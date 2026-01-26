@@ -1,0 +1,153 @@
+/* src/App.css */
+:root {
+  --primary-color: #003675; /* 순천향대 다크 블루 */
+  --bg-color: #f5f5f5;
+  --text-color: #333;
+}
+
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* 전체 컨테이너: 모바일에서는 꽉 차고, PC에서는 앱처럼 보이게 */
+.page-container {
+  max-width: 600px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* 헤더 스타일 */
+.header {
+  padding: 20px;
+  text-align: center;
+  background-color: white;
+  border-bottom: 1px solid #eee;
+}
+.header h2 { margin: 0; font-size: 1.2rem; color: var(--primary-color); }
+
+/* 메인 그리드 메뉴 (버튼들) */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2열 배치 */
+  gap: 15px;
+  padding: 20px;
+  flex: 1;
+}
+
+.menu-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.menu-card:hover { transform: translateY(-3px); border-color: var(--primary-color); }
+.menu-card span { font-size: 1rem; font-weight: bold; margin-top: 10px; }
+
+/* 하단 네비게이션 바 */
+.bottom-nav {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: white;
+  border-top: 1px solid #eee;
+}
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+}
+.nav-btn.center { font-weight: bold; color: var(--primary-color); }
+
+/* src/App.css 맨 아래에 추가 */
+
+/* 캘린더 전체 컨테이너 */
+.react-calendar {
+  width: 100%;
+  background: white;
+  border: none;
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.125em;
+}
+
+/* 상단 네비게이션 (2025년 8월 ...) */
+.react-calendar__navigation {
+  display: flex;
+  height: 44px;
+  margin-bottom: 10px;
+}
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #003675; /* 순천향 블루 */
+}
+
+/* 요일 표시 (일 월 화 ...) */
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.85em;
+  color: #666;
+  text-decoration: none; /* 밑줄 제거 */
+}
+/* 요일 밑줄 진짜 제거 */
+abbr[title] {
+  text-decoration: none;
+  cursor: default;
+}
+
+/* 날짜 타일 */
+.react-calendar__tile {
+  max-width: 100%;
+  padding: 15px 6px;
+  background: none;
+  text-align: center;
+  line-height: 16px;
+  font-size: 14px;
+  position: relative; /* 점 표시를 위해 */
+}
+
+/* 오늘 날짜 */
+.react-calendar__tile--now {
+  background: #e3f2fd;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #003675;
+}
+
+/* 선택된 날짜 */
+.react-calendar__tile--active {
+  background: #003675 !important;
+  color: white !important;
+  border-radius: 8px;
+}
+
+/* 일정이 있는 날짜에 표시할 점 (Dot) */
+.calendar-dot {
+  height: 6px;
+  width: 6px;
+  background-color: #f44336; /* 빨간 점 */
+  border-radius: 50%;
+  display: block;
+  margin: 5px auto 0; /* 날짜 숫자 아래에 배치 */
+}
