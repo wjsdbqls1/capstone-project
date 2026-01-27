@@ -151,3 +151,8 @@ abbr[title] {
   display: block;
   margin: 5px auto 0; /* 날짜 숫자 아래에 배치 */
 }
+
+.notice-content img {
+  max-width: 100%;
+  height: auto;
+}
