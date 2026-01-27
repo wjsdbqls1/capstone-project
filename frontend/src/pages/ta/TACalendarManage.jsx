@@ -19,7 +19,6 @@ function TACalendarManage() {
   
   // 모바일 감지 State
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
   const token = localStorage.getItem('token');
 
   // 화면 크기 변경 감지
@@ -67,7 +66,7 @@ function TACalendarManage() {
 
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
-  const getDiffDays = (s, e) => Math.ceil((new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24)) + 1;
+  const getDiffDays = (s, e) => Math.ceil((new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24)) + 0.95;
 
   const renderCalendar = () => {
     const year = currentDate.getFullYear();
@@ -85,7 +84,7 @@ function TACalendarManage() {
       let dayMemos = myMemos.filter(m => m.memo_date === dateStr).map(m => ({ id: `memo-${m.id}`, title: m.content, start_date: m.memo_date, end_date: m.memo_date, type: 'memo' }));
       let allItems = [...dayEvents, ...dayMemos];
       
-      // PC 뷰를 위한 정렬
+      // PC용 정렬 (모바일은 Dot 표시라 순서 덜 중요하지만 동일하게 적용)
       allItems.sort((a, b) => {
         if (a.start_date !== b.start_date) return a.start_date.localeCompare(b.start_date);
         const durationA = getDiffDays(a.start_date, a.end_date);
@@ -100,7 +99,7 @@ function TACalendarManage() {
           
           <div style={calStyles.eventList}>
             {isMobile ? (
-                // [모바일] 점(Dot)으로 표시
+                // [모바일] 깔끔하게 점(Dot)으로 표시
                 <div style={{display:'flex', justifyContent:'center', gap:'3px', flexWrap:'wrap', padding:'0 2px'}}>
                     {allItems.slice(0, 5).map((ev, idx) => {
                         const dotColor = ev.type === 'memo' ? '#2e7d32' : (ev.source === 'manual' ? '#ef6c00' : '#1565c0');
@@ -109,7 +108,7 @@ function TACalendarManage() {
                     {allItems.length > 5 && <div style={{fontSize:'8px', color:'#888'}}>+</div>}
                 </div>
             ) : (
-                // [PC] 기존 막대(Bar) 표시
+                // [PC] 기존 텍스트 바(Bar) 표시 (원상 복구)
                 <>
                     {allItems.slice(0, 3).map((ev, idx) => {
                         const isManual = ev.source === 'manual';
@@ -121,7 +120,7 @@ function TACalendarManage() {
                         const isEndOfEvent = remainingDaysTotal <= ((6 - currentDayOfWeek) + 1);
                         
                         const theme = isMemo ? { bg:'#e8f5e9', text:'#2e7d32', bar:'#2e7d32' } : isManual ? { bg:'#fff3e0', text:'#e65100', bar:'#e65100' } : { bg:'#e3f2fd', text:'#1565c0', bar:'#1565c0' };
-                        const itemStyle = { backgroundColor: theme.bg, color: theme.text, borderLeft: isStartOfEvent ? `3px solid ${theme.bar}` : 'none', paddingLeft: '4px' };
+                        const itemStyle = { backgroundColor: theme.bg, color: theme.text, borderLeft: isStartOfEvent ? `3px solid ${theme.bar}` : 'none', borderTopLeftRadius: isStartOfEvent?'4px':'0', borderBottomLeftRadius: isStartOfEvent?'4px':'0', borderTopRightRadius: isEndOfEvent?'4px':'0', borderBottomRightRadius: isEndOfEvent?'4px':'0', paddingLeft: isStartOfEvent?'4px':'8px' };
                         
                         return shouldRenderBar ? (
                             <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle, width: `calc(${span * 100}% + ${span - 1}px)`, zIndex: 10, position: 'relative'}}>{ev.title}</div>
@@ -152,16 +151,28 @@ function TACalendarManage() {
         <button onClick={() => setIsRegisterModalOpen(true)} style={calStyles.addBtn}>+ 일정 등록</button>
       </div>
       
-      {/* 캘린더 본체 */}
-      <div style={calStyles.calendarWrapper}>
-          <div style={calStyles.dayHeaderRow}>{['일','월','화','수','목','금','토'].map((day, idx) => <div key={day} style={{...calStyles.dayHeader, color: idx===0?'#d32f2f': idx===6?'#1976d2':'#333'}}>{day}</div>)}</div>
-          <div style={calStyles.calendarGrid}>{renderCalendar()}</div>
+      {/* 캘린더 영역: 모바일/PC 스타일 분기 */}
+      <div style={isMobile ? calStyles.calendarWrapperMobile : calStyles.calendarWrapperPC}>
+          <div style={{
+              ...calStyles.dayHeaderRow,
+              ...(isMobile ? { minWidth: '600px' } : {}) // 모바일 가로 스크롤용 최소 너비
+          }}>
+            {['일','월','화','수','목','금','토'].map((day, idx) => (
+                <div key={day} style={{...calStyles.dayHeader, color: idx===0?'#d32f2f': idx===6?'#1976d2':'#333'}}>{day}</div>
+            ))}
+          </div>
+          <div style={{
+              ...calStyles.calendarGrid,
+              ...(isMobile ? { minWidth: '600px', gridAutoRows: 'minmax(80px, 1fr)' } : { flex: 1, gridAutoRows: '1fr', width: '100%' })
+          }}>
+            {renderCalendar()}
+          </div>
       </div>
 
       {isDetailModalOpen && (
         <div style={modalStyles.overlay} onClick={() => setIsDetailModalOpen(false)}>
             <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
-                <div style={modalStyles.header}><h3 style={{margin:0, color:'#003675'}}>{selectedDate}</h3><button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}>✕</button></div>
+                <div style={modalStyles.header}><h3 style={{margin:0, color:'#003675'}}>{selectedDate} 일정</h3><button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}>✕</button></div>
                 <div style={modalStyles.list}>
                     <div style={{display:'flex', gap:'5px', marginBottom:'15px'}}>
                         <input value={memoInput} onChange={(e) => setMemoInput(e.target.value)} placeholder="메모 입력..." style={{flex:1, padding:'10px', borderRadius:'8px', border:'1px solid #ddd'}}/>
@@ -187,20 +198,35 @@ function TACalendarManage() {
 }
 
 const styles = { pageTitle: { fontSize: '22px', fontWeight: '800', color: '#003675', marginBottom: '15px' } };
+
+// 스타일 객체: 모바일/PC 분리
 const calStyles = { 
     controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }, 
     monthNav: { display: 'flex', alignItems: 'center', gap: '10px' }, 
     navBtn: { background:'white', border:'1px solid #ddd', borderRadius:'8px', cursor:'pointer', padding:'6px 12px', fontSize:'14px', fontWeight:'bold' }, 
     addBtn: { backgroundColor: '#ff9800', color: 'black', border: 'none', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }, 
     
-    // [중요] height: auto로 변경하여 내용이 넘쳐도 잘리지 않게 함
-    calendarWrapper: { flex: 1, borderRadius: '16px', border: '1px solid rgba(255,255,255,0.8)', backgroundColor: 'white', display: 'flex', flexDirection: 'column', overflow: 'hidden', height:'auto' }, 
+    // [공통] 래퍼 기본 스타일
+    calendarWrapperBase: {
+        borderRadius: '16px', 
+        border: '1px solid rgba(255,255,255,0.8)', 
+        backgroundColor: 'white', 
+        display: 'flex', 
+        flexDirection: 'column',
+    },
+    // [PC] 기존 꽉 찬 화면 (1fr)
+    get calendarWrapperPC() {
+        return { ...this.calendarWrapperBase, flex: 1, overflow: 'hidden', minHeight: '500px' };
+    },
+    // [모바일] 가로 스크롤 + 높이 자연스럽게 늘어남 (여백 제거)
+    get calendarWrapperMobile() {
+        return { ...this.calendarWrapperBase, flex: 1, overflowX: 'auto', overflowY: 'hidden', height: 'auto' };
+    },
     
     dayHeaderRow: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(255,255,255,0.6)', height: '35px' }, 
     dayHeader: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight:'1px solid rgba(255,255,255,0.6)', fontWeight:'bold', fontSize: '14px' }, 
     
-    // [중요] minmax로 최소 높이 보장하여 찌그러짐 방지
-    calendarGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridAutoRows: 'minmax(80px, 1fr)', width: '100%', boxSizing: 'border-box' }, 
+    calendarGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', boxSizing: 'border-box' }, 
     
     dayCell: { borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)', backgroundColor: 'transparent', display:'flex', flexDirection:'column', cursor: 'pointer', overflow: 'visible', position: 'relative', minHeight: '80px' }, 
     dayCellEmpty: { backgroundColor: 'rgba(0,0,0,0.02)', borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)' }, 
@@ -210,6 +236,7 @@ const calStyles = {
     eventItem: { fontSize: '12px', padding: '2px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', margin: '0 2px', lineHeight: '1.2', height: '20px', borderRadius:'4px' }, 
     moreBtn: { fontSize: '11px', color: '#666', paddingLeft: '4px', fontWeight: 'bold' } 
 };
+
 const modalStyles = { overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 }, modal: { width: '85%', maxWidth:'400px', maxHeight: '80%', backgroundColor: 'white', borderRadius: '16px', padding: '0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }, header: { padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9', borderBottom: '1px solid #eee' }, closeBtn: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#666' }, list: { padding: '20px', overflowY: 'auto', flex: 1 }, item: { padding: '12px', backgroundColor: 'white', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #f0f0f0' }, inputGroup: { marginBottom: '15px' }, label: { fontSize: '13px', color: '#666', fontWeight:'bold', marginBottom:'5px', display:'block' }, input: { width: '100%', padding: '10px', boxSizing:'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '15px' }, btnGroup: { display: 'flex', gap: '10px', marginTop: '20px' }, cancelBtn: { flex: 1, padding: '12px', border: '1px solid #ddd', backgroundColor:'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color:'#666' }, submitBtn: { flex: 1, padding: '12px', border: 'none', backgroundColor:'#ff9800', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color:'white' } };
 
 export default TACalendarManage;
