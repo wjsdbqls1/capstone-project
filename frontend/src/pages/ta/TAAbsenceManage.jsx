@@ -1,25 +1,20 @@
-// src/pages/ta/TACalendarManage.jsx
+// src/pages/ta/TAAbsenceManage.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TALayout from './TALayout';
-import '../../App.css';
 
-function TACalendarManage() {
-  const navigate = useNavigate();
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [academicEvents, setAcademicEvents] = useState([]);
-  const [myMemos, setMyMemos] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);       
-  const [selectedItems, setSelectedItems] = useState([]);     
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false); 
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false); 
-  const [memoInput, setMemoInput] = useState("");
-  const [newEvent, setNewEvent] = useState({ title: '', start_date: '', end_date: '' });
+function TAAbsenceManage() {
+  const [requests, setRequests] = useState([]);
+  const [filteredRequests, setFilteredRequests] = useState([]);
+  const [view, setView] = useState('list');
+  const [selectedReq, setSelectedReq] = useState(null);
+  const [showRejectInput, setShowRejectInput] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   
-  // 모바일 감지
+  const [dateFilter, setDateFilter] = useState('all');
+  
+  // 모바일 감지 (기존 코드 유지를 위해 추가)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -27,254 +22,182 @@ function TACalendarManage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const fetchData = async () => {
+  const fetchRequests = async () => {
     try {
-      const eventRes = await axios.get('http://13.219.208.109:8000/academic-events');
-      setAcademicEvents(eventRes.data);
-      if (token) {
-        const memoRes = await axios.get('http://13.219.208.109:8000/memos', { headers: { Authorization: `Bearer ${token}` } });
-        setMyMemos(memoRes.data);
-      }
+      const token = localStorage.getItem("token"); 
+      const response = await axios.get('http://13.219.208.109:8000/admin/absence/list', { headers: { Authorization: `Bearer ${token}` } });
+      const sortedData = response.data.sort((a, b) => b.id - a.id);
+      setRequests(sortedData);
+      setFilteredRequests(sortedData);
     } catch (error) { console.error("로딩 실패:", error); }
   };
+  useEffect(() => { fetchRequests(); }, []);
 
-  useEffect(() => { fetchData(); }, [currentDate]);
+  useEffect(() => {
+    if (dateFilter === 'all') { setFilteredRequests(requests); return; }
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const result = requests.filter(req => {
+      const reqDate = new Date(req.created_at);
+      const reqDateStart = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate());
+      if (dateFilter === 'today') return reqDateStart.getTime() === todayStart.getTime();
+      if (dateFilter === 'week') {
+        const day = now.getDay(); const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(now.setDate(diff)); monday.setHours(0,0,0,0);
+        return reqDate >= monday;
+      }
+      if (dateFilter === 'month') return reqDate.getMonth() === now.getMonth() && reqDate.getFullYear() === now.getFullYear();
+      if (dateFilter === 'year') return reqDate.getFullYear() === now.getFullYear();
+      return true;
+    });
+    setFilteredRequests(result);
+  }, [dateFilter, requests]);
 
-  const handleDateClick = (dateStr, items) => { setSelectedDate(dateStr); setSelectedItems(items); setMemoInput(""); setIsDetailModalOpen(true); };
-  const handleAddMemo = async () => {
-    if (!memoInput.trim()) return;
-    try {
-        await axios.post('http://13.219.208.109:8000/memos', { memo_date: selectedDate, content: memoInput }, { headers: { Authorization: `Bearer ${token}` } });
-        setMemoInput(""); await fetchData(); updateSelectedItems(selectedDate);
-    } catch (err) { alert("저장 실패"); }
+  const handleStatusUpdate = async (status) => {
+    if (!selectedReq) return;
+    if (status === 'REJECTED' && !showRejectInput) { setShowRejectInput(true); return; }
+    const token = localStorage.getItem("token");
+    await axios.put(`http://13.219.208.109:8000/admin/absence/${selectedReq.id}/status`, { status, reject_reason: rejectReason }, { headers: { Authorization: `Bearer ${token}` } });
+    alert("처리 완료"); fetchRequests(); setView('list'); setSelectedReq(null);
   };
-  const handleDeleteMemo = async (id) => {
-    if(!window.confirm("삭제?")) return;
-    try { await axios.delete(`http://13.219.208.109:8000/memos/${id}`, { headers: { Authorization: `Bearer ${token}` } }); await fetchData(); updateSelectedItems(selectedDate); } catch (err) {}
-  };
-  const handleRegister = async () => {
-    if(!newEvent.title || !newEvent.start_date || !newEvent.end_date) return;
-    try { await axios.post('http://13.219.208.109:8000/academic-events', newEvent); alert("등록됨"); setIsRegisterModalOpen(false); setNewEvent({ title: '', start_date: '', end_date: '' }); fetchData(); } catch (error) { alert("실패"); }
-  };
 
-  const updateSelectedItems = (dateStr) => {
-    const dayEvents = academicEvents.filter(ev => ev.start_date <= dateStr && ev.end_date >= dateStr);
-    const dayMemos = myMemos.filter(m => m.memo_date === dateStr).map(m => ({...m, type:'memo', title: m.content}));
-    setSelectedItems([...dayEvents, ...dayMemos]);
-  };
-
-  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
-  const getDiffDays = (s, e) => Math.ceil((new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24)) + 1;
-
-  const renderCalendar = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const daysInMonth = getDaysInMonth(year, month);
-    const firstDay = getFirstDayOfMonth(year, month);
-    const days = [];
-    
-    for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} style={{...calStyles.dayCellEmpty}}></div>);
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const currentDayOfWeek = new Date(year, month, d).getDay();
-      
-      let dayEvents = academicEvents.filter(ev => ev.start_date <= dateStr && ev.end_date >= dateStr);
-      let dayMemos = myMemos.filter(m => m.memo_date === dateStr).map(m => ({ id: `memo-${m.id}`, title: m.content, start_date: m.memo_date, end_date: m.memo_date, type: 'memo' }));
-      let allItems = [...dayEvents, ...dayMemos];
-      
-      // PC용 정렬 (긴 일정 우선)
-      allItems.sort((a, b) => {
-        if (a.start_date !== b.start_date) return a.start_date.localeCompare(b.start_date);
-        const durationA = getDiffDays(a.start_date, a.end_date);
-        const durationB = getDiffDays(b.start_date, b.end_date);
-        if (durationA !== durationB) return durationB - durationA; 
-        return a.title.localeCompare(b.title);
-      });
-
-      days.push(
-        <div key={d} style={{...calStyles.dayCell, zIndex: 50 - d}} onClick={() => handleDateClick(dateStr, allItems)}>
-          <div style={calStyles.dayNum}>{d}</div>
-          
-          <div style={calStyles.eventList}>
-            {isMobile ? (
-                // [모바일] 점(Dot) 표시
-                <div style={{display:'flex', justifyContent:'center', gap:'3px', flexWrap:'wrap', padding:'0 2px'}}>
-                    {allItems.slice(0, 5).map((ev, idx) => {
-                        const dotColor = ev.type === 'memo' ? '#2e7d32' : (ev.source === 'manual' ? '#ef6c00' : '#1565c0');
-                        return <div key={idx} style={{width:'6px', height:'6px', borderRadius:'50%', backgroundColor: dotColor}}></div>
-                    })}
-                    {allItems.length > 5 && <div style={{fontSize:'8px', color:'#888'}}>+</div>}
-                </div>
-            ) : (
-                // [PC] 막대(Bar) 표시 + 연속 일정 지원
-                <>
-                    {allItems.slice(0, 5).map((ev, idx) => {
-                        const isManual = ev.source === 'manual';
-                        const isMemo = ev.type === 'memo';
-                        const isStartOfEvent = ev.start_date === dateStr;
-                        const shouldRenderBar = isStartOfEvent || currentDayOfWeek === 0;
-                        const remainingDaysTotal = getDiffDays(dateStr, ev.end_date);
-                        const span = Math.min(remainingDaysTotal, (6 - currentDayOfWeek) + 1);
-                        
-                        const theme = isMemo ? { bg:'#e8f5e9', text:'#2e7d32', bar:'#2e7d32' } : isManual ? { bg:'#fff3e0', text:'#e65100', bar:'#e65100' } : { bg:'#e3f2fd', text:'#1565c0', bar:'#1565c0' };
-                        const itemStyle = { 
-                            backgroundColor: theme.bg, color: theme.text, 
-                            borderLeft: isStartOfEvent ? `3px solid ${theme.bar}` : 'none', 
-                            paddingLeft: '4px',
-                            width: `calc(${span * 100}% + ${span - 1}px)`, 
-                            zIndex: 10, position: 'relative' 
-                        };
-                        
-                        return shouldRenderBar ? (
-                            <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>{ev.title}</div>
-                        ) : <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, opacity:0, pointerEvents:'none'}}>{ev.title}</div>;
-                    })}
-                    {/* [PC] 5개 초과 시 +N 표시 */}
-                    {allItems.length > 5 && <div style={calStyles.moreBtn}>+{allItems.length - 5}</div>}
-                </>
-            )}
-          </div>
-        </div>
-      );
+  const getStatusStyle = (status) => {
+    switch (status) {
+        case 'APPROVED': return { bg: '#e8f5e9', text: '#2e7d32', label: '승인' };
+        case 'REJECTED': return { bg: '#ffebee', text: '#c62828', label: '반려' };
+        default: return { bg: '#fff3e0', text: '#ef6c00', label: '검토대기' };
     }
-    return days;
-  };
-
-  const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-
-  const getWeeksCount = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const lastDate = new Date(year, month + 1, 0).getDate();
-    return Math.ceil((firstDay + lastDate) / 7);
   };
 
   return (
     <TALayout>
-      <div style={styles.pageTitle}>캘린더 관리</div>
-      <div style={calStyles.controls}>
-        <div style={calStyles.monthNav}>
-          <button onClick={prevMonth} style={calStyles.navBtn}>◀</button>
-          <h3 style={{margin:0, fontSize:'20px', fontWeight:'800', color:'#333'}}>{currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}</h3>
-          <button onClick={nextMonth} style={calStyles.navBtn}>▶</button>
-        </div>
-        <button onClick={() => setIsRegisterModalOpen(true)} style={calStyles.addBtn}>+ 일정 등록</button>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
+          <div style={styles.pageTitle}>{view === 'detail' ? '신청서 검토' : '공결 신청 관리'}</div>
+          {view === 'detail' && (
+            <button onClick={() => setView('list')} style={styles.backBtn}>‹ 목록으로</button>
+          )}
       </div>
       
-      {/* 캘린더 영역 */}
-      <div style={isMobile ? calStyles.calendarWrapperMobile : calStyles.calendarWrapperPC}>
-          <div style={calStyles.dayHeaderRow}>
-            {['일','월','화','수','목','금','토'].map((day, idx) => (
-                <div key={day} style={{...calStyles.dayHeader, color: idx===0?'#d32f2f': idx===6?'#1976d2':'#333'}}>{day}</div>
-            ))}
+      {view === 'list' && (
+          <div style={styles.filterBar}>
+              <span style={{fontWeight:'bold', color:'#555', marginRight:'10px'}}>📅 기간 선택:</span>
+              <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+                  <option value="all">📅 전체 기간</option>
+                  <option value="today">오늘</option>
+                  <option value="week">이번 주</option>
+                  <option value="month">이번 달</option>
+                  <option value="year">올해</option>
+              </select>
           </div>
-          <div style={{
-              ...calStyles.calendarGrid, 
-              gridTemplateRows: isMobile ? 'auto' : `repeat(${getWeeksCount()}, 1fr)`,
-              gridAutoRows: isMobile ? 'minmax(80px, 1fr)' : 'auto'
-          }}>
-            {renderCalendar()}
-          </div>
-      </div>
-
-      {isDetailModalOpen && (
-        <div style={modalStyles.overlay} onClick={() => setIsDetailModalOpen(false)}>
-            <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
-                <div style={modalStyles.header}><h3 style={{margin:0, color:'#003675'}}>{selectedDate} 일정</h3><button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}>✕</button></div>
-                <div style={modalStyles.list}>
-                    <div style={{display:'flex', gap:'5px', marginBottom:'15px'}}>
-                        <input value={memoInput} onChange={(e) => setMemoInput(e.target.value)} placeholder="메모 입력..." style={{flex:1, padding:'10px', borderRadius:'8px', border:'1px solid #ddd'}}/>
-                        <button onClick={handleAddMemo} style={{padding:'0 15px', backgroundColor:'#2e7d32', color:'white', border:'none', borderRadius:'8px', fontWeight:'bold', cursor:'pointer'}}>추가</button>
-                    </div>
-                    {selectedItems.length === 0 ? <p style={{textAlign:'center', color:'#999'}}>일정이 없습니다.</p> : selectedItems.map((ev, idx) => (
-                        <div key={idx} style={{
-                            ...modalStyles.item, 
-                            borderLeft: ev.type==='memo' ? '4px solid #2e7d32' : ev.source==='manual' ? '4px solid #ff9800' : '4px solid #1565c0', 
-                            backgroundColor: ev.type==='memo' ? '#f1f8e9' : 'white'
-                        }}>
-                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                                <div style={{flex: 1, paddingRight: '10px'}}>
-                                    <div style={{fontWeight:'bold', fontSize:'15px', color:'#333'}}>{ev.title}</div>
-                                    {ev.type!=='memo' && <div style={{fontSize:'12px', color:'#666', marginTop:'4px'}}>{ev.start_date} ~ {ev.end_date}</div>}
-                                </div>
-                                {ev.type==='memo' && <button onClick={() => handleDeleteMemo(ev.id.replace('memo-',''))} style={{background:'none', border:'none', cursor:'pointer', color:'#999', fontSize:'16px'}}>🗑️</button>}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
       )}
-      {isRegisterModalOpen && (
-        <div style={modalStyles.overlay}><div style={modalStyles.modal}><div style={modalStyles.header}><h3 style={{margin:0}}>일정 등록</h3><button onClick={() => setIsRegisterModalOpen(false)} style={modalStyles.closeBtn}>✕</button></div><div style={{padding:'20px'}}><div style={modalStyles.inputGroup}><label style={modalStyles.label}>제목</label><input placeholder="예: 수강신청" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.inputGroup}><label style={modalStyles.label}>시작</label><input type="date" value={newEvent.start_date} onChange={e => setNewEvent({...newEvent, start_date: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.inputGroup}><label style={modalStyles.label}>종료</label><input type="date" value={newEvent.end_date} onChange={e => setNewEvent({...newEvent, end_date: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.btnGroup}><button onClick={() => setIsRegisterModalOpen(false)} style={modalStyles.cancelBtn}>취소</button><button onClick={handleRegister} style={modalStyles.submitBtn}>등록</button></div></div></div></div>
+      
+      {view === 'list' ? (
+          <div style={styles.listArea}>
+              {filteredRequests.length === 0 ? (
+                <div style={{textAlign:'center', marginTop:'50px', color:'#666', fontWeight:'500'}}>{dateFilter !== 'all' ? "선택한 기간에 신청 내역이 없습니다." : "신청 내역이 없습니다."}</div>
+              ) : (
+                filteredRequests.map((req) => {
+                  const statusStyle = getStatusStyle(req.status);
+                  return (
+                      <div key={req.id} style={styles.card} onClick={() => { setSelectedReq(req); setView('detail'); setShowRejectInput(false); }}
+                        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.6)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.4)'; }}
+                      >
+                          <div style={{display:'flex', justifyContent:'space-between', marginBottom:'8px'}}>
+                              <span style={{fontSize:'13px', color:'#666', fontWeight:'500'}}>{req.created_at.split('T')[0]}</span>
+                              <span style={{fontSize:'12px', fontWeight:'bold', backgroundColor: statusStyle.bg, color: statusStyle.text, padding: '4px 8px', borderRadius: '6px'}}>{statusStyle.label}</span>
+                          </div>
+                          <div style={{fontWeight:'bold', fontSize:'17px', color:'#222', marginBottom:'5px'}}>[{req.student_no}] {req.student_name}</div>
+                          <div style={{fontSize:'14px', color:'#555'}}><span style={{fontWeight:'600', color:'#003675'}}>{req.course_name}</span> | <span style={{color:'#c62828'}}>{req.absent_date}</span></div>
+                      </div>
+                  );
+              })
+            )}
+          </div>
+      ) : (
+          <div style={styles.detailContainer}>
+              <div style={styles.sectionBox}>
+                  <h3 style={styles.sectionTitle}>👤 신청자 정보</h3>
+                  {/* PC에서만 왼쪽 정렬, 모바일은 기존 양끝 정렬 유지 */}
+                  <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
+                      <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학과</span> 
+                      <span>{selectedReq.department}</span>
+                  </div>
+                  <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
+                      <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학번</span> 
+                      <span>{selectedReq.student_no}</span>
+                  </div>
+                  <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
+                      <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>이름</span> 
+                      <span style={{fontWeight:'bold'}}>{selectedReq.student_name}</span>
+                  </div>
+              </div>
+
+              <div style={styles.sectionBox}>
+                  <h3 style={styles.sectionTitle}>📄 신청 내용</h3>
+                  <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
+                      <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>과목명</span> 
+                      <strong>{selectedReq.course_name}</strong>
+                  </div>
+                  <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
+                      <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>결석일</span> 
+                      <span style={{color:'#c62828', fontWeight:'bold'}}>{selectedReq.absent_date}</span>
+                  </div>
+                  <div style={{marginTop:'15px'}}><div style={styles.label}>결석 사유</div><div style={styles.reasonBox}>{selectedReq.reason}</div></div>
+                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`http://13.219.208.109:8000/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={styles.fileLink}>📎 증빙서류 다운로드 / 보기</a></div>)}
+              </div>
+
+              {selectedReq.status === 'SUBMITTED' ? (
+                  <div style={styles.actionArea}>
+                      {showRejectInput ? (
+                          <div style={styles.rejectBox}>
+                              <div style={{fontWeight:'bold', marginBottom:'8px', color:'#c62828'}}>반려 사유 입력</div>
+                              <textarea style={styles.textarea} placeholder="반려 사유 입력" value={rejectReason} onChange={e=>setRejectReason(e.target.value)} />
+                              <div style={{display:'flex', gap:'10px', marginTop:'10px'}}>
+                                  <button onClick={()=>setShowRejectInput(false)} style={styles.cancelBtn}>취소</button>
+                                  <button onClick={()=>handleStatusUpdate('REJECTED')} style={styles.confirmRejectBtn}>반려 확정</button>
+                              </div>
+                          </div>
+                      ) : (
+                          <div style={{display:'flex', gap:'15px'}}>
+                              <button onClick={()=>handleStatusUpdate('APPROVED')} style={styles.approveBtn}>승인</button>
+                              <button onClick={()=>setShowRejectInput(true)} style={styles.rejectBtn}>반려</button>
+                          </div>
+                      )}
+                  </div>
+              ) : (
+                <div style={{marginTop:'30px', padding:'15px', borderRadius:'10px', textAlign:'center', fontWeight:'bold', backgroundColor: selectedReq.status === 'APPROVED' ? '#e8f5e9' : '#ffebee', color: selectedReq.status === 'APPROVED' ? '#2e7d32' : '#c62828', border: selectedReq.status === 'APPROVED' ? '1px solid #c8e6c9' : '1px solid #ffcdd2'}}>
+                    {selectedReq.status === 'APPROVED' ? "✅ 승인 처리되었습니다." : `🛑 반려되었습니다. (사유: ${selectedReq.reject_reason || '-'})`}
+                </div>
+              )}
+          </div>
       )}
     </TALayout>
   );
 }
 
-const styles = { pageTitle: { fontSize: '22px', fontWeight: '800', color: '#003675', marginBottom: '15px' } };
-
-const calStyles = { 
-    controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }, 
-    monthNav: { display: 'flex', alignItems: 'center', gap: '10px' }, 
-    navBtn: { background:'white', border:'1px solid #ddd', borderRadius:'8px', cursor:'pointer', padding:'6px 12px', fontSize:'14px', fontWeight:'bold' }, 
-    addBtn: { backgroundColor: '#ff9800', color: 'black', border: 'none', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }, 
-    
-    calendarWrapperBase: {
-        borderRadius: '16px', 
-        border: '1px solid rgba(255,255,255,0.8)', 
-        backgroundColor: 'white', 
-        display: 'flex', 
-        flexDirection: 'column',
-    },
-    get calendarWrapperPC() {
-        return { ...this.calendarWrapperBase, flex: 1, overflow: 'hidden', minHeight: '500px' };
-    },
-    get calendarWrapperMobile() {
-        return { ...this.calendarWrapperBase, height: 'auto', minHeight: '400px' };
-    },
-    
-    dayHeaderRow: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(255,255,255,0.6)', height: '35px' }, 
-    dayHeader: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight:'1px solid rgba(255,255,255,0.6)', fontWeight:'bold', fontSize: '14px' }, 
-    
-    calendarGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', flex: 1, width: '100%', boxSizing: 'border-box' }, 
-    
-    dayCell: { 
-        borderRight:'1px solid rgba(202, 200, 200, 0.6)', 
-        borderBottom:'1px solid rgba(202, 200, 200, 0.6)', 
-        backgroundColor: 'transparent', 
-        display:'flex', 
-        flexDirection:'column', 
-        cursor: 'pointer', 
-        overflow: 'visible', // 연속 일정을 위해 visible
-        position: 'relative', 
-        minHeight: '80px' 
-    }, 
-    dayCellEmpty: { backgroundColor: 'rgba(0,0,0,0.02)', borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)' }, 
-    
-    dayNum: { fontSize: '14px', fontWeight: 'bold', padding: '6px', color: '#333' }, 
-    eventList: { display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', position: 'absolute', top: '28px', left: 0, right: 0, paddingBottom: '4px' }, 
-    eventItem: { fontSize: '11px', padding: '2px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', margin: '0 2px', lineHeight: '1.2', height: '18px', borderRadius:'3px' }, 
-    moreBtn: { fontSize: '10px', color: '#666', paddingLeft: '4px', fontWeight: 'bold' } 
+const styles = {
+  pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675' },
+  backBtn: { cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 12px', borderRadius:'20px', fontSize:'13px', color:'#555', fontWeight:'bold', transition:'all 0.2s' },
+  filterBar: { marginBottom:'15px', padding:'10px 15px', backgroundColor:'rgba(255, 255, 255, 0.4)', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.6)', display:'flex', alignItems:'center' },
+  select: { padding:'8px 12px', borderRadius:'8px', border:'1px solid #ced4da', backgroundColor:'rgba(255,255,255,0.8)', fontSize:'14px', cursor:'pointer', outline:'none', minWidth:'100px' },
+  listArea: { flex: 1, overflowY: 'auto', padding: '5px' },
+  card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.8)', borderLeft: '6px solid #003675', transition: 'all 0.2s ease' },
+  detailContainer: { overflowY:'auto', padding:'5px' },
+  sectionBox: { backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '25px', borderRadius: '16px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' },
+  sectionTitle: { fontSize: '18px', color: '#003675', borderBottom: '2px solid #003675', paddingBottom: '10px', marginBottom: '20px', fontWeight:'800' },
+  // 기본 스타일은 유지하되 justifyContent는 JSX에서 오버라이드
+  infoRow: { display:'flex', marginBottom:'12px', borderBottom:'1px dashed #f0f0f0', paddingBottom:'8px', fontSize:'15px', color:'#333' },
+  label: { color:'#666', fontWeight:'bold', minWidth:'80px' },
+  reasonBox: { backgroundColor:'#f8f9fa', padding:'15px', borderRadius:'10px', border:'1px solid #eee', color:'#333', lineHeight:'1.6', minHeight:'60px' },
+  fileLink: { display:'inline-block', padding:'10px 15px', backgroundColor:'#e3f2fd', color:'#003675', borderRadius:'8px', textDecoration:'none', fontWeight:'bold', border:'1px solid #bbdefb', fontSize:'14px' },
+  actionArea: { marginTop: '30px' },
+  approveBtn: { flex: 1, backgroundColor: '#2e7d32', color: 'white', padding: '16px', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(46, 125, 50, 0.2)', transition: 'background 0.2s' },
+  rejectBtn: { flex: 1, backgroundColor: '#c62828', color: 'white', padding: '16px', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(198, 40, 40, 0.2)', transition: 'background 0.2s' },
+  rejectBox: { padding: '20px', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #ffcdd2', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' },
+  textarea: { width: '100%', padding: '12px', border: '1px solid #ddd', borderRadius: '8px', resize: 'none', height: '100px', boxSizing: 'border-box', fontSize:'15px', fontFamily:'inherit' },
+  cancelBtn: { flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: 'white', cursor: 'pointer', fontWeight:'bold', color:'#555' },
+  confirmRejectBtn: { flex: 1, backgroundColor: '#c62828', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }
 };
 
-// [수정] 모달 너비 확대 및 내부 아이템 레이아웃 개선
-const modalStyles = { 
-    overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 }, 
-    modal: { width: '85%', maxWidth:'600px', maxHeight: '80%', backgroundColor: 'white', borderRadius: '16px', padding: '0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }, 
-    header: { padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9', borderBottom: '1px solid #eee' }, 
-    closeBtn: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#666' }, 
-    list: { padding: '20px', overflowY: 'auto', flex: 1 }, 
-    item: { padding: '15px', backgroundColor: 'white', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #f0f0f0' }, 
-    inputGroup: { marginBottom: '15px' }, 
-    label: { fontSize: '13px', color: '#666', fontWeight:'bold', marginBottom:'5px', display:'block' }, 
-    input: { width: '100%', padding: '10px', boxSizing:'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '15px' }, 
-    btnGroup: { display: 'flex', gap: '10px', marginTop: '20px' }, 
-    cancelBtn: { flex: 1, padding: '12px', border: '1px solid #ddd', backgroundColor:'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color:'#666' }, 
-    submitBtn: { flex: 1, padding: '12px', border: 'none', backgroundColor:'#ff9800', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color:'white' } 
-};
-
-export default TACalendarManage;
+export default TAAbsenceManage;
