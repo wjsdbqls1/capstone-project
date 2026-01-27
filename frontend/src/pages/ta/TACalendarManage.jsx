@@ -17,6 +17,7 @@ function TACalendarManage() {
   const [memoInput, setMemoInput] = useState("");
   const [newEvent, setNewEvent] = useState({ title: '', start_date: '', end_date: '' });
   
+  // 모바일 감지
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const token = localStorage.getItem('token');
 
@@ -64,7 +65,7 @@ function TACalendarManage() {
 
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
-  const getDiffDays = (s, e) => Math.ceil((new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24)) + 0.95;
+  const getDiffDays = (s, e) => Math.ceil((new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24)) + 1;
 
   const renderCalendar = () => {
     const year = currentDate.getFullYear();
@@ -97,7 +98,7 @@ function TACalendarManage() {
           
           <div style={calStyles.eventList}>
             {isMobile ? (
-                // [모바일] 점(Dot) 표시 (최대 5개)
+                // [모바일] 점(Dot) 표시
                 <div style={{display:'flex', justifyContent:'center', gap:'3px', flexWrap:'wrap', padding:'0 2px'}}>
                     {allItems.slice(0, 5).map((ev, idx) => {
                         const dotColor = ev.type === 'memo' ? '#2e7d32' : (ev.source === 'manual' ? '#ef6c00' : '#1565c0');
@@ -121,7 +122,7 @@ function TACalendarManage() {
                             backgroundColor: theme.bg, color: theme.text, 
                             borderLeft: isStartOfEvent ? `3px solid ${theme.bar}` : 'none', 
                             paddingLeft: '4px',
-                            width: `calc(${span * 100}% + ${span - 1}px)`, 
+                            width: `calc(${span * 100}% + ${span - 1}px)`, // 연속 일정 길이 계산
                             zIndex: 10, position: 'relative' 
                         };
                         
@@ -129,7 +130,7 @@ function TACalendarManage() {
                             <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>{ev.title}</div>
                         ) : <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, opacity:0, pointerEvents:'none'}}>{ev.title}</div>;
                     })}
-                    {/* [PC] 5개 초과 시 +1 표시 */}
+                    {/* [PC] 5개 초과 시 +N 표시 */}
                     {allItems.length > 5 && <div style={calStyles.moreBtn}>+{allItems.length - 5}</div>}
                 </>
             )}
@@ -166,16 +167,13 @@ function TACalendarManage() {
       
       {/* 캘린더 영역 */}
       <div style={isMobile ? calStyles.calendarWrapperMobile : calStyles.calendarWrapperPC}>
-          {/* 요일 헤더 */}
           <div style={calStyles.dayHeaderRow}>
             {['일','월','화','수','목','금','토'].map((day, idx) => (
                 <div key={day} style={{...calStyles.dayHeader, color: idx===0?'#d32f2f': idx===6?'#1976d2':'#333'}}>{day}</div>
             ))}
           </div>
-          {/* 날짜 그리드 */}
           <div style={{
               ...calStyles.calendarGrid, 
-              // PC: 화면 꽉 채움(1fr), 모바일: 최소 높이 보장 + 자동 늘어남
               gridTemplateRows: isMobile ? 'auto' : `repeat(${getWeeksCount()}, 1fr)`,
               gridAutoRows: isMobile ? 'minmax(80px, 1fr)' : 'auto'
           }}>
@@ -227,13 +225,13 @@ const calStyles = {
         display: 'flex', 
         flexDirection: 'column',
     },
-    // [PC] 기존처럼 꽉 채움 (flex: 1, overflow: hidden) -> 화면 크기에 딱 맞춤
+    // [PC] 꽉 찬 화면 (1fr)
     get calendarWrapperPC() {
         return { ...this.calendarWrapperBase, flex: 1, overflow: 'hidden', minHeight: '500px' };
     },
-    // [모바일] flex: 1으로 남은 공간을 채우되, 내용이 많으면 내부에서 스크롤 (화면 꽉 채움)
+    // [모바일] 높이 자연스럽게 늘어남 (스크롤 X, flex: 1 해제)
     get calendarWrapperMobile() {
-        return { ...this.calendarWrapperBase, flex: 1, overflowY: 'auto', minHeight: '400px' };
+        return { ...this.calendarWrapperBase, height: 'auto', minHeight: '400px' };
     },
     
     dayHeaderRow: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(255,255,255,0.6)', height: '35px' }, 
@@ -241,11 +239,22 @@ const calStyles = {
     
     calendarGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', flex: 1, width: '100%', boxSizing: 'border-box' }, 
     
-    dayCell: { borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)', backgroundColor: 'transparent', display:'flex', flexDirection:'column', cursor: 'pointer', overflow: 'hidden', position: 'relative' }, 
+    // [중요] PC 연속 일정을 위해 overflow: visible 필수!
+    dayCell: { 
+        borderRight:'1px solid rgba(202, 200, 200, 0.6)', 
+        borderBottom:'1px solid rgba(202, 200, 200, 0.6)', 
+        backgroundColor: 'transparent', 
+        display:'flex', 
+        flexDirection:'column', 
+        cursor: 'pointer', 
+        overflow: 'visible', // 연속 일정 표시를 위해 visible로 변경
+        position: 'relative', 
+        minHeight: '80px' 
+    }, 
     dayCellEmpty: { backgroundColor: 'rgba(0,0,0,0.02)', borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)' }, 
     
     dayNum: { fontSize: '14px', fontWeight: 'bold', padding: '6px', color: '#333' }, 
-    eventList: { display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', position: 'absolute', top: '28px', left: 0, right: 0 }, 
+    eventList: { display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', position: 'absolute', top: '28px', left: 0, right: 0, paddingBottom: '4px' }, 
     eventItem: { fontSize: '11px', padding: '2px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', margin: '0 2px', lineHeight: '1.2', height: '18px', borderRadius:'3px' }, 
     moreBtn: { fontSize: '10px', color: '#666', paddingLeft: '4px', fontWeight: 'bold' } 
 };
