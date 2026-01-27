@@ -12,8 +12,8 @@ function TAAbsenceManage() {
   const [rejectReason, setRejectReason] = useState('');
   
   const [dateFilter, setDateFilter] = useState('all');
-  
-  // 모바일 감지 (기존 코드 유지를 위해 추가)
+
+  // 모바일 감지 (PC/Mobile 레이아웃 분기를 위해 추가)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -80,7 +80,7 @@ function TAAbsenceManage() {
       
       {view === 'list' && (
           <div style={styles.filterBar}>
-              
+              <span style={{fontWeight:'bold', color:'#555', marginRight:'10px'}}>📅 기간 선택:</span>
               <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
                   <option value="all">📅 전체 기간</option>
                   <option value="today">오늘</option>
@@ -107,7 +107,10 @@ function TAAbsenceManage() {
                               <span style={{fontSize:'13px', color:'#666', fontWeight:'500'}}>{req.created_at.split('T')[0]}</span>
                               <span style={{fontSize:'12px', fontWeight:'bold', backgroundColor: statusStyle.bg, color: statusStyle.text, padding: '4px 8px', borderRadius: '6px'}}>{statusStyle.label}</span>
                           </div>
-                          <div style={{fontWeight:'bold', fontSize:'17px', color:'#222', marginBottom:'5px'}}>[{req.student_no}] {req.student_name}</div>
+                          {/* [수정] 카드 목록에 학과, 학년, 이름, 학번 표시 */}
+                          <div style={{fontWeight:'bold', fontSize:'17px', color:'#222', marginBottom:'5px'}}>
+                              {req.department} {req.grade}학년 {req.student_name} ({req.student_no})
+                          </div>
                           <div style={{fontSize:'14px', color:'#555'}}><span style={{fontWeight:'600', color:'#003675'}}>{req.course_name}</span> | <span style={{color:'#c62828'}}>{req.absent_date}</span></div>
                       </div>
                   );
@@ -118,14 +121,19 @@ function TAAbsenceManage() {
           <div style={styles.detailContainer}>
               <div style={styles.sectionBox}>
                   <h3 style={styles.sectionTitle}>👤 신청자 정보</h3>
-                  {/* PC에서만 왼쪽 정렬, 모바일은 기존 양끝 정렬 유지 */}
+                  
+                  {/* [수정] PC는 왼쪽 정렬(flex-start) + 라벨 고정 너비, 모바일은 양끝 정렬(space-between) 유지 */}
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학과</span> 
-                      <span style={{fontWeight:'bold'}}>{selectedReq.department}</span>
+                      <span>{selectedReq.department}</span>
+                  </div>
+                  <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
+                      <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학년</span> 
+                      <span>{selectedReq.grade}학년</span>
                   </div>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학번</span> 
-                      <span style={{fontWeight:'bold'}}>{selectedReq.student_no}</span>
+                      <span>{selectedReq.student_no}</span>
                   </div>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>이름</span> 
@@ -143,8 +151,19 @@ function TAAbsenceManage() {
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>결석일</span> 
                       <span style={{color:'#c62828', fontWeight:'bold'}}>{selectedReq.absent_date}</span>
                   </div>
-                  <div style={{marginTop:'15px'}}><div style={styles.label}>결석 사유</div><div style={styles.reasonBox}>{selectedReq.reason}</div></div>
-                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`http://13.219.208.109:8000/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={styles.fileLink}>📎 증빙서류 다운로드 / 보기</a></div>)}
+                  
+                  <div style={{marginTop:'15px'}}>
+                    <div style={{...styles.label, marginBottom:'5px', display:'block'}}>결석 사유</div>
+                    <div style={styles.reasonBox}>{selectedReq.reason}</div>
+                  </div>
+
+                  {selectedReq.file && (
+                    <div style={{marginTop:'15px'}}>
+                        <a href={`http://13.219.208.109:8000/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={styles.fileLink}>
+                            📎 증빙서류 다운로드 / 보기
+                        </a>
+                    </div>
+                  )}
               </div>
 
               {selectedReq.status === 'SUBMITTED' ? (
@@ -178,7 +197,7 @@ function TAAbsenceManage() {
 
 const styles = {
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675' },
-  backBtn: { cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 12px', borderRadius:'20px', fontSize:'15px', color:'#555', fontWeight:'bold', transition:'all 0.2s' },
+  backBtn: { cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 12px', borderRadius:'20px', fontSize:'13px', color:'#555', fontWeight:'bold', transition:'all 0.2s' },
   filterBar: { marginBottom:'15px', padding:'10px 15px', backgroundColor:'rgba(255, 255, 255, 0.4)', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.6)', display:'flex', alignItems:'center' },
   select: { padding:'8px 12px', borderRadius:'8px', border:'1px solid #ced4da', backgroundColor:'rgba(255,255,255,0.8)', fontSize:'14px', cursor:'pointer', outline:'none', minWidth:'100px' },
   listArea: { flex: 1, overflowY: 'auto', padding: '5px' },
@@ -186,7 +205,7 @@ const styles = {
   detailContainer: { overflowY:'auto', padding:'5px' },
   sectionBox: { backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '25px', borderRadius: '16px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' },
   sectionTitle: { fontSize: '18px', color: '#003675', borderBottom: '2px solid #003675', paddingBottom: '10px', marginBottom: '20px', fontWeight:'800' },
-  // 기본 스타일은 유지하되 justifyContent는 JSX에서 오버라이드
+  // 기본 스타일 유지, justifyContent는 컴포넌트 내부에서 조건부 적용
   infoRow: { display:'flex', marginBottom:'12px', borderBottom:'1px dashed #f0f0f0', paddingBottom:'8px', fontSize:'15px', color:'#333' },
   label: { color:'#666', fontWeight:'bold', minWidth:'80px' },
   reasonBox: { backgroundColor:'#f8f9fa', padding:'15px', borderRadius:'10px', border:'1px solid #eee', color:'#333', lineHeight:'1.6', minHeight:'60px' },
