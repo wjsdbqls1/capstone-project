@@ -233,7 +233,7 @@ const styles = {
   },
   bodySection: { 
     fontSize: '15.5px', // 폰트 크기 미세 조정
-    lineHeight: '1.45', // 기존 1.6에서 1.45로 줄여 가독성 강화
+    lineHeight: '1.35', // 기존 1.6에서 1.45로 줄여 가독성 강화
     color: '#222', // 글자색을 약간 더 진하게 변경
     padding: '0 2px',
     maxWidth: '100%',
