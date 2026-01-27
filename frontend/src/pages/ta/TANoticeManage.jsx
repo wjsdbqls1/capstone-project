@@ -160,7 +160,7 @@ const styles = {
   createBtn: { padding: '10px 20px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight:'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' },
   listArea: { flex: 1, overflowY: 'auto', paddingRight: '5px' },
   emptyMessage: { textAlign: 'center', marginTop: '50px', color: '#868e96', fontWeight: '500' },
-  card: { backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '20px', borderRadius: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', border: '1px solid rgba(255,255,255,0.8)' },
+  card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', border: '1px solid rgba(255,255,255,0.8)' },
   cardContent: { flex: 1, minWidth: 0 }, 
   metaRow: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '5px' },
   gradeBadge: { fontSize: '11px', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' },

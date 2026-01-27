@@ -138,7 +138,7 @@ const styles = {
   createBtn: { padding: '10px 20px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight:'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' },
   listArea: { flex: 1, overflowY: 'auto', paddingRight: '5px' },
   emptyMessage: { textAlign: 'center', marginTop: '50px', color: '#868e96', fontWeight: '500' },
-  card: { backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '20px', borderRadius: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: '1px solid rgba(255,255,255,0.8)' },
+  card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: '1px solid rgba(255,255,255,0.8)' },
   cardContent: { flex: 1, minWidth: 0 },
   question: { fontWeight: 'bold', fontSize: '16px', marginBottom: '8px', color: '#333' },
   answer: { fontSize: '14px', color: '#555', whiteSpace: 'pre-wrap', lineHeight: '1.5' },

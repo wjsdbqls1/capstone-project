@@ -152,7 +152,7 @@ const styles = {
   filterBar: { marginBottom:'15px', padding:'10px 15px', backgroundColor:'rgba(255, 255, 255, 0.4)', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.6)', display:'flex', alignItems:'center' },
   select: { padding:'8px 12px', borderRadius:'8px', border:'1px solid #ced4da', backgroundColor:'rgba(255,255,255,0.8)', fontSize:'14px', cursor:'pointer', outline:'none', minWidth:'100px' },
   listArea: { flex: 1, overflowY: 'auto', padding: '5px' },
-  card: { backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '20px', borderRadius: '16px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.8)', borderLeft: '6px solid #003675', transition: 'all 0.2s ease' },
+  card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.8)', borderLeft: '6px solid #003675', transition: 'all 0.2s ease' },
   detailContainer: { overflowY:'auto', padding:'5px' },
   sectionBox: { backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '25px', borderRadius: '16px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' },
   sectionTitle: { fontSize: '18px', color: '#003675', borderBottom: '2px solid #003675', paddingBottom: '10px', marginBottom: '20px', fontWeight:'800' },
