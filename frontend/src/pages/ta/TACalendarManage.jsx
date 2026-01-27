@@ -168,7 +168,7 @@ const calStyles = {
     controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }, 
     monthNav: { display: 'flex', alignItems: 'center', gap: '15px' }, 
     navBtn: { background:'white', border:'1px solid #ddd', borderRadius:'8px', cursor:'pointer', padding:'6px 12px', fontSize:'14px', fontWeight:'bold' }, 
-    addBtn: { backgroundColor: '#ff9800', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '25px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }, 
+    addBtn: { backgroundColor: '#ff9800', color: 'black', border: 'none', padding: '10px 20px', borderRadius: '25px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }, 
     calendarWrapper: { flex: 1, borderRadius: '16px', border: '1px solid #ddd', backgroundColor: 'white', display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: '500px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }, 
     dayHeaderRow: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: '#f8f9fa', borderBottom: '1px solid #e9ecef', height: '40px' }, 
     dayHeader: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight:'1px solid #e9ecef', fontWeight:'bold', fontSize: '14px' }, 
