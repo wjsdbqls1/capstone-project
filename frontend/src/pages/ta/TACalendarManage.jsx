@@ -17,10 +17,11 @@ function TACalendarManage() {
   const [memoInput, setMemoInput] = useState("");
   const [newEvent, setNewEvent] = useState({ title: '', start_date: '', end_date: '' });
   
-  // 모바일 감지
+  // 모바일 감지 State
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const token = localStorage.getItem('token');
 
+  // 화면 크기 변경 감지
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -74,10 +75,7 @@ function TACalendarManage() {
     const firstDay = getFirstDayOfMonth(year, month);
     const days = [];
     
-    // 빈 칸 채우기
     for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} style={{...calStyles.dayCellEmpty}}></div>);
-    
-    // 날짜 채우기
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const currentDayOfWeek = new Date(year, month, d).getDay();
@@ -86,7 +84,7 @@ function TACalendarManage() {
       let dayMemos = myMemos.filter(m => m.memo_date === dateStr).map(m => ({ id: `memo-${m.id}`, title: m.content, start_date: m.memo_date, end_date: m.memo_date, type: 'memo' }));
       let allItems = [...dayEvents, ...dayMemos];
       
-      // PC용 정렬 (긴 일정 우선)
+      // 정렬 (긴 일정 우선)
       allItems.sort((a, b) => {
         if (a.start_date !== b.start_date) return a.start_date.localeCompare(b.start_date);
         const durationA = getDiffDays(a.start_date, a.end_date);
@@ -101,7 +99,7 @@ function TACalendarManage() {
           
           <div style={calStyles.eventList}>
             {isMobile ? (
-                // [모바일] 점(Dot)으로 깔끔하게 표시 (가로 스크롤 X, 찌그러짐 방지)
+                // [모바일] 점(Dot)으로 표시
                 <div style={{display:'flex', justifyContent:'center', gap:'3px', flexWrap:'wrap', padding:'0 2px'}}>
                     {allItems.slice(0, 5).map((ev, idx) => {
                         const dotColor = ev.type === 'memo' ? '#2e7d32' : (ev.source === 'manual' ? '#ef6c00' : '#1565c0');
@@ -110,22 +108,31 @@ function TACalendarManage() {
                     {allItems.length > 5 && <div style={{fontSize:'8px', color:'#888'}}>+</div>}
                 </div>
             ) : (
-                // [PC] 막대(Bar) 표시 + 5개 제한
+                // [PC] 연속된 막대(Bar) 표시 복구
                 <>
                     {allItems.slice(0, 5).map((ev, idx) => {
                         const isManual = ev.source === 'manual';
                         const isMemo = ev.type === 'memo';
                         const isStartOfEvent = ev.start_date === dateStr;
-                        const shouldRenderBar = isStartOfEvent || currentDayOfWeek === 0;
+                        const shouldRenderBar = isStartOfEvent || currentDayOfWeek === 0; // 시작일이거나 일요일이면 바 그림
+                        const remainingDaysTotal = getDiffDays(dateStr, ev.end_date); // 남은 총 기간
+                        const span = Math.min(remainingDaysTotal, (6 - currentDayOfWeek) + 1); // 이번 주에 차지하는 칸 수
                         
                         const theme = isMemo ? { bg:'#e8f5e9', text:'#2e7d32', bar:'#2e7d32' } : isManual ? { bg:'#fff3e0', text:'#e65100', bar:'#e65100' } : { bg:'#e3f2fd', text:'#1565c0', bar:'#1565c0' };
-                        const itemStyle = { backgroundColor: theme.bg, color: theme.text, borderLeft: isStartOfEvent ? `3px solid ${theme.bar}` : 'none', paddingLeft: '4px' };
+                        const itemStyle = { 
+                            backgroundColor: theme.bg, 
+                            color: theme.text, 
+                            borderLeft: isStartOfEvent ? `3px solid ${theme.bar}` : 'none', 
+                            paddingLeft: '4px',
+                            width: `calc(${span * 100}% + ${span - 1}px)`, // [중요] 연속된 바 길이 계산
+                            position: 'relative', 
+                            zIndex: 10 
+                        };
                         
                         return shouldRenderBar ? (
-                            <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle, width: `calc(100% + 2px)`, zIndex: 10, position: 'relative'}}>{ev.title}</div>
+                            <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>{ev.title}</div>
                         ) : <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, opacity:0, pointerEvents:'none'}}>{ev.title}</div>;
                     })}
-                    {/* 5개 초과 시 +N 표시 */}
                     {allItems.length > 5 && <div style={calStyles.moreBtn}>+{allItems.length - 5}</div>}
                 </>
             )}
@@ -139,7 +146,7 @@ function TACalendarManage() {
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
 
-  // 이번 달의 주(Week) 수 계산 (높이 균등 분할용)
+  // 주(Week) 수 계산 (높이 균등 분할)
   const getWeeksCount = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -161,17 +168,16 @@ function TACalendarManage() {
       </div>
       
       {/* 캘린더 영역 */}
-      <div style={calStyles.calendarWrapper}>
-          {/* 요일 헤더 */}
+      <div style={isMobile ? calStyles.calendarWrapperMobile : calStyles.calendarWrapperPC}>
           <div style={calStyles.dayHeaderRow}>
             {['일','월','화','수','목','금','토'].map((day, idx) => (
                 <div key={day} style={{...calStyles.dayHeader, color: idx===0?'#d32f2f': idx===6?'#1976d2':'#333'}}>{day}</div>
             ))}
           </div>
-          {/* 날짜 그리드: 주(Week) 수에 따라 높이 균등 분할 (1fr) */}
           <div style={{
               ...calStyles.calendarGrid, 
-              gridTemplateRows: `repeat(${getWeeksCount()}, 1fr)` 
+              // PC에서는 주 수에 따라 균등 분할, 모바일은 최소 높이 보장
+              gridTemplateRows: isMobile ? 'auto' : `repeat(${getWeeksCount()}, 1fr)` 
           }}>
             {renderCalendar()}
           </div>
@@ -207,42 +213,41 @@ function TACalendarManage() {
 
 const styles = { pageTitle: { fontSize: '22px', fontWeight: '800', color: '#003675', marginBottom: '15px' } };
 
+// 스타일 객체
 const calStyles = { 
     controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }, 
     monthNav: { display: 'flex', alignItems: 'center', gap: '10px' }, 
     navBtn: { background:'white', border:'1px solid #ddd', borderRadius:'8px', cursor:'pointer', padding:'6px 12px', fontSize:'14px', fontWeight:'bold' }, 
     addBtn: { backgroundColor: '#ff9800', color: 'black', border: 'none', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }, 
     
-    // [수정] 높이 100%로 설정하여 컨테이너에 맞게 꽉 차게 함
-    calendarWrapper: { 
-        flex: 1, 
+    // 기본 래퍼 스타일
+    calendarWrapperBase: {
         borderRadius: '16px', 
         border: '1px solid rgba(255,255,255,0.8)', 
         backgroundColor: 'white', 
         display: 'flex', 
-        flexDirection: 'column', 
-        overflow: 'hidden', 
-        height: '100%', // 부모 높이에 맞춤
-        minHeight: '400px'
-    }, 
+        flexDirection: 'column',
+    },
+    // [PC] 꽉 찬 화면 (1fr)
+    get calendarWrapperPC() {
+        return { ...this.calendarWrapperBase, flex: 1, overflow: 'hidden', minHeight: '500px' };
+    },
+    // [모바일] 높이 자연스럽게 늘어남 (스크롤 X, flex: 1 해제)
+    get calendarWrapperMobile() {
+        return { ...this.calendarWrapperBase, height: 'auto', minHeight: '400px' };
+    },
     
     dayHeaderRow: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(255,255,255,0.6)', height: '35px' }, 
     dayHeader: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight:'1px solid rgba(255,255,255,0.6)', fontWeight:'bold', fontSize: '14px' }, 
     
-    // [수정] Grid 설정 (rows는 inline style에서 동적으로 처리됨)
-    calendarGrid: { 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(7, 1fr)', 
-        flex: 1, // 남은 공간 모두 차지
-        width: '100%', 
-        boxSizing: 'border-box' 
-    }, 
+    calendarGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', flex: 1, width: '100%', boxSizing: 'border-box' }, 
     
-    dayCell: { borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)', backgroundColor: 'transparent', display:'flex', flexDirection:'column', cursor: 'pointer', overflow: 'hidden', position: 'relative' }, 
+    // [모바일] minHeight를 줄여서 너무 길어지지 않게 함
+    dayCell: { borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)', backgroundColor: 'transparent', display:'flex', flexDirection:'column', cursor: 'pointer', overflow: 'visible', position: 'relative', minHeight: '80px' }, 
     dayCellEmpty: { backgroundColor: 'rgba(0,0,0,0.02)', borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)' }, 
     
     dayNum: { fontSize: '14px', fontWeight: 'bold', padding: '6px', color: '#333' }, 
-    eventList: { display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', position: 'absolute', top: '28px', left: 0, right: 0 }, 
+    eventList: { display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', position: 'absolute', top: '28px', left: 0, right: 0, paddingBottom: '4px' }, 
     eventItem: { fontSize: '11px', padding: '2px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', margin: '0 2px', lineHeight: '1.2', height: '18px', borderRadius:'3px' }, 
     moreBtn: { fontSize: '10px', color: '#666', paddingLeft: '4px', fontWeight: 'bold' } 
 };
