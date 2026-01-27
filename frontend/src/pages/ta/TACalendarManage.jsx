@@ -165,8 +165,8 @@ const calStyles = {
     dayHeaderRow: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(255,255,255,0.6)', height: '35px' }, 
     dayHeader: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight:'1px solid rgba(255,255,255,0.6)', fontWeight:'bold', fontSize: '14px' }, 
     calendarGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', flex: 1, gridAutoRows: '1fr', width: '100%', boxSizing: 'border-box' }, 
-    dayCell: { borderRight:'1px solid rgba(255,255,255,0.6)', borderBottom:'1px solid rgba(255,255,255,0.6)', backgroundColor: 'transparent', display:'flex', flexDirection:'column', cursor: 'pointer', overflow: 'visible', position: 'relative', minHeight: '80px' }, 
-    dayCellEmpty: { backgroundColor: 'rgba(0,0,0,0.02)', borderRight:'1px solid rgba(255,255,255,0.6)', borderBottom:'1px solid rgba(255,255,255,0.6)' }, 
+    dayCell: { borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)', backgroundColor: 'transparent', display:'flex', flexDirection:'column', cursor: 'pointer', overflow: 'visible', position: 'relative', minHeight: '80px' }, 
+    dayCellEmpty: { backgroundColor: 'rgba(0,0,0,0.02)', borderRight:'1px solid rgba(202, 200, 200, 0.6)', borderBottom:'1px solid rgba(202, 200, 200, 0.6)' }, 
     dayNum: { fontSize: '16px', fontWeight: 'bold', padding: '6px', color: '#333' }, // 글자 크기 증가
     eventList: { display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', position: 'absolute', top: '30px', left: 0, right: 0, overflow: 'visible' }, 
     eventItem: { fontSize: '12px', padding: '2px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', margin: '0 2px', lineHeight: '1.2', height: '20px', borderRadius:'4px' }, // 글자 크기 증가
