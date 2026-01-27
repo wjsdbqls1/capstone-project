@@ -89,7 +89,7 @@ function TAPending() {
 
         {/* 정렬 바 */}
         <div style={styles.sortBar}>
-            <button onClick={() => handleSortChange('deadline')} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}>📅 마감순</button>
+            <button onClick={() => handleSortChange('deadline')} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}>📅 학사일정 마감순</button>
             <button onClick={() => handleSortChange('latest')} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}>⬇ 최신순</button>
             <button onClick={() => handleSortChange('old')} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}>⬆ 오래된순</button>
         </div>
@@ -130,17 +130,54 @@ function TAPending() {
               <h3 style={{margin:0, color:'#003675'}}>답변 작성하기</h3>
               <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}>✕</button>
             </div>
+            
             <div style={modalStyles.content}>
+              
+              {/* 질문 박스 (베이지색) */}
               <div style={modalStyles.questionBox}>
+                
+                {/* 1. 작성자(학생) 정보 복구 */}
+                <div style={{fontSize:'14px', color:'#555', marginBottom:'12px', borderBottom:'1px dashed #ddd', paddingBottom:'8px'}}>
+                    <span style={{marginRight:'5px'}}>👤</span> 
+                    <span style={{fontWeight:'bold'}}>학생 정보: </span>
+                    {selectedInquiry.author_info ? (
+                        <span>
+                            {selectedInquiry.author_info.department} / {selectedInquiry.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{selectedInquiry.author_info.name}</span> ({selectedInquiry.author_info.student_no})
+                        </span>
+                    ) : (
+                        <span>ID: {selectedInquiry.user_id}</span>
+                    )}
+                </div>
+
                 <div style={modalStyles.qTitle}>{selectedInquiry.title}</div>
                 <div style={modalStyles.qText}>{selectedInquiry.content}</div>
-                {selectedInquiry.attachment && <a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 학생 첨부파일</a>}
+                
+                {selectedInquiry.attachment && (
+                    <div style={{marginTop:'15px', backgroundColor:'white', padding:'8px', borderRadius:'6px', border:'1px solid #eee', display:'inline-block'}}>
+                        <a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 학생 첨부파일 다운로드 / 보기</a>
+                    </div>
+                )}
+
+                {/* 2. 관련 학사일정 정보 복구 */}
+                {selectedInquiry.academic_event_id && academicEvents[selectedInquiry.academic_event_id] && (
+                    <div style={{marginTop:'15px', padding:'10px', backgroundColor:'#fff3e0', borderRadius:'8px', color:'#e65100', fontSize:'14px', fontWeight:'bold', display:'flex', alignItems:'center', gap:'6px'}}>
+                        <span>📅</span>
+                        <span>관련 일정: {academicEvents[selectedInquiry.academic_event_id].title} (~{academicEvents[selectedInquiry.academic_event_id].end_date})</span>
+                    </div>
+                )}
               </div>
+
+              {/* 답변 작성 영역 */}
               <div style={modalStyles.answerArea}>
-                <div style={{fontWeight:'bold', marginBottom:'5px'}}>답변 입력</div>
+                <div style={{fontWeight:'bold', marginBottom:'8px', color:'#333'}}>A. 답변 입력</div>
                 <textarea style={modalStyles.textarea} placeholder="답변을 입력하세요." value={replyContent} onChange={(e) => setReplyContent(e.target.value)}/>
-                <input type="file" onChange={(e) => setReplyFile(e.target.files[0])} style={{marginTop:'5px'}}/>
+                
+                <div style={{marginTop:'10px'}}>
+                    <div style={{fontSize:'13px', fontWeight:'bold', marginBottom:'4px', color:'#555'}}>📎 답변 첨부파일 (선택)</div>
+                    <input type="file" onChange={(e) => setReplyFile(e.target.files[0])} style={modalStyles.fileInput}/>
+                </div>
               </div>
+
               <button style={modalStyles.submitBtn} onClick={handleSubmitReply}>답변 등록</button>
             </div>
           </div>
@@ -152,7 +189,7 @@ function TAPending() {
 
 const styles = {
   glassBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.75)', // 하얀색 반투명
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
     backdropFilter: 'blur(15px)',
     borderRadius: '20px',
     padding: '30px',
@@ -160,7 +197,7 @@ const styles = {
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)' // 그림자 효과
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
   },
   pageTitle: { fontSize: '24px', fontWeight: 'bold', color: '#003675', marginBottom: '20px' },
   sortBar: { display: 'flex', gap: '8px', marginBottom: '15px' },
@@ -180,16 +217,18 @@ const styles = {
 
 const modalStyles = {
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 },
-  modal: { width: '90%', maxWidth:'600px', maxHeight: '85%', backgroundColor: 'white', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' },
-  header: { padding: '15px 20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9' },
+  modal: { width: '90%', maxWidth:'650px', maxHeight: '85%', backgroundColor: 'white', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' },
+  header: { padding: '15px 25px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9' },
   closeBtn: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color:'#666' },
-  content: { padding: '20px', overflowY: 'auto', flex: 1 },
-  questionBox: { marginBottom: '20px', padding: '15px', backgroundColor: '#fff8e1', borderRadius: '8px', border:'1px solid #ffe0b2' },
-  qTitle: { fontWeight: 'bold', marginBottom: '8px', fontSize: '16px', color:'#333' },
-  qText: { fontSize: '15px', lineHeight: '1.6', whiteSpace: 'pre-wrap', color:'#444' },
-  fileLink: { display:'block', marginTop:'10px', color:'#003675', fontWeight:'bold', textDecoration:'underline' },
-  textarea: { width: '100%', minHeight: '150px', padding: '12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '15px', resize: 'none', boxSizing: 'border-box' },
-  submitBtn: { width: '100%', padding: '15px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop:'15px' }
+  content: { padding: '25px', overflowY: 'auto', flex: 1, backgroundColor:'#fff' },
+  questionBox: { marginBottom: '25px', padding: '20px', backgroundColor: '#fff8e1', borderRadius: '12px', border:'1px solid #ffe0b2' },
+  qTitle: { fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', color:'#333' },
+  qText: { fontSize: '16px', lineHeight: '1.6', whiteSpace: 'pre-wrap', color:'#444' },
+  fileLink: { color:'#003675', fontWeight:'bold', textDecoration:'none', fontSize:'14px' },
+  answerArea: { marginBottom:'20px' },
+  textarea: { width: '100%', minHeight: '150px', padding: '15px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '16px', resize: 'none', boxSizing: 'border-box', lineHeight:'1.5' },
+  fileInput: { width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '6px', backgroundColor: '#f9f9f9' },
+  submitBtn: { width: '100%', padding: '15px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0, 54, 117, 0.2)' }
 };
 
 export default TAPending;
