@@ -157,7 +157,7 @@ const layoutStyles = {
   overlay: { position:'fixed', top:0, left:0, right:0, bottom:0, backgroundColor:'rgba(0,0,0,0.5)', zIndex:999 },
   
   menuGroup: { marginBottom: '15px' },
-  groupTitle: { fontSize: '17px', fontWeight: '800', color: '#003675', padding: '10px 30px', marginBottom: '5px' }, // 폰트 사이즈 증가
+  groupTitle: { fontSize: '20px', fontWeight: '800', color: '#003675', padding: '10px 30px', marginBottom: '5px' }, // 폰트 사이즈 증가
   menuItem: { padding: '14px 30px 14px 45px', fontSize: '17px', color: '#555', cursor: 'pointer', transition: 'all 0.2s', fontWeight: '500' }, // 폰트 사이즈 및 패딩 증가
   menuItemActive: { padding: '14px 30px 14px 40px', fontSize: '17px', color: '#003675', fontWeight: 'bold', backgroundColor: '#e3f2fd', borderLeft: '5px solid #003675', cursor: 'pointer' }, // 폰트 사이즈 및 패딩 증가
   divider: { height: '1px', backgroundColor: '#eee', margin: '15px 30px' },

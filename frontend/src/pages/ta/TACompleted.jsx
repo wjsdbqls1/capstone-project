@@ -168,7 +168,7 @@ function TACompleted() {
 }
 
 const styles = {
-  pageTitle: { fontSize: '22px', fontWeight: '800', color: '#003675', marginBottom: '15px' },
+  pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675', marginBottom: '15px' },
   filterBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.6)' },
   filterGroup: { display: 'flex', gap: '8px' },
   select: { padding: '8px 10px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: 'rgba(255,255,255,0.8)', fontSize: '13px', cursor: 'pointer', outline: 'none' },
