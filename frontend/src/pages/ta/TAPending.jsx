@@ -11,9 +11,6 @@ function TAPending() {
   const [replyFile, setReplyFile] = useState(null); 
   const [sortType, setSortType] = useState('latest'); 
 
-  // 모바일 여부 확인 (간단한 반응형 처리)
-  const isMobile = window.innerWidth <= 768;
-
   const fetchData = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -87,8 +84,9 @@ function TAPending() {
                           </div>
                           <div style={styles.title}>{item.title}</div>
                           {eventInfo && <div style={styles.relatedEvent}>📌 {eventInfo.title}</div>}
+                          {/* 목록 카드에 학생 정보 복구 */}
                           <div style={styles.writerInfo}>
-                              {item.author_info ? `${item.author_info.name} (${item.author_info.grade}학년)` : `ID: ${item.user_id}`}
+                              {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name} (${item.author_info.student_no})` : `ID: ${item.user_id}`}
                           </div>
                       </div>
                   );
@@ -103,7 +101,15 @@ function TAPending() {
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.questionBox}>
-                <div style={modalStyles.infoRow}><span style={{fontWeight:'bold'}}>👤 학생 정보: </span>{selectedInquiry.author_info ? `${selectedInquiry.author_info.department} ${selectedInquiry.author_info.grade}학년 ${selectedInquiry.author_info.name}` : selectedInquiry.user_id}</div>
+                {/* 모달 내 학생 정보 복구 */}
+                <div style={modalStyles.infoRow}>
+                    <span style={{fontWeight:'bold', marginRight:'5px'}}>👤 학생 정보: </span>
+                    {selectedInquiry.author_info ? (
+                        <span>{selectedInquiry.author_info.department} / {selectedInquiry.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{selectedInquiry.author_info.name}</span> ({selectedInquiry.author_info.student_no})</span>
+                    ) : (
+                        <span>ID: {selectedInquiry.user_id}</span>
+                    )}
+                </div>
                 <div style={modalStyles.qTitle}>{selectedInquiry.title}</div>
                 <div style={modalStyles.qText}>{selectedInquiry.content}</div>
                 {selectedInquiry.attachment && <div style={modalStyles.attachBox}><a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 첨부파일 보기</a></div>}
@@ -131,7 +137,7 @@ const styles = {
   listArea: { flex: 1, overflowY: 'auto', paddingRight: '2px' },
   emptyMessage: { textAlign: 'center', marginTop: '50px', color: '#868e96', fontWeight:'bold' },
   card: { backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: '15px', borderRadius: '16px', marginBottom: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.9)', borderLeft: '5px solid #ff9800' },
-  cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' },
+  cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems:'center' },
   statusBadge: { color: '#ff9800', fontWeight: 'bold', fontSize: '11px', backgroundColor:'#fff3e0', padding:'3px 6px', borderRadius:'4px' },
   eventBadge: { backgroundColor: '#ffe0b2', color: '#e65100', fontSize: '11px', padding: '3px 6px', borderRadius: '4px', fontWeight:'bold' },
   date: { color: '#666', fontSize: '11px' },
