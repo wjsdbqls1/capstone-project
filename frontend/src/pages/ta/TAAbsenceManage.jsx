@@ -105,7 +105,7 @@ function TAAbsenceManage() {
                       >
                           <div style={{display:'flex', justifyContent:'space-between', marginBottom:'8px'}}>
                               <span style={{fontSize:'13px', color:'#666', fontWeight:'500'}}>{req.created_at.split('T')[0]}</span>
-                              <span style={{fontSize:'12px', fontWeight:'bold', backgroundColor: statusStyle.bg, color: statusStyle.text, padding: '4px 8px', borderRadius: '6px'}}><span style={{
+                              <span style={{
                                   fontSize:'14px', 
                                   fontWeight:'bold', 
                                   backgroundColor: statusStyle.bg, 
