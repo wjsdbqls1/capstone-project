@@ -91,7 +91,7 @@ function TALayout({ children }) {
             style={layoutStyles.aiMenuItem}
             onClick={() => handleMenuClick('/ta/ai')}
           >
-            <span style={{fontSize:'18px'}}>🤖</span> 
+            <span style={{fontSize:'22px'}}>🤖</span> 
             <span style={{position:'relative', top:'1px'}}>AI 조교 리포트</span>
           </div>
         </nav>
@@ -126,16 +126,16 @@ const layoutStyles = {
     zIndex: 20,
     boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
   },
-  menuBtn: { background:'none', border:'none', color:'white', fontSize:'24px', cursor:'pointer', padding:0, marginRight:'5px' },
+  menuBtn: { background:'none', border:'none', color:'white', fontSize:'28px', cursor:'pointer', padding:0, marginRight:'5px' },
   logoArea: { cursor: 'pointer' },
-  logo: { fontSize: '20px', fontWeight: 'bold', color: 'white', margin: 0, letterSpacing: '-0.5px' },
+  logo: { fontSize: '24px', fontWeight: 'bold', color: 'white', margin: 0, letterSpacing: '-0.5px' }, // 폰트 사이즈 증가
   logoutBtn: {
-    padding: '6px 16px',
+    padding: '8px 20px',
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     border: '1px solid rgba(255, 255, 255, 0.5)',
     borderRadius: '20px',
     color: 'white',
-    fontSize: '13px',
+    fontSize: '15px', // 폰트 사이즈 증가
     fontWeight: '600',
     cursor: 'pointer',
     whiteSpace: 'nowrap'
@@ -144,7 +144,7 @@ const layoutStyles = {
   body: { display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' },
   
   sidebar: {
-    width: '240px',
+    width: '260px', // 사이드바 너비 약간 증가
     backgroundColor: 'white',
     borderRight: '1px solid #e0e0e0',
     padding: '25px 0',
@@ -152,16 +152,16 @@ const layoutStyles = {
     flexDirection: 'column',
     flexShrink: 0,
     overflowY: 'auto',
-    transition: 'left 0.3s ease' // 모바일 슬라이드 효과
+    transition: 'left 0.3s ease'
   },
   overlay: { position:'fixed', top:0, left:0, right:0, bottom:0, backgroundColor:'rgba(0,0,0,0.5)', zIndex:999 },
   
   menuGroup: { marginBottom: '15px' },
-  groupTitle: { fontSize: '15px', fontWeight: '800', color: '#003675', padding: '10px 30px', marginBottom: '5px' },
-  menuItem: { padding: '12px 30px 12px 45px', fontSize: '15px', color: '#555', cursor: 'pointer', transition: 'all 0.2s', fontWeight: '500' },
-  menuItemActive: { padding: '12px 30px 12px 40px', fontSize: '15px', color: '#003675', fontWeight: 'bold', backgroundColor: '#e3f2fd', borderLeft: '5px solid #003675', cursor: 'pointer' },
+  groupTitle: { fontSize: '17px', fontWeight: '800', color: '#003675', padding: '10px 30px', marginBottom: '5px' }, // 폰트 사이즈 증가
+  menuItem: { padding: '14px 30px 14px 45px', fontSize: '17px', color: '#555', cursor: 'pointer', transition: 'all 0.2s', fontWeight: '500' }, // 폰트 사이즈 및 패딩 증가
+  menuItemActive: { padding: '14px 30px 14px 40px', fontSize: '17px', color: '#003675', fontWeight: 'bold', backgroundColor: '#e3f2fd', borderLeft: '5px solid #003675', cursor: 'pointer' }, // 폰트 사이즈 및 패딩 증가
   divider: { height: '1px', backgroundColor: '#eee', margin: '15px 30px' },
-  aiMenuItem: { margin: '10px 20px', padding: '12px', borderRadius: '12px', background: 'linear-gradient(135deg, #003675 0%, #1976d2 100%)', color: 'white', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0, 54, 117, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' },
+  aiMenuItem: { margin: '10px 20px', padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #003675 0%, #1976d2 100%)', color: 'white', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0, 54, 117, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }, // 폰트 사이즈 증가
 
   mainContent: {
     flex: 1,
@@ -177,7 +177,7 @@ const layoutStyles = {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
     backdropFilter: 'blur(20px)',
-    borderRadius: '24px', // 모바일에서는 padding이 15px로 조절됨 (위쪽 코드 참조)
+    borderRadius: '24px',
     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
     border: '1px solid rgba(255, 255, 255, 0.8)',
     display: 'flex',
