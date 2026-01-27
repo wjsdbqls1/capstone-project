@@ -94,7 +94,7 @@ function TAPending() {
 
       <div style={styles.listArea}>
           {inquiries.length === 0 ? (
-              <div style={styles.emptyMessage}>대기 중인 문의가 없습니다. 🎉</div>
+              <div style={styles.emptyMessage}>대기 중인 문의가 없습니다. </div>
           ) : (
               inquiries.map((item) => {
                   const eventInfo = item.academic_event_id ? academicEvents[item.academic_event_id] : null;
