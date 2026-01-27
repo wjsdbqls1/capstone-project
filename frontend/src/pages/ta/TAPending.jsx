@@ -84,43 +84,45 @@ function TAPending() {
 
   return (
     <TALayout>
-      <div style={styles.pageTitle}>대기중인 문의</div>
+      <div style={styles.glassBox}>
+        <div style={styles.pageTitle}>대기중인 문의</div>
 
-      {/* 정렬 바 */}
-      <div style={styles.sortBar}>
-          <button onClick={() => handleSortChange('deadline')} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}>📅 마감순</button>
-          <button onClick={() => handleSortChange('latest')} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}>⬇ 최신순</button>
-          <button onClick={() => handleSortChange('old')} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}>⬆ 오래된순</button>
+        {/* 정렬 바 */}
+        <div style={styles.sortBar}>
+            <button onClick={() => handleSortChange('deadline')} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}>📅 마감순</button>
+            <button onClick={() => handleSortChange('latest')} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}>⬇ 최신순</button>
+            <button onClick={() => handleSortChange('old')} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}>⬆ 오래된순</button>
+        </div>
+
+        {/* 목록 */}
+        <div style={styles.listArea}>
+            {inquiries.length === 0 ? (
+                <div style={styles.emptyMessage}>대기 중인 문의가 없습니다. 🎉</div>
+            ) : (
+                inquiries.map((item) => {
+                    const eventInfo = item.academic_event_id ? academicEvents[item.academic_event_id] : null;
+                    return (
+                        <div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)}>
+                            <div style={styles.cardHeader}>
+                                <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
+                                    <span style={styles.statusBadge}>답변 대기</span>
+                                    {eventInfo && <span style={styles.eventBadge}>D-day: {eventInfo.end_date}</span>}
+                                </div>
+                                <span style={styles.date}>{item.created_at.split('T')[0]}</span>
+                            </div>
+                            <div style={styles.title}>{item.title}</div>
+                            {eventInfo && <div style={styles.relatedEvent}>📌 관련 일정: {eventInfo.title}</div>}
+                            <div style={styles.writerInfo}>
+                                {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name}` : `ID: ${item.user_id}`}
+                            </div>
+                        </div>
+                    );
+                })
+            )}
+        </div>
       </div>
 
-      {/* 목록 */}
-      <div style={styles.listArea}>
-          {inquiries.length === 0 ? (
-              <div style={styles.emptyMessage}>대기 중인 문의가 없습니다. 🎉</div>
-          ) : (
-              inquiries.map((item) => {
-                  const eventInfo = item.academic_event_id ? academicEvents[item.academic_event_id] : null;
-                  return (
-                      <div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)}>
-                          <div style={styles.cardHeader}>
-                              <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
-                                  <span style={styles.statusBadge}>답변 대기</span>
-                                  {eventInfo && <span style={styles.eventBadge}>D-day: {eventInfo.end_date}</span>}
-                              </div>
-                              <span style={styles.date}>{item.created_at.split('T')[0]}</span>
-                          </div>
-                          <div style={styles.title}>{item.title}</div>
-                          {eventInfo && <div style={styles.relatedEvent}>📌 관련 일정: {eventInfo.title}</div>}
-                          <div style={styles.writerInfo}>
-                              {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name}` : `ID: ${item.user_id}`}
-                          </div>
-                      </div>
-                  );
-              })
-          )}
-      </div>
-
-      {/* 모달 (기존 디자인 유지) */}
+      {/* 모달 */}
       {selectedInquiry && (
         <div style={modalStyles.overlay}>
           <div style={modalStyles.modal}>
@@ -149,6 +151,17 @@ function TAPending() {
 }
 
 const styles = {
+  glassBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.75)', // 하얀색 반투명
+    backdropFilter: 'blur(15px)',
+    borderRadius: '20px',
+    padding: '30px',
+    height: '100%',
+    boxSizing: 'border-box',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)' // 그림자 효과
+  },
   pageTitle: { fontSize: '24px', fontWeight: 'bold', color: '#003675', marginBottom: '20px' },
   sortBar: { display: 'flex', gap: '8px', marginBottom: '15px' },
   sortBtn: { padding: '8px 12px', border: '1px solid #ddd', borderRadius: '20px', background: 'white', cursor: 'pointer', fontSize: '13px', color: '#555' },

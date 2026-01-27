@@ -37,6 +37,7 @@ function TAAbsenceManage() {
 
   return (
     <TALayout>
+      <div style={styles.glassBox}>
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
             <div style={styles.pageTitle}>{view === 'detail' ? '신청서 검토' : '공결 신청 관리'}</div>
             {view === 'detail' && <button onClick={() => setView('list')} style={{cursor:'pointer', border:'none', background:'transparent', fontSize:'14px', color:'#666'}}>목록으로</button>}
@@ -44,7 +45,8 @@ function TAAbsenceManage() {
         
         {view === 'list' ? (
             <div style={styles.listArea}>
-                {requests.map((req) => {
+                {requests.length === 0 ? <div style={{textAlign:'center', marginTop:'50px', color:'#666'}}>신청 내역이 없습니다.</div> :
+                 requests.map((req) => {
                     const statusStyle = getStatusStyle(req.status);
                     return (
                         <div key={req.id} style={styles.card} onClick={() => { setSelectedReq(req); setView('detail'); setShowRejectInput(false); }}>
@@ -88,11 +90,23 @@ function TAAbsenceManage() {
                 )}
             </div>
         )}
+      </div>
     </TALayout>
   );
 }
 
 const styles = {
+  glassBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.75)', // 하얀색 반투명
+    backdropFilter: 'blur(15px)',
+    borderRadius: '20px',
+    padding: '30px',
+    height: '100%',
+    boxSizing: 'border-box',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+  },
   pageTitle: { fontSize: '24px', fontWeight: 'bold', color: '#003675' },
   listArea: { flex: 1, overflowY: 'auto' },
   card: { backgroundColor: 'white', padding: '15px', borderRadius: '12px', marginBottom: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', cursor: 'pointer' },
