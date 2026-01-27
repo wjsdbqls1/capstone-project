@@ -1,8 +1,10 @@
 version: '3.8'
 
 services:
+  # 1. 데이터베이스 (기존 설정 유지)
   db:
     image: mysql:8.0
+    container_name: mysql_db
     restart: always
     environment:
       MYSQL_DATABASE: admin_assistant
@@ -14,6 +16,28 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # 2. 백엔드 추가
+  backend:
+    build: ./backend
+    container_name: fastapi_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      # DB 접속 정보를 도커 서비스 이름(db)으로 연결합니다.
+      DATABASE_URL: mysql+pymysql://appuser:apppassword@db:3306/admin_assistant
+
+  # 3. 프론트엔드 추가
+  frontend:
+    build: ./frontend  # 폴더명이 다르면 수정하세요 (예: ./src 등)
+    container_name: react_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    stdin_open: true
 
 volumes:
   db_data:
