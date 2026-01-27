@@ -175,19 +175,17 @@ const styles = {
 
   glassContainer: {
     flex: 1,
-    margin: '15px',
-    // clamp(최소, 권장, 최대) -> 패딩 자동 조절
-    padding: 'clamp(20px, 5vw, 40px)', 
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+    margin: '15px', // 여백 축소
+    // clamp(최소, 권장, 최대) -> 화면 크기에 따라 패딩 자동 조절
+    padding: 'clamp(15px, 3vw, 40px)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.65)', 
     backdropFilter: 'blur(15px)',
     borderRadius: '20px',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.15)',
-    border: '1px solid rgba(255, 255, 255, 0.6)',
-    overflowY: 'auto',
-    maxWidth: '800px',
-    width: '90%', // 모바일에서는 거의 꽉 차게
-    alignSelf: 'center',
-    boxSizing: 'border-box' // 패딩 포함 크기 계산
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden'
   },
 
   titleSection: {
