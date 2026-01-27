@@ -109,9 +109,9 @@ function TAAbsenceManage() {
               </select>
 
               {/* [추가] 상태 필터 드롭박스 */}
-              <span style={{fontWeight:'bold', color:'#555', margin:'0 10px'}}>상태:</span>
+              <span style={{fontWeight:'bold', color:'#555', margin:'0 10px'}}></span>
               <select style={styles.select} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                  <option value="all">전체</option>
+                  <option value="all">전체 상태</option>
                   <option value="pending">검토대기</option>
                   <option value="approved">승인</option>
                   <option value="rejected">반려</option>
