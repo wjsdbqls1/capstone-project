@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TALayout from './TALayout';
+import '../../App.css'; 
 
 function TACompleted() {
   const navigate = useNavigate();
@@ -52,6 +53,7 @@ function TACompleted() {
 
   return (
     <TALayout>
+      <div style={styles.glassBox}>
         <div style={styles.pageTitle}>처리 완료 문의</div>
         <div style={styles.listArea}>
           {inquiries.length === 0 ? (
@@ -69,6 +71,7 @@ function TACompleted() {
             ))
           )}
         </div>
+      </div>
 
       {selectedInquiry && (
         <div style={modalStyles.overlay} onClick={() => setSelectedInquiry(null)}>
@@ -114,6 +117,7 @@ function TACompleted() {
 }
 
 const styles = {
+  glassBox: { backgroundColor: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(15px)', borderRadius: '20px', padding: '30px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)' },
   pageTitle: { fontSize: '24px', fontWeight: 'bold', color: '#003675', marginBottom: '20px' },
   listArea: { flex: 1, overflowY: 'auto' },
   emptyMessage: { textAlign: 'center', marginTop: '50px', color: '#666' },

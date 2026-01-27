@@ -39,7 +39,7 @@ function TAAbsenceManage() {
     <TALayout>
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
             <div style={styles.pageTitle}>{view === 'detail' ? '신청서 검토' : '공결 신청 관리'}</div>
-            {view === 'detail' && <button onClick={() => setView('list')}>목록으로</button>}
+            {view === 'detail' && <button onClick={() => setView('list')} style={{cursor:'pointer', border:'none', background:'transparent', fontSize:'14px', color:'#666'}}>목록으로</button>}
         </div>
         
         {view === 'list' ? (
@@ -76,12 +76,12 @@ function TAAbsenceManage() {
                         {showRejectInput ? (
                             <div>
                                 <textarea style={{width:'100%', padding:'10px'}} placeholder="반려 사유" value={rejectReason} onChange={e=>setRejectReason(e.target.value)} />
-                                <button onClick={()=>handleStatusUpdate('REJECTED')} style={{backgroundColor:'#c62828', color:'white', padding:'10px'}}>반려 확정</button>
+                                <button onClick={()=>handleStatusUpdate('REJECTED')} style={{backgroundColor:'#c62828', color:'white', padding:'10px', marginTop:'5px'}}>반려 확정</button>
                             </div>
                         ) : (
                             <div style={{display:'flex', gap:'10px'}}>
-                                <button onClick={()=>handleStatusUpdate('APPROVED')} style={{flex:1, backgroundColor:'#2e7d32', color:'white', padding:'15px', border:'none'}}>승인</button>
-                                <button onClick={()=>handleStatusUpdate('REJECTED')} style={{flex:1, backgroundColor:'#c62828', color:'white', padding:'15px', border:'none'}}>반려</button>
+                                <button onClick={()=>handleStatusUpdate('APPROVED')} style={{flex:1, backgroundColor:'#2e7d32', color:'white', padding:'15px', border:'none', borderRadius:'8px'}}>승인</button>
+                                <button onClick={()=>handleStatusUpdate('REJECTED')} style={{flex:1, backgroundColor:'#c62828', color:'white', padding:'15px', border:'none', borderRadius:'8px'}}>반려</button>
                             </div>
                         )}
                     </div>

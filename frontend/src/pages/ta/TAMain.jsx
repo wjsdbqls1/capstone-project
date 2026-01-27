@@ -6,11 +6,11 @@ function TAMain() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 로그인 후 첫 페이지를 '대기중인 문의'로 설정
+    // 1. 로그인 하고 첫 페이지가 대기중인 문의
     navigate('/ta/pending', { replace: true });
   }, [navigate]);
 
-  return null; // 화면을 그리지 않고 이동
+  return null;
 }
 
 export default TAMain;

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import TALayout from './TALayout'; // 레이아웃 적용
+import TALayout from './TALayout';
 
 function TAPending() {
   const navigate = useNavigate();
@@ -62,11 +62,11 @@ function TAPending() {
       setSelectedInquiry(response.data);
       setReplyContent("");
       setReplyFile(null); 
-    } catch (error) { alert("오류 발생"); }
+    } catch (error) { alert("내용 로딩 실패"); }
   };
 
   const handleSubmitReply = async () => {
-    if (!replyContent.trim()) { alert("내용을 입력해주세요."); return; }
+    if (!replyContent.trim()) { alert("답변 내용을 입력해주세요."); return; }
     const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('content', replyContent);
@@ -76,7 +76,7 @@ function TAPending() {
       await axios.post(`http://13.219.208.109:8000/inquiries/${selectedInquiry.id}/replies`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
-      alert("답변 등록 완료!");
+      alert("답변이 등록되었습니다!");
       setSelectedInquiry(null);
       fetchData(); 
     } catch (error) { alert("등록 실패"); }
@@ -84,43 +84,43 @@ function TAPending() {
 
   return (
     <TALayout>
-        <div style={styles.pageTitle}>대기중인 문의</div>
+      <div style={styles.pageTitle}>대기중인 문의</div>
 
-        {/* 정렬 바 */}
-        <div style={styles.sortBar}>
-            <button onClick={() => handleSortChange('deadline')} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}>📅 마감순</button>
-            <button onClick={() => handleSortChange('latest')} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}>⬇ 최신순</button>
-            <button onClick={() => handleSortChange('old')} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}>⬆ 오래된순</button>
-        </div>
+      {/* 정렬 바 */}
+      <div style={styles.sortBar}>
+          <button onClick={() => handleSortChange('deadline')} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}>📅 마감순</button>
+          <button onClick={() => handleSortChange('latest')} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}>⬇ 최신순</button>
+          <button onClick={() => handleSortChange('old')} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}>⬆ 오래된순</button>
+      </div>
 
-        {/* 목록 */}
-        <div style={styles.listArea}>
-            {inquiries.length === 0 ? (
-                <div style={styles.emptyMessage}>대기 중인 문의가 없습니다. 🎉</div>
-            ) : (
-                inquiries.map((item) => {
-                    const eventInfo = item.academic_event_id ? academicEvents[item.academic_event_id] : null;
-                    return (
-                        <div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)}>
-                            <div style={styles.cardHeader}>
-                                <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
-                                    <span style={styles.statusBadge}>답변 대기</span>
-                                    {eventInfo && <span style={styles.eventBadge}>D-day: {eventInfo.end_date}</span>}
-                                </div>
-                                <span style={styles.date}>{item.created_at.split('T')[0]}</span>
-                            </div>
-                            <div style={styles.title}>{item.title}</div>
-                            {eventInfo && <div style={styles.relatedEvent}>📌 관련 일정: {eventInfo.title}</div>}
-                            <div style={styles.writerInfo}>
-                                {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name}` : `ID: ${item.user_id}`}
-                            </div>
-                        </div>
-                    );
-                })
-            )}
-        </div>
+      {/* 목록 */}
+      <div style={styles.listArea}>
+          {inquiries.length === 0 ? (
+              <div style={styles.emptyMessage}>대기 중인 문의가 없습니다. 🎉</div>
+          ) : (
+              inquiries.map((item) => {
+                  const eventInfo = item.academic_event_id ? academicEvents[item.academic_event_id] : null;
+                  return (
+                      <div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)}>
+                          <div style={styles.cardHeader}>
+                              <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
+                                  <span style={styles.statusBadge}>답변 대기</span>
+                                  {eventInfo && <span style={styles.eventBadge}>D-day: {eventInfo.end_date}</span>}
+                              </div>
+                              <span style={styles.date}>{item.created_at.split('T')[0]}</span>
+                          </div>
+                          <div style={styles.title}>{item.title}</div>
+                          {eventInfo && <div style={styles.relatedEvent}>📌 관련 일정: {eventInfo.title}</div>}
+                          <div style={styles.writerInfo}>
+                              {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name}` : `ID: ${item.user_id}`}
+                          </div>
+                      </div>
+                  );
+              })
+          )}
+      </div>
 
-      {/* 모달 */}
+      {/* 모달 (기존 디자인 유지) */}
       {selectedInquiry && (
         <div style={modalStyles.overlay}>
           <div style={modalStyles.modal}>
