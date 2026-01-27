@@ -80,7 +80,7 @@ function TAAbsenceManage() {
       
       {view === 'list' && (
           <div style={styles.filterBar}>
-              <span style={{fontWeight:'bold', color:'#555', marginRight:'10px'}}>📅 기간 선택:</span>
+              
               <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
                   <option value="all">📅 전체 기간</option>
                   <option value="today">오늘</option>
@@ -129,11 +129,11 @@ function TAAbsenceManage() {
                   </div>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학년</span> 
-                      <span>{selectedReq.grade}학년</span>
+                      <span style={{fontWeight:'bold'}}>{selectedReq.grade}학년</span>
                   </div>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학번</span> 
-                      <span>{selectedReq.student_no}</span>
+                      <span style={{fontWeight:'bold'}}>{selectedReq.student_no}</span>
                   </div>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>이름</span> 
@@ -197,7 +197,7 @@ function TAAbsenceManage() {
 
 const styles = {
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675' },
-  backBtn: { cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 12px', borderRadius:'20px', fontSize:'13px', color:'#555', fontWeight:'bold', transition:'all 0.2s' },
+  backBtn: { cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 12px', borderRadius:'20px', fontSize:'15px', color:'#555', fontWeight:'bold', transition:'all 0.2s' },
   filterBar: { marginBottom:'15px', padding:'10px 15px', backgroundColor:'rgba(255, 255, 255, 0.4)', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.6)', display:'flex', alignItems:'center' },
   select: { padding:'8px 12px', borderRadius:'8px', border:'1px solid #ced4da', backgroundColor:'rgba(255,255,255,0.8)', fontSize:'14px', cursor:'pointer', outline:'none', minWidth:'100px' },
   listArea: { flex: 1, overflowY: 'auto', padding: '5px' },
