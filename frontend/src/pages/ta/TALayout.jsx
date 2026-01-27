@@ -19,7 +19,6 @@ function TALayout({ children }) {
 
   return (
     <div style={layoutStyles.container}>
-      {/* 1. 상단 헤더 (요청하신 파란색 바 스타일) */}
       <header style={layoutStyles.header}>
         <div style={layoutStyles.logoArea} onClick={() => navigate('/ta/pending')}>
           <h1 style={layoutStyles.logo}>행정조교 시스템</h1>
@@ -30,10 +29,7 @@ function TALayout({ children }) {
       </header>
 
       <div style={layoutStyles.body}>
-        {/* 2. 왼쪽 사이드바 */}
         <nav style={layoutStyles.sidebar}>
-          
-          {/* 문의 그룹 (부모 메뉴) */}
           <div style={layoutStyles.menuGroup}>
             <div style={layoutStyles.groupTitle}>문의</div>
             <div 
@@ -52,7 +48,6 @@ function TALayout({ children }) {
 
           <div style={layoutStyles.divider}></div>
 
-          {/* 일반 메뉴들 */}
           <div 
             style={isActive('/ta/notice') ? layoutStyles.menuItemActive : layoutStyles.menuItem}
             onClick={() => navigate('/ta/notice')}
@@ -80,20 +75,18 @@ function TALayout({ children }) {
           
           <div style={layoutStyles.divider}></div>
 
-          {/* AI 조교 리포트 (강조 스타일) */}
           <div 
             style={layoutStyles.aiMenuItem}
             onClick={() => navigate('/ta/ai')}
             onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
             onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            <span style={{fontSize:'16px'}}>🤖</span> AI 조교 리포트
+            <span style={{fontSize:'18px'}}>🤖</span> 
+            <span style={{position:'relative', top:'1px'}}>AI 조교 리포트</span>
           </div>
         </nav>
 
-        {/* 3. 메인 컨텐츠 영역 */}
         <main style={layoutStyles.mainContent}>
-            {/* 개별 페이지의 내용은 이 glassBox 안으로 들어갑니다 */}
             <div style={layoutStyles.glassBox}>
                 {children}
             </div>
@@ -113,14 +106,14 @@ const layoutStyles = {
   },
   header: {
     height: '60px',
-    backgroundColor: '#003675', // 요청하신 진한 파란색
+    backgroundColor: '#003675',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '0 30px',
     flexShrink: 0,
     zIndex: 20,
-    boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+    boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
   },
   logoArea: { cursor: 'pointer' },
   logo: { fontSize: '22px', fontWeight: 'bold', color: 'white', margin: 0, letterSpacing: '-0.5px' },
@@ -153,14 +146,14 @@ const layoutStyles = {
   },
   menuGroup: { marginBottom: '15px' },
   groupTitle: {
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '800',
     color: '#003675',
     padding: '10px 30px',
     marginBottom: '5px'
   },
   menuItem: {
-    padding: '12px 30px 12px 45px', // 계층 구조 표현을 위한 들여쓰기
+    padding: '12px 30px 12px 45px',
     fontSize: '15px',
     color: '#555',
     cursor: 'pointer',
@@ -173,7 +166,7 @@ const layoutStyles = {
     color: '#003675',
     fontWeight: 'bold',
     backgroundColor: '#e3f2fd',
-    borderLeft: '5px solid #003675', // 왼쪽 활성 표시줄
+    borderLeft: '5px solid #003675',
     cursor: 'pointer'
   },
   divider: {
@@ -181,17 +174,16 @@ const layoutStyles = {
     backgroundColor: '#eee',
     margin: '15px 30px'
   },
-  // AI 리포트 강조 스타일
   aiMenuItem: {
     margin: '10px 20px',
     padding: '12px',
     borderRadius: '12px',
-    background: 'linear-gradient(135deg, #003675 0%, #1976d2 100%)', // 파란색 그라데이션
+    background: 'linear-gradient(135deg, #003675 0%, #1976d2 100%)',
     color: 'white',
     fontWeight: 'bold',
-    fontSize: '15px',
+    fontSize: '14px',
     cursor: 'pointer',
-    boxShadow: '0 4px 10px rgba(0, 54, 117, 0.2)',
+    boxShadow: '0 4px 10px rgba(0, 54, 117, 0.3)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -212,12 +204,12 @@ const layoutStyles = {
   },
   glassBox: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // 반투명 배경
-    backdropFilter: 'blur(20px)', // 블러 효과
+    backgroundColor: 'rgba(255, 255, 255, 0.85)', // 불투명도 높여 가독성 확보
+    backdropFilter: 'blur(20px)',
     borderRadius: '24px',
     padding: '35px',
-    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
-    border: '1px solid rgba(255, 255, 255, 0.6)',
+    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+    border: '1px solid rgba(255, 255, 255, 0.8)',
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden'

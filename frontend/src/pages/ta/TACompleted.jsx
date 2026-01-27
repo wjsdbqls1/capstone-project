@@ -9,57 +9,36 @@ function TACompleted() {
   const navigate = useNavigate();
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
-  
-  // 데이터 관련
   const [academicEvents, setAcademicEvents] = useState({});
   const [selectedInquiry, setSelectedInquiry] = useState(null);
-  
-  // 답변 수정 관련 State
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editContent, setEditContent] = useState("");
   const [editFile, setEditFile] = useState(null);
-
-  // 필터 및 검색 State
   const [searchTerm, setSearchTerm] = useState("");
   const [gradeFilter, setGradeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
 
   useEffect(() => { fetchInquiries(); }, []);
 
-  // 필터링 로직
   useEffect(() => {
     let result = [...inquiries];
-
-    // 1. 검색어 필터
     if (searchTerm) {
-      result = result.filter(item => 
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.author_info && item.author_info.name.includes(searchTerm))
-      );
+      result = result.filter(item => item.title.toLowerCase().includes(searchTerm.toLowerCase()) || (item.author_info && item.author_info.name.includes(searchTerm)));
     }
-
-    // 2. 학년 필터
     if (gradeFilter !== "all") {
-      result = result.filter(item => 
-        item.author_info && item.author_info.grade === parseInt(gradeFilter)
-      );
+      result = result.filter(item => item.author_info && item.author_info.grade === parseInt(gradeFilter));
     }
-
-    // 3. 날짜 필터
     if (dateFilter !== "all") {
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
       result = result.filter(item => {
         const itemDate = new Date(item.created_at);
         const itemDateStart = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
-
         if (dateFilter === 'today') return itemDateStart.getTime() === todayStart.getTime();
         if (dateFilter === 'week') {
           const day = now.getDay(); 
           const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-          const monday = new Date(now.setDate(diff));
-          monday.setHours(0,0,0,0);
+          const monday = new Date(now.setDate(diff)); monday.setHours(0,0,0,0);
           return itemDate >= monday;
         }
         if (dateFilter === 'month') return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear();
@@ -67,7 +46,6 @@ function TACompleted() {
         return true;
       });
     }
-
     setFilteredInquiries(result);
   }, [searchTerm, gradeFilter, dateFilter, inquiries]);
 
@@ -77,15 +55,10 @@ function TACompleted() {
     try {
       const response = await axios.get('http://13.219.208.109:8000/inquiries', { headers: { Authorization: `Bearer ${token}` } });
       const completedList = response.data.filter(item => item.status === 'COMPLETED' || item.status === '답변 완료');
-      
       const resEvents = await axios.get('http://13.219.208.109:8000/academic-events');
-      const eventMap = {};
-      resEvents.data.forEach(ev => { eventMap[ev.id] = ev; });
-      setAcademicEvents(eventMap);
-
+      const eventMap = {}; resEvents.data.forEach(ev => { eventMap[ev.id] = ev; }); setAcademicEvents(eventMap);
       const sortedList = completedList.sort((a, b) => b.id - a.id);
-      setInquiries(sortedList);
-      setFilteredInquiries(sortedList);
+      setInquiries(sortedList); setFilteredInquiries(sortedList);
     } catch (error) { console.error(error); }
   };
 
@@ -105,13 +78,9 @@ function TACompleted() {
     const formData = new FormData();
     formData.append("content", editContent);
     if (editFile) formData.append("file", editFile);
-
     try {
-      await axios.put(`http://13.219.208.109:8000/inquiries/${inquiryId}/replies/${replyId}`, formData, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }
-      });
-      alert("수정되었습니다.");
-      handleSelect(inquiryId);
+      await axios.put(`http://13.219.208.109:8000/inquiries/${inquiryId}/replies/${replyId}`, formData, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } });
+      alert("수정되었습니다."); handleSelect(inquiryId);
     } catch (error) { alert("수정 실패"); }
   };
 
@@ -119,114 +88,51 @@ function TACompleted() {
     <TALayout>
       <div style={styles.glassBox}>
         <div style={styles.pageTitle}>처리 완료 문의</div>
-        
-        {/* 필터 바: 회색 배경을 추가하여 흰색 컨테이너와 구분 */}
         <div style={styles.filterBar}>
             <div style={styles.filterGroup}>
                 <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-                    <option value="all">📅 전체 기간</option>
-                    <option value="today">오늘</option>
-                    <option value="week">이번 주</option>
-                    <option value="month">이번 달</option>
-                    <option value="year">올해</option>
+                    <option value="all">📅 전체 기간</option><option value="today">오늘</option><option value="week">이번 주</option><option value="month">이번 달</option><option value="year">올해</option>
                 </select>
                 <select style={styles.select} value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)}>
-                    <option value="all">🎓 전체 학년</option>
-                    <option value="1">1학년</option>
-                    <option value="2">2학년</option>
-                    <option value="3">3학년</option>
-                    <option value="4">4학년</option>
+                    <option value="all">🎓 전체 학년</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value={4}>4학년</option>
                 </select>
             </div>
             <div style={styles.searchWrapper}>
                 <span style={{fontSize:'16px', color:'#666'}}>🔍</span>
-                <input 
-                    type="text" 
-                    placeholder="이름 또는 제목 검색..." 
-                    style={styles.searchInput}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <input type="text" placeholder="이름 또는 제목 검색..." style={styles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
             </div>
         </div>
-
         <div style={styles.listArea}>
           {filteredInquiries.length === 0 ? (
-            <div style={styles.emptyMessage}>
-                {searchTerm || gradeFilter !== 'all' || dateFilter !== 'all' 
-                    ? "검색 조건에 맞는 문의가 없습니다." 
-                    : "완료된 문의가 없습니다."}
-            </div>
+            <div style={styles.emptyMessage}>{searchTerm || gradeFilter !== 'all' || dateFilter !== 'all' ? "검색 조건에 맞는 문의가 없습니다." : "완료된 문의가 없습니다."}</div>
           ) : (
             filteredInquiries.map((item) => (
-              <div 
-                key={item.id} 
-                style={styles.card} 
-                onClick={() => handleSelect(item.id)}
-                onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)';
-                }}
-                onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
-                }}
-              >
+              <div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)}>
                 <div style={styles.cardHeader}>
                   <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
                     <span style={styles.statusDone}>답변 완료</span>
-                    {item.author_info && (
-                        <span style={styles.nameTag}>{item.author_info.name}</span>
-                    )}
+                    {item.author_info && (<span style={styles.nameTag}>{item.author_info.name}</span>)}
                   </div>
                   <span style={styles.date}>{item.created_at.split('T')[0]}</span>
                 </div>
                 <h3 style={styles.title}>{item.title}</h3>
-                
-                <div style={styles.writerInfo}>
-                    {item.author_info 
-                        ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name} (${item.author_info.student_no})` 
-                        : `ID: ${item.user_id}`}
-                </div>
+                <div style={styles.writerInfo}>{item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name} (${item.author_info.student_no})` : `ID: ${item.user_id}`}</div>
               </div>
             ))
           )}
         </div>
       </div>
-
-      {/* 모달 유지 */}
       {selectedInquiry && (
         <div style={modalStyles.overlay} onClick={() => setSelectedInquiry(null)}>
           <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={modalStyles.header}>
-              <h3 style={{margin:0, color:'#2e7d32'}}>문의 상세</h3>
-              <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}>✕</button>
-            </div>
-            
+            <div style={modalStyles.header}><h3 style={{margin:0, color:'#2e7d32'}}>문의 상세</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}>✕</button></div>
             <div style={modalStyles.content}>
                <div style={modalStyles.questionBox}>
-                  <div style={{fontSize:'14px', color:'#555', marginBottom:'12px', borderBottom:'1px dashed #ddd', paddingBottom:'8px'}}>
-                      <span style={{marginRight:'5px'}}>👤</span> 
-                      <span style={{fontWeight:'bold'}}>학생 정보: </span>
-                      {selectedInquiry.author_info ? (
-                          <span>
-                              {selectedInquiry.author_info.department} / {selectedInquiry.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{selectedInquiry.author_info.name}</span> ({selectedInquiry.author_info.student_no})
-                          </span>
-                      ) : <span>ID: {selectedInquiry.user_id}</span>}
-                  </div>
+                  <div style={modalStyles.infoRow}><span style={{marginRight:'5px'}}>👤</span><span style={{fontWeight:'bold'}}>학생 정보: </span>{selectedInquiry.author_info ? <span>{selectedInquiry.author_info.department} / {selectedInquiry.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{selectedInquiry.author_info.name}</span> ({selectedInquiry.author_info.student_no})</span> : <span>ID: {selectedInquiry.user_id}</span>}</div>
                   <div style={modalStyles.qTitle}>Q. {selectedInquiry.title}</div>
                   <div style={modalStyles.qText}>{selectedInquiry.content}</div>
-                  {selectedInquiry.attachment && (
-                      <div style={{marginTop:'15px', backgroundColor:'white', padding:'8px', borderRadius:'6px', border:'1px solid #eee', display:'inline-block'}}>
-                          <a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 학생 첨부파일 보기</a>
-                      </div>
-                  )}
-                  {selectedInquiry.academic_event_id && academicEvents[selectedInquiry.academic_event_id] && (
-                      <div style={{marginTop:'15px', padding:'10px', backgroundColor:'#e8f5e9', borderRadius:'8px', color:'#2e7d32', fontSize:'14px', fontWeight:'bold', display:'flex', alignItems:'center', gap:'6px'}}>
-                          <span>📅</span>
-                          <span>관련 일정: {academicEvents[selectedInquiry.academic_event_id].title} (~{academicEvents[selectedInquiry.academic_event_id].end_date})</span>
-                      </div>
-                  )}
+                  {selectedInquiry.attachment && (<div style={modalStyles.attachBox}><a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 학생 첨부파일 보기</a></div>)}
+                  {selectedInquiry.academic_event_id && academicEvents[selectedInquiry.academic_event_id] && (<div style={modalStyles.eventBox}><span>📅</span><span>관련 일정: {academicEvents[selectedInquiry.academic_event_id].title} (~{academicEvents[selectedInquiry.academic_event_id].end_date})</span></div>)}
                </div>
                <hr style={{margin:'25px 0', border:'0', borderTop:'1px dashed #ddd'}}/>
                <div style={modalStyles.section}>
@@ -234,21 +140,9 @@ function TACompleted() {
                   {selectedInquiry.replies?.map(r => (
                     <div key={r.id} style={modalStyles.answerBox}>
                         {editingReplyId === r.id ? (
-                            <div>
-                                <textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/>
-                                <div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}>
-                                    <button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button>
-                                    <button onClick={()=>handleUpdateReply(selectedInquiry.id, r.id)} style={modalStyles.saveBtn}>저장</button>
-                                </div>
-                            </div>
+                            <div><textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/><div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}><button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button><button onClick={()=>handleUpdateReply(selectedInquiry.id, r.id)} style={modalStyles.saveBtn}>저장</button></div></div>
                         ) : (
-                            <div>
-                                <div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>
-                                {r.attachment && (<div style={{marginTop:'8px'}}><a href={`http://13.219.208.109:8000${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none'}}>📎 답변 첨부파일</a></div>)}
-                                <div style={{marginTop:'10px', textAlign:'right'}}>
-                                    <button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline'}}>✏️ 수정하기</button>
-                                </div>
-                            </div>
+                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`http://13.219.208.109:8000${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none'}}>📎 답변 첨부파일</a></div>)}<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline'}}>✏️ 수정하기</button></div></div>
                         )}
                     </div>
                   ))}
@@ -262,75 +156,15 @@ function TACompleted() {
 }
 
 const styles = {
-  glassBox: { 
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // 가독성을 위해 불투명도 약간 상향
-    backdropFilter: 'blur(20px)', 
-    borderRadius: '24px', 
-    padding: '30px', 
-    height: '100%', 
-    boxSizing: 'border-box', 
-    display: 'flex', 
-    flexDirection: 'column', 
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-    border: '1px solid rgba(255,255,255,0.6)'
-  },
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675', marginBottom: '20px' },
-  
-  // 필터 바 디자인 개선 (회색 배경 추가)
-  filterBar: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: '20px', 
-    flexWrap: 'wrap', 
-    gap: '10px',
-    backgroundColor: '#f8f9fa', // 회색 배경으로 영역 구분
-    padding: '15px',
-    borderRadius: '16px',
-    border: '1px solid #e9ecef'
-  },
+  filterBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '16px', border: '1px solid #e9ecef' },
   filterGroup: { display: 'flex', gap: '8px' },
-  select: { 
-    padding: '10px 14px', 
-    borderRadius: '10px', 
-    border: '1px solid #ced4da', // 테두리 추가
-    backgroundColor: 'white', 
-    fontSize: '14px', 
-    cursor: 'pointer', 
-    color: '#495057', 
-    outline: 'none',
-    fontWeight: '500'
-  },
-  searchWrapper: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '8px', 
-    backgroundColor: 'white', 
-    padding: '10px 16px', 
-    borderRadius: '10px', 
-    border: '1px solid #ced4da', // 테두리 추가
-    boxShadow: '0 2px 4px rgba(0,0,0,0.02)', 
-    minWidth: '280px' 
-  },
+  select: { padding: '10px 14px', borderRadius: '10px', border: '1px solid #ced4da', backgroundColor: 'white', fontSize: '14px', cursor: 'pointer', color: '#495057', outline: 'none', fontWeight: '500' },
+  searchWrapper: { display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'white', padding: '10px 16px', borderRadius: '10px', border: '1px solid #ced4da', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', minWidth: '280px' },
   searchInput: { border: 'none', outline: 'none', fontSize: '14px', width: '100%', backgroundColor: 'transparent' },
-
   listArea: { flex: 1, overflowY: 'auto', paddingRight: '5px' },
   emptyMessage: { textAlign: 'center', marginTop: '50px', color: '#868e96', fontWeight: '500' },
-  
-  // 카드 디자인 개선 (테두리 및 그림자 강화)
-  card: { 
-    backgroundColor: 'white', 
-    padding: '20px', 
-    borderRadius: '16px', 
-    marginBottom: '12px', 
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)', 
-    cursor: 'pointer', 
-    borderLeft: '6px solid #4caf50',
-    borderTop: '1px solid #e9ecef', // 상하우측 테두리 추가
-    borderRight: '1px solid #e9ecef',
-    borderBottom: '1px solid #e9ecef',
-    transition: 'all 0.2s ease'
-  },
+  card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer', borderLeft: '6px solid #4caf50', borderTop: '1px solid #e9ecef', borderRight: '1px solid #e9ecef', borderBottom: '1px solid #e9ecef', transition: 'all 0.2s ease' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems:'center' },
   statusDone: { color: '#2e7d32', fontWeight: 'bold', fontSize: '12px', backgroundColor:'#e8f5e9', padding:'4px 8px', borderRadius:'6px' },
   nameTag: { fontSize: '13px', fontWeight: 'bold', color: '#495057' },
@@ -344,13 +178,14 @@ const modalStyles = {
   modal: { width: '90%', maxWidth: '650px', maxHeight: '85%', backgroundColor: 'white', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' },
   header: { padding: '18px 25px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8f9fa' },
   closeBtn: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#868e96' },
-  content: { padding: '25px', overflowY: 'auto', flex: 1 },
-  
+  content: { padding: '25px', overflowY: 'auto', flex: 1, backgroundColor:'#fff' },
   questionBox: { padding: '20px', backgroundColor: '#fff8e1', borderRadius: '12px', border:'1px solid #ffe0b2' },
+  infoRow: { fontSize:'14px', color:'#555', marginBottom:'12px', borderBottom:'1px dashed #e6cba8', paddingBottom:'8px' },
   qTitle: { fontWeight: 'bold', fontSize: '18px', color:'#333', marginBottom:'10px' },
   qText: { fontSize: '16px', lineHeight: '1.6', color: '#444', whiteSpace: 'pre-wrap' },
+  attachBox: { marginTop:'15px', backgroundColor:'white', padding:'8px', borderRadius:'6px', border:'1px solid #eee', display:'inline-block' },
   fileLink: { color:'#003675', fontWeight:'bold', textDecoration:'none', fontSize:'14px' },
-
+  eventBox: { marginTop:'15px', padding:'10px', backgroundColor:'#e8f5e9', borderRadius:'8px', color:'#2e7d32', fontSize:'14px', fontWeight:'bold', display:'flex', alignItems:'center', gap:'6px' },
   section: { marginBottom: '15px' },
   answerBox: { backgroundColor: '#f1f8e9', padding: '20px', borderRadius: '12px', marginBottom: '15px', border: '1px solid #c5e1a5' },
   editTextarea: { width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da', boxSizing: 'border-box', fontSize:'15px' },

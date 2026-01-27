@@ -121,20 +121,18 @@ function TACalendarManage() {
 
   return (
     <TALayout>
-      <div style={styles.glassBox}>
-        <div style={styles.pageTitle}>캘린더 관리</div>
-        <div style={calStyles.controls}>
-          <div style={calStyles.monthNav}>
-            <button onClick={prevMonth} style={calStyles.navBtn}>◀</button>
-            <h3 style={{margin:0, fontSize:'20px'}}>{currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}</h3>
-            <button onClick={nextMonth} style={calStyles.navBtn}>▶</button>
-          </div>
-          <button onClick={() => setIsRegisterModalOpen(true)} style={calStyles.addBtn}>+ 학과 일정 등록</button>
+      <div style={styles.pageTitle}>캘린더 관리</div>
+      <div style={calStyles.controls}>
+        <div style={calStyles.monthNav}>
+          <button onClick={prevMonth} style={calStyles.navBtn}>◀</button>
+          <h3 style={{margin:0, fontSize:'24px', fontWeight:'800', color:'#333'}}>{currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}</h3>
+          <button onClick={nextMonth} style={calStyles.navBtn}>▶</button>
         </div>
-        <div style={calStyles.calendarWrapper}>
-            <div style={calStyles.dayHeaderRow}>{['일','월','화','수','목','금','토'].map((day, idx) => <div key={day} style={{...calStyles.dayHeader, color: idx===0?'#d32f2f': idx===6?'#1976d2':'#333'}}>{day}</div>)}</div>
-            <div style={calStyles.calendarGrid}>{renderCalendar()}</div>
-        </div>
+        <button onClick={() => setIsRegisterModalOpen(true)} style={calStyles.addBtn}>+ 학과 일정 등록</button>
+      </div>
+      <div style={calStyles.calendarWrapper}>
+          <div style={calStyles.dayHeaderRow}>{['일','월','화','수','목','금','토'].map((day, idx) => <div key={day} style={{...calStyles.dayHeader, color: idx===0?'#d32f2f': idx===6?'#1976d2':'#333'}}>{day}</div>)}</div>
+          <div style={calStyles.calendarGrid}>{renderCalendar()}</div>
       </div>
 
       {isDetailModalOpen && (
@@ -165,8 +163,23 @@ function TACalendarManage() {
   );
 }
 
-const styles = { glassBox: { backgroundColor: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(15px)', borderRadius: '20px', padding: '30px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)' }, pageTitle: { fontSize: '24px', fontWeight: 'bold', color: '#003675', marginBottom: '20px' } };
-const calStyles = { controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '5px' }, monthNav: { display: 'flex', alignItems: 'center', gap: '10px' }, navBtn: { background:'white', border:'1px solid #ddd', borderRadius:'8px', cursor:'pointer', padding:'4px 8px', fontSize:'12px' }, addBtn: { backgroundColor: '#ff9800', color: 'black', border: 'none', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }, calendarWrapper: { flex: 1, borderRadius: '12px', border: '1px solid #ddd', backgroundColor: 'white', display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: '300px' }, dayHeaderRow: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: '#f5f5f5', borderBottom: '1px solid #eee', height: '30px' }, dayHeader: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight:'1px solid #eee', fontWeight:'bold', fontSize: '12px' }, calendarGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', flex: 1, gridAutoRows: '1fr', width: '100%', boxSizing: 'border-box' }, dayCell: { borderRight:'1px solid #eee', borderBottom:'1px solid #eee', backgroundColor: 'white', display:'flex', flexDirection:'column', cursor: 'pointer', overflow: 'visible', position: 'relative' }, dayCellEmpty: { backgroundColor: '#fafafa', borderRight:'1px solid #eee', borderBottom:'1px solid #eee' }, dayNum: { fontSize: '12px', fontWeight: 'bold', padding: '4px', color: '#444' }, eventList: { display: 'flex', flexDirection: 'column', gap: '1px', width: '100%', position: 'absolute', top: '25px', left: 0, right: 0, overflow: 'visible' }, eventItem: { fontSize: '10px', padding: '1px 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: '500', margin: '0 1px', lineHeight: '1.2', height: '16px', boxSizing: 'border-box' }, moreBtn: { fontSize: '9px', color: '#888', paddingLeft: '4px', fontWeight: 'bold' } };
+const styles = { pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675', marginBottom: '20px' } };
+const calStyles = { 
+    controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }, 
+    monthNav: { display: 'flex', alignItems: 'center', gap: '15px' }, 
+    navBtn: { background:'white', border:'1px solid #ddd', borderRadius:'8px', cursor:'pointer', padding:'6px 12px', fontSize:'14px', fontWeight:'bold' }, 
+    addBtn: { backgroundColor: '#ff9800', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '25px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }, 
+    calendarWrapper: { flex: 1, borderRadius: '16px', border: '1px solid #ddd', backgroundColor: 'white', display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: '500px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }, 
+    dayHeaderRow: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: '#f8f9fa', borderBottom: '1px solid #e9ecef', height: '40px' }, 
+    dayHeader: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight:'1px solid #e9ecef', fontWeight:'bold', fontSize: '14px' }, 
+    calendarGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', flex: 1, gridAutoRows: '1fr', width: '100%', boxSizing: 'border-box' }, 
+    dayCell: { borderRight:'1px solid #f1f3f5', borderBottom:'1px solid #f1f3f5', backgroundColor: 'white', display:'flex', flexDirection:'column', cursor: 'pointer', overflow: 'visible', position: 'relative', minHeight: '100px' }, 
+    dayCellEmpty: { backgroundColor: '#f8f9fa', borderRight:'1px solid #f1f3f5', borderBottom:'1px solid #f1f3f5' }, 
+    dayNum: { fontSize: '16px', fontWeight: 'bold', padding: '8px', color: '#495057' }, // 날짜 글자 크기 확대
+    eventList: { display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', position: 'absolute', top: '35px', left: 0, right: 0, overflow: 'visible' }, 
+    eventItem: { fontSize: '13px', padding: '2px 5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: '500', margin: '0 2px', lineHeight: '1.4', height: '22px', boxSizing: 'border-box' }, // 일정 글자 크기 확대
+    moreBtn: { fontSize: '11px', color: '#868e96', paddingLeft: '6px', fontWeight: 'bold' } 
+};
 const modalStyles = { overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 999 }, modal: { width: '85%', maxWidth:'400px', maxHeight: '80%', backgroundColor: 'white', borderRadius: '16px', padding: '0', boxShadow: '0 10px 40px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }, header: { padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9', borderBottom: '1px solid #eee' }, closeBtn: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#666' }, list: { padding: '20px', overflowY: 'auto', flex: 1 }, item: { padding: '12px', backgroundColor: 'white', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #f0f0f0' }, inputGroup: { marginBottom: '15px' }, label: { fontSize: '13px', color: '#666', fontWeight:'bold', marginBottom:'5px', display:'block' }, input: { width: '100%', padding: '10px', boxSizing:'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '15px' }, btnGroup: { display: 'flex', gap: '10px', marginTop: '20px' }, cancelBtn: { flex: 1, padding: '12px', border: '1px solid #ddd', backgroundColor:'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color:'#666' }, submitBtn: { flex: 1, padding: '12px', border: 'none', backgroundColor:'#ff9800', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color:'black' } };
 
 export default TACalendarManage;
