@@ -51,7 +51,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
     print(f"📂 '{UPLOAD_DIR}' 폴더가 생성되었습니다.")
 
-# http://localhost:8000/uploads/파일명 으로 접근 가능하게 설정
+# http://13.219.208.109:8000/uploads/파일명 으로 접근 가능하게 설정
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 

@@ -30,7 +30,7 @@ function TACompleted() {
     }
 
     try {
-      const response = await axios.get('http://localhost:8000/inquiries', {
+      const response = await axios.get('http://13.219.208.109:8000/inquiries', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -48,10 +48,10 @@ function TACompleted() {
   const handleSelect = async (id) => {
     const token = localStorage.getItem('token');
     try {
-        const qRes = await axios.get(`http://localhost:8000/inquiries/${id}`, {
+        const qRes = await axios.get(`http://13.219.208.109:8000/inquiries/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
-        const rRes = await axios.get(`http://localhost:8000/inquiries/${id}/replies`, {
+        const rRes = await axios.get(`http://13.219.208.109:8000/inquiries/${id}/replies`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -95,7 +95,7 @@ function TACompleted() {
     }
 
     try {
-        await axios.put(`http://localhost:8000/inquiries/${inquiryId}/replies/${replyId}`, formData, {
+        await axios.put(`http://13.219.208.109:8000/inquiries/${inquiryId}/replies/${replyId}`, formData, {
             headers: { 
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "multipart/form-data"
@@ -198,7 +198,7 @@ function TACompleted() {
                   {selectedInquiry.attachment && (
                     <div style={modalStyles.fileBox}>
                         📎 <b>학생 첨부파일:</b> 
-                        <a href={`http://localhost:8000${selectedInquiry.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.fileLink}>
+                        <a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.fileLink}>
                             보기 / 다운로드
                         </a>
                     </div>
@@ -257,7 +257,7 @@ function TACompleted() {
 
                                     {r.attachment && (
                                         <div style={{marginTop:'10px', fontSize:'13px', borderTop:'1px solid #c8e6c9', paddingTop:'8px'}}>
-                                            📎 <a href={`http://localhost:8000${r.attachment}`} target="_blank" rel="noreferrer" style={{color:'#2e7d32', fontWeight:'bold'}}>답변 첨부파일 확인</a>
+                                            📎 <a href={`http://13.219.208.109:8000${r.attachment}`} target="_blank" rel="noreferrer" style={{color:'#2e7d32', fontWeight:'bold'}}>답변 첨부파일 확인</a>
                                         </div>
                                     )}
                                     <div style={{fontSize:'11px', color:'#666', marginTop:'8px', textAlign:'right'}}>

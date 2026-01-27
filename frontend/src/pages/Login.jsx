@@ -17,7 +17,7 @@ function Login() {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/auth/login', {
+      const response = await axios.post('http://13.219.208.109:8000/auth/login', {
           student_no: id, 
           password: password
       });

@@ -22,7 +22,7 @@ function Register() {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/auth/register', {
+      const response = await axios.post('http://13.219.208.109:8000/auth/register', {
         student_no: studentNo,
         password: password,
         name: name,

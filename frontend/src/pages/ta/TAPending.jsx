@@ -29,7 +29,7 @@ function TAPending() {
     }
 
     try {
-      const resInq = await axios.get('http://localhost:8000/inquiries', {
+      const resInq = await axios.get('http://13.219.208.109:8000/inquiries', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -37,7 +37,7 @@ function TAPending() {
         item.status !== 'COMPLETED' && item.status !== '답변 완료'
       );
       
-      const resEvents = await axios.get('http://localhost:8000/academic-events');
+      const resEvents = await axios.get('http://13.219.208.109:8000/academic-events');
       const eventMap = {};
       resEvents.data.forEach(ev => {
         eventMap[ev.id] = ev;
@@ -93,7 +93,7 @@ function TAPending() {
   const handleSelect = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.get(`http://localhost:8000/inquiries/${id}`, {
+      const response = await axios.get(`http://13.219.208.109:8000/inquiries/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedInquiry(response.data);
@@ -120,7 +120,7 @@ function TAPending() {
     }
 
     try {
-      await axios.post(`http://localhost:8000/inquiries/${selectedInquiry.id}/replies`, formData, {
+      await axios.post(`http://13.219.208.109:8000/inquiries/${selectedInquiry.id}/replies`, formData, {
         headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data' 
@@ -267,7 +267,7 @@ function TAPending() {
                 {selectedInquiry.attachment && (
                     <div style={modalStyles.fileBox}>
                         📎 <b>학생 첨부파일:</b> 
-                        <a href={`http://localhost:8000${selectedInquiry.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.fileLink}>
+                        <a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.fileLink}>
                             다운로드 / 보기
                         </a>
                     </div>

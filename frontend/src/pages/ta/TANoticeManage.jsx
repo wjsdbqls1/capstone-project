@@ -25,7 +25,7 @@ function TANoticeManage() {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       
-      const response = await axios.get('http://localhost:8000/notices?source=internal', config);
+      const response = await axios.get('http://13.219.208.109:8000/notices?source=internal', config);
       setNotices(response.data);
     } catch (error) {
       console.error("공지 목록 로딩 실패:", error);
@@ -45,7 +45,7 @@ function TANoticeManage() {
 
   const handleOpenEdit = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/notices/internal/${id}`);
+      const response = await axios.get(`http://13.219.208.109:8000/notices/internal/${id}`);
       setFormData({
         title: response.data.title,
         content_html: response.data.content_html,
@@ -85,10 +85,10 @@ function TANoticeManage() {
         };
 
       if (isEditMode) {
-        await axios.put(`http://localhost:8000/admin/notices/${targetId}`, sendData, config);
+        await axios.put(`http://13.219.208.109:8000/admin/notices/${targetId}`, sendData, config);
         alert("수정되었습니다.");
       } else {
-        await axios.post(`http://localhost:8000/admin/notices`, sendData, config);
+        await axios.post(`http://13.219.208.109:8000/admin/notices`, sendData, config);
         alert("등록되었습니다.");
       }
       setShowModal(false);
@@ -103,7 +103,7 @@ function TANoticeManage() {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       const token = localStorage.getItem('token');
       try {
-        await axios.delete(`http://localhost:8000/admin/notices/${id}`, {
+        await axios.delete(`http://13.219.208.109:8000/admin/notices/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         fetchNotices();

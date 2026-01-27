@@ -23,7 +23,7 @@ function TAAbsenceManage() {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("token"); 
-      const response = await axios.get('http://localhost:8000/admin/absence/list', {
+      const response = await axios.get('http://13.219.208.109:8000/admin/absence/list', {
         headers: { Authorization: `Bearer ${token}` }
       });
       // 최신순 정렬
@@ -72,7 +72,7 @@ function TAAbsenceManage() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`http://localhost:8000/admin/absence/${selectedReq.id}/status`, 
+      await axios.put(`http://13.219.208.109:8000/admin/absence/${selectedReq.id}/status`, 
         { 
           status: status,
           reject_reason: status === 'REJECTED' ? rejectReason : null
@@ -209,7 +209,7 @@ function TAAbsenceManage() {
                         <span style={styles.label}>증빙서류  </span>
                         {selectedReq.file ? (
                             <a 
-                                href={`http://localhost:8000/uploads/absence/${selectedReq.file.stored_name}`} 
+                                href={`http://13.219.208.109:8000/uploads/absence/${selectedReq.file.stored_name}`} 
                                 download={selectedReq.file.original_name}
                                 target="_blank" 
                                 rel="noopener noreferrer"

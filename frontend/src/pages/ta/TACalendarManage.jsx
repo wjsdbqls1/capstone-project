@@ -38,11 +38,11 @@ function TACalendarManage() {
   // 1. 데이터 가져오기
   const fetchData = async () => {
     try {
-      const eventRes = await axios.get('http://localhost:8000/academic-events');
+      const eventRes = await axios.get('http://13.219.208.109:8000/academic-events');
       setAcademicEvents(eventRes.data);
 
       if (token) {
-        const memoRes = await axios.get('http://localhost:8000/memos', {
+        const memoRes = await axios.get('http://13.219.208.109:8000/memos', {
             headers: { Authorization: `Bearer ${token}` }
         });
         setMyMemos(memoRes.data);
@@ -68,7 +68,7 @@ function TACalendarManage() {
   const handleAddMemo = async () => {
     if (!memoInput.trim()) return;
     try {
-        await axios.post('http://localhost:8000/memos', 
+        await axios.post('http://13.219.208.109:8000/memos', 
           { memo_date: selectedDate, content: memoInput },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -84,7 +84,7 @@ function TACalendarManage() {
   const handleDeleteMemo = async (id) => {
     if(!window.confirm("삭제하시겠습니까?")) return;
     try {
-        await axios.delete(`http://localhost:8000/memos/${id}`, {
+        await axios.delete(`http://13.219.208.109:8000/memos/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         await fetchData();
@@ -101,7 +101,7 @@ function TACalendarManage() {
       return;
     }
     try {
-      await axios.post('http://localhost:8000/academic-events', newEvent);
+      await axios.post('http://13.219.208.109:8000/academic-events', newEvent);
       alert("일정이 등록되었습니다!");
       setIsRegisterModalOpen(false);
       setNewEvent({ title: '', start_date: '', end_date: '' });

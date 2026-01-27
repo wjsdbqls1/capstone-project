@@ -31,7 +31,7 @@ function StudentNotice() {
         return;
       }
       try {
-        const response = await axios.get('http://localhost:8000/users/me', {
+        const response = await axios.get('http://13.219.208.109:8000/users/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUserGrade(response.data.grade); 
@@ -47,7 +47,7 @@ function StudentNotice() {
     // 2. 공지사항 목록
     const fetchNotices = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/notices?source=all&limit=1000');
+        const response = await axios.get('http://13.219.208.109:8000/notices?source=all&limit=1000');
         setNotices(response.data);
       } catch (error) {
         console.error("공지사항 로딩 실패:", error);
