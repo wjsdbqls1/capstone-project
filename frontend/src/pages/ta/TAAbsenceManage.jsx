@@ -80,7 +80,7 @@ function TAAbsenceManage() {
       
       {view === 'list' && (
           <div style={styles.filterBar}>
-              <span style={{fontWeight:'bold', color:'#555', marginRight:'10px'}}>📅 기간 선택:</span>
+              
               <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
                   <option value="all">📅 전체 기간</option>
                   <option value="today">오늘</option>
