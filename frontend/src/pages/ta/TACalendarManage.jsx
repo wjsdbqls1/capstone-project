@@ -65,7 +65,7 @@ function TACalendarManage() {
 
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
-  const getDiffDays = (s, e) => Math.ceil((new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24)) + 1;
+  const getDiffDays = (s, e) => Math.ceil((new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24)) + 0.95;
 
   const renderCalendar = () => {
     const year = currentDate.getFullYear();
@@ -209,7 +209,7 @@ function TACalendarManage() {
   );
 }
 
-const styles = { pageTitle: { fontSize: '22px', fontWeight: '800', color: '#003675', marginBottom: '15px' } };
+const styles = { pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675', marginBottom: '15px' } };
 
 const calStyles = { 
     controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }, 
@@ -255,7 +255,7 @@ const calStyles = {
     
     dayNum: { fontSize: '14px', fontWeight: 'bold', padding: '6px', color: '#333' }, 
     eventList: { display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', position: 'absolute', top: '28px', left: 0, right: 0, paddingBottom: '4px' }, 
-    eventItem: { fontSize: '11px', padding: '2px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', margin: '0 2px', lineHeight: '1.2', height: '18px', borderRadius:'3px' }, 
+    eventItem: { fontSize: '14px', padding: '2px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', margin: '0 2px', lineHeight: '1.2', height: '18px', borderRadius:'3px' }, 
     moreBtn: { fontSize: '10px', color: '#666', paddingLeft: '4px', fontWeight: 'bold' } 
 };
 
