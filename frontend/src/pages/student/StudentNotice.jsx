@@ -14,7 +14,7 @@ function StudentNotice() {
   
   // 페이지네이션
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; 
+  const itemsPerPage = 10; 
 
   // 필터 및 검색
   const [searchInput, setSearchInput] = useState('');
