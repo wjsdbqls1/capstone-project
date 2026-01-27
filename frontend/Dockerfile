@@ -10,4 +10,4 @@ RUN npm install
 COPY . .
 
 # 실행 (개발 모드 기준)
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
