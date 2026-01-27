@@ -4,7 +4,6 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../App.css'; 
 
-// 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg'; 
 
 function StudentNoticeDetail() {
@@ -53,24 +52,14 @@ function StudentNoticeDetail() {
         <button 
           style={styles.backBtn} 
           onClick={() => navigate(-1)}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-          }}
         >
            <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
         </button>
-        
         <h2 style={{margin: 0, fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: '600', color: 'white'}}>공지 상세</h2>
-        
         <div style={{width: '60px'}}></div> 
       </div>
 
-      {/* 상세 내용 유리 박스 - 내부 스크롤을 위해 div 하나 더 감싸거나 스타일 수정 */}
       <div style={styles.glassContainer}>
-        
         {/* 제목 영역 */}
         <div style={styles.titleSection}>
           <div style={styles.badgeWrapper}>
@@ -109,7 +98,7 @@ function StudentNoticeDetail() {
           </div>
         )}
 
-        {/* 본문 내용 */}
+        {/* 본문 내용 - 가독성 개선 스타일 적용 */}
         <div style={styles.bodySection}>
           <div 
              className="notice-content"
@@ -117,7 +106,9 @@ function StudentNoticeDetail() {
                  whiteSpace: 'pre-wrap', 
                  minHeight: '200px', 
                  wordBreak: 'break-word',
-                 overflowX: 'auto'
+                 overflowX: 'auto',
+                 textAlign: 'justify', // 양쪽 정렬로 깔끔하게
+                 letterSpacing: '-0.3px' // 자간을 살짝 좁혀 응집력 강화
              }} 
              dangerouslySetInnerHTML={{ __html: notice.content_html }} 
           />
@@ -137,10 +128,9 @@ const styles = {
     width: '100vw',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'auto', // 페이지 전체 스크롤 활성화
+    overflowY: 'auto',
     WebkitOverflowScrolling: 'touch'
   },
-  
   header: {
     backgroundColor: 'rgba(0, 54, 117, 0.9)', 
     padding: '10px 15px',
@@ -152,7 +142,6 @@ const styles = {
     height: '55px',
     flexShrink: 0
   },
-
   backBtn: {
     display: 'flex',
     alignItems: 'center',
@@ -171,42 +160,36 @@ const styles = {
     outline: 'none',
     whiteSpace: 'nowrap'
   },
-
   glassContainer: {
-    // flex: 1 대신 flex-shrink: 0을 주어 내용만큼 늘어나게 함
     flexShrink: 0,
     margin: '15px',
     padding: 'clamp(20px, 4vw, 30px)', 
-    backgroundColor: 'rgba(255, 255, 255, 0.65)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.75)', // 가독성을 위해 배경 불투명도 약간 상승
     backdropFilter: 'blur(15px)',
     borderRadius: '20px',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
     border: '1px solid rgba(255, 255, 255, 0.4)',
     display: 'flex',
     flexDirection: 'column',
-    // 내부 스크롤이 아닌 페이지 스크롤을 이용하기 위해 overflow 제거
     marginBottom: '40px' 
   },
-
   titleSection: {
-    borderBottom: '2px solid rgba(0, 54, 117, 0.1)',
+    borderBottom: '1.5px solid rgba(0, 54, 117, 0.1)',
     paddingBottom: '15px',
     marginBottom: '20px'
   },
   badgeWrapper: { display: 'flex', gap: '8px', marginBottom: '10px' },
   badge: { display: 'inline-block', padding: '4px 10px', backgroundColor: '#003675', color: 'white', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' },
   extBadge: { display: 'inline-block', padding: '4px 10px', backgroundColor: '#ef6c00', color: 'white', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' },
-  
   title: { 
     fontSize: 'clamp(18px, 5vw, 24px)', 
     fontWeight: '800', 
     color: '#1a1a1a', 
-    marginBottom: '10px', 
-    lineHeight: '1.4',
+    marginBottom: '12px', 
+    lineHeight: '1.35', // 제목 줄간격도 최적화
     wordBreak: 'keep-all'
   },
   date: { fontSize: '13px', color: '#666', textAlign: 'right' },
-
   fileCard: {
     backgroundColor: '#f8f9fa',
     padding: '12px',
@@ -235,7 +218,7 @@ const styles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    maxWidth: '180px' // 모바일에서 파일명이 너무 길면 잘리도록 조절
+    maxWidth: '180px'
   },
   downloadBtn: {
     backgroundColor: 'white',
@@ -248,14 +231,12 @@ const styles = {
     border: '1px solid #003675',
     whiteSpace: 'nowrap'
   },
-
   bodySection: { 
-    fontSize: '16px', 
-    lineHeight: '1.6', 
-    color: '#333',
-    padding: '0 5px',
+    fontSize: '15.5px', // 폰트 크기 미세 조정
+    lineHeight: '1.45', // 기존 1.6에서 1.45로 줄여 가독성 강화
+    color: '#222', // 글자색을 약간 더 진하게 변경
+    padding: '0 2px',
     maxWidth: '100%',
-    // 본문 내부에 매우 긴 단어나 코드가 있을 경우를 대비
     overflowX: 'auto' 
   }
 };
