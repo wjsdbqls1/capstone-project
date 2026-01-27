@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import TALayout from './TALayout'; // 레이아웃 임포트
-import '../../App.css'; 
+import TALayout from './TALayout'; // 레이아웃 적용
 
 function TAPending() {
   const navigate = useNavigate();
@@ -17,15 +16,9 @@ function TAPending() {
 
   const fetchData = async () => {
     const token = localStorage.getItem('token');
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      navigate('/');
-      return;
-    }
+    if (!token) { navigate('/'); return; }
     try {
-      const resInq = await axios.get('http://13.219.208.109:8000/inquiries', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const resInq = await axios.get('http://13.219.208.109:8000/inquiries', { headers: { Authorization: `Bearer ${token}` } });
       const pendingList = resInq.data.filter(item => item.status !== 'COMPLETED' && item.status !== '답변 완료');
       
       const resEvents = await axios.get('http://13.219.208.109:8000/academic-events');
@@ -35,11 +28,7 @@ function TAPending() {
 
       setInquiries(sortList(pendingList, 'latest', eventMap));
     } catch (error) {
-      console.error("데이터 로딩 실패:", error);
-      if (error.response && error.response.status === 401) {
-        localStorage.clear();
-        navigate('/');
-      }
+      if (error.response && error.response.status === 401) { localStorage.clear(); navigate('/'); }
     }
   };
 
@@ -69,19 +58,15 @@ function TAPending() {
   const handleSelect = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.get(`http://13.219.208.109:8000/inquiries/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`http://13.219.208.109:8000/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setSelectedInquiry(response.data);
       setReplyContent("");
       setReplyFile(null); 
-    } catch (error) {
-      alert("상세 내용을 가져오지 못했습니다.");
-    }
+    } catch (error) { alert("오류 발생"); }
   };
 
   const handleSubmitReply = async () => {
-    if (!replyContent.trim()) { alert("답변 내용을 입력해주세요."); return; }
+    if (!replyContent.trim()) { alert("내용을 입력해주세요."); return; }
     const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('content', replyContent);
@@ -91,17 +76,14 @@ function TAPending() {
       await axios.post(`http://13.219.208.109:8000/inquiries/${selectedInquiry.id}/replies`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
-      alert("답변이 등록되었습니다!");
+      alert("답변 등록 완료!");
       setSelectedInquiry(null);
       fetchData(); 
-    } catch (error) {
-      alert("오류가 발생했습니다.");
-    }
+    } catch (error) { alert("등록 실패"); }
   };
 
   return (
     <TALayout>
-      <div style={styles.glassBox}>
         <div style={styles.pageTitle}>대기중인 문의</div>
 
         {/* 정렬 바 */}
@@ -130,14 +112,13 @@ function TAPending() {
                             <div style={styles.title}>{item.title}</div>
                             {eventInfo && <div style={styles.relatedEvent}>📌 관련 일정: {eventInfo.title}</div>}
                             <div style={styles.writerInfo}>
-                                {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name} (${item.author_info.student_no})` : `ID: ${item.user_id}`}
+                                {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name}` : `ID: ${item.user_id}`}
                             </div>
                         </div>
                     );
                 })
             )}
         </div>
-      </div>
 
       {/* 모달 */}
       {selectedInquiry && (
@@ -168,17 +149,6 @@ function TAPending() {
 }
 
 const styles = {
-  glassBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    backdropFilter: 'blur(15px)',
-    borderRadius: '20px',
-    padding: '30px',
-    height: '100%',
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-  },
   pageTitle: { fontSize: '24px', fontWeight: 'bold', color: '#003675', marginBottom: '20px' },
   sortBar: { display: 'flex', gap: '8px', marginBottom: '15px' },
   sortBtn: { padding: '8px 12px', border: '1px solid #ddd', borderRadius: '20px', background: 'white', cursor: 'pointer', fontSize: '13px', color: '#555' },
