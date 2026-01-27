@@ -12,8 +12,10 @@ function TAAbsenceManage() {
   const [rejectReason, setRejectReason] = useState('');
   
   const [dateFilter, setDateFilter] = useState('all');
+  // [추가] 상태 필터 State
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  // 모바일 감지 (PC/Mobile 레이아웃 분기를 위해 추가)
+  // 모바일 감지
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -33,25 +35,42 @@ function TAAbsenceManage() {
   };
   useEffect(() => { fetchRequests(); }, []);
 
+  // [수정] 필터링 로직 (날짜 + 상태 동시 적용)
   useEffect(() => {
-    if (dateFilter === 'all') { setFilteredRequests(requests); return; }
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const result = requests.filter(req => {
-      const reqDate = new Date(req.created_at);
-      const reqDateStart = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate());
-      if (dateFilter === 'today') return reqDateStart.getTime() === todayStart.getTime();
-      if (dateFilter === 'week') {
-        const day = now.getDay(); const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(now.setDate(diff)); monday.setHours(0,0,0,0);
-        return reqDate >= monday;
-      }
-      if (dateFilter === 'month') return reqDate.getMonth() === now.getMonth() && reqDate.getFullYear() === now.getFullYear();
-      if (dateFilter === 'year') return reqDate.getFullYear() === now.getFullYear();
-      return true;
-    });
+    let result = [...requests];
+
+    // 1. 날짜 필터 적용
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      result = result.filter(req => {
+        const reqDate = new Date(req.created_at);
+        const reqDateStart = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate());
+        if (dateFilter === 'today') return reqDateStart.getTime() === todayStart.getTime();
+        if (dateFilter === 'week') {
+          const day = now.getDay(); const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+          const monday = new Date(now.setDate(diff)); monday.setHours(0,0,0,0);
+          return reqDate >= monday;
+        }
+        if (dateFilter === 'month') return reqDate.getMonth() === now.getMonth() && reqDate.getFullYear() === now.getFullYear();
+        if (dateFilter === 'year') return reqDate.getFullYear() === now.getFullYear();
+        return true;
+      });
+    }
+
+    // 2. 상태 필터 적용 (추가됨)
+    if (statusFilter !== 'all') {
+      result = result.filter(req => {
+        if (statusFilter === 'pending') return req.status === 'SUBMITTED';
+        if (statusFilter === 'approved') return req.status === 'APPROVED';
+        if (statusFilter === 'rejected') return req.status === 'REJECTED';
+        return true;
+      });
+    }
+
     setFilteredRequests(result);
-  }, [dateFilter, requests]);
+  }, [dateFilter, statusFilter, requests]);
 
   const handleStatusUpdate = async (status) => {
     if (!selectedReq) return;
@@ -80,13 +99,22 @@ function TAAbsenceManage() {
       
       {view === 'list' && (
           <div style={styles.filterBar}>
-              
+              <span style={{fontWeight:'bold', color:'#555', marginRight:'10px'}}></span>
               <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-                  <option value="all">📅 전체 기간</option>
+                  <option value="all">전체</option>
                   <option value="today">오늘</option>
                   <option value="week">이번 주</option>
                   <option value="month">이번 달</option>
                   <option value="year">올해</option>
+              </select>
+
+              {/* [추가] 상태 필터 드롭박스 */}
+              <span style={{fontWeight:'bold', color:'#555', margin:'0 10px'}}>⚡ 상태:</span>
+              <select style={styles.select} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                  <option value="all">전체</option>
+                  <option value="pending">검토대기</option>
+                  <option value="approved">승인</option>
+                  <option value="rejected">반려</option>
               </select>
           </div>
       )}
@@ -94,7 +122,7 @@ function TAAbsenceManage() {
       {view === 'list' ? (
           <div style={styles.listArea}>
               {filteredRequests.length === 0 ? (
-                <div style={{textAlign:'center', marginTop:'50px', color:'#666', fontWeight:'500'}}>{dateFilter !== 'all' ? "선택한 기간에 신청 내역이 없습니다." : "신청 내역이 없습니다."}</div>
+                <div style={{textAlign:'center', marginTop:'50px', color:'#666', fontWeight:'500'}}>{dateFilter !== 'all' || statusFilter !== 'all' ? "조건에 맞는 신청 내역이 없습니다." : "신청 내역이 없습니다."}</div>
               ) : (
                 filteredRequests.map((req) => {
                   const statusStyle = getStatusStyle(req.status);
@@ -113,10 +141,8 @@ function TAAbsenceManage() {
                                   padding: '6px 12px', 
                                   borderRadius: '8px'
                               }}>
-                                  {statusStyle.label}
                               </span>
                           </div>
-                          {/* [수정] 카드 목록에 학과, 학년, 이름, 학번 표시 */}
                           <div style={{fontWeight:'bold', fontSize:'17px', color:'#222', marginBottom:'5px'}}>
                               {req.department} {req.grade}학년 {req.student_name} ({req.student_no})
                           </div>
@@ -130,8 +156,6 @@ function TAAbsenceManage() {
           <div style={styles.detailContainer}>
               <div style={styles.sectionBox}>
                   <h3 style={styles.sectionTitle}>👤 신청자 정보</h3>
-                  
-                  {/* [수정] PC는 왼쪽 정렬(flex-start) + 라벨 고정 너비, 모바일은 양끝 정렬(space-between) 유지 */}
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학과</span> 
                       <span style={{fontWeight:'bold'}}>{selectedReq.department}</span>
@@ -160,19 +184,8 @@ function TAAbsenceManage() {
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>결석일</span> 
                       <span style={{color:'#c62828', fontWeight:'bold'}}>{selectedReq.absent_date}</span>
                   </div>
-                  
-                  <div style={{marginTop:'15px'}}>
-                    <div style={{...styles.label, marginBottom:'5px', display:'block'}}>결석 사유</div>
-                    <div style={styles.reasonBox}>{selectedReq.reason}</div>
-                  </div>
-
-                  {selectedReq.file && (
-                    <div style={{marginTop:'15px'}}>
-                        <a href={`http://13.219.208.109:8000/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={styles.fileLink}>
-                            📎 증빙서류 다운로드 / 보기
-                        </a>
-                    </div>
-                  )}
+                  <div style={{marginTop:'15px'}}><div style={styles.label}>결석 사유</div><div style={styles.reasonBox}>{selectedReq.reason}</div></div>
+                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`http://13.219.208.109:8000/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={styles.fileLink}>📎 증빙서류 다운로드 / 보기</a></div>)}
               </div>
 
               {selectedReq.status === 'SUBMITTED' ? (
@@ -206,16 +219,15 @@ function TAAbsenceManage() {
 
 const styles = {
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675' },
-  backBtn: { cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 12px', borderRadius:'20px', fontSize:'15px', color:'#555', fontWeight:'bold', transition:'all 0.2s' },
-  filterBar: { marginBottom:'15px', padding:'10px 15px', backgroundColor:'rgba(255, 255, 255, 0.4)', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.6)', display:'flex', alignItems:'center' },
+  backBtn: { cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 12px', borderRadius:'20px', fontSize:'13px', color:'#555', fontWeight:'bold', transition:'all 0.2s' },
+  filterBar: { marginBottom:'15px', padding:'10px 15px', backgroundColor:'rgba(255, 255, 255, 0.4)', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.6)', display:'flex', alignItems:'center', flexWrap: 'wrap' },
   select: { padding:'8px 12px', borderRadius:'8px', border:'1px solid #ced4da', backgroundColor:'rgba(255,255,255,0.8)', fontSize:'14px', cursor:'pointer', outline:'none', minWidth:'100px' },
   listArea: { flex: 1, overflowY: 'auto', padding: '5px' },
   card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.8)', borderLeft: '6px solid #003675', transition: 'all 0.2s ease' },
-  detailContainer: { overflowY:'auto', padding:'5px' },
+  detailContainer: { overflowY:'auto', padding:'5px', maxWidth:'800px', margin:'0 auto', width:'100%' },
   sectionBox: { backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '25px', borderRadius: '16px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' },
   sectionTitle: { fontSize: '18px', color: '#003675', borderBottom: '2px solid #003675', paddingBottom: '10px', marginBottom: '20px', fontWeight:'800' },
-  // 기본 스타일 유지, justifyContent는 컴포넌트 내부에서 조건부 적용
-  infoRow: { display:'flex', marginBottom:'12px', borderBottom:'1px dashed #f0f0f0', paddingBottom:'8px', fontSize:'15px', color:'#333' },
+  infoRow: { display:'flex', alignItems:'center', marginBottom:'12px', borderBottom:'1px dashed #f0f0f0', paddingBottom:'8px', fontSize:'15px', color:'#333' },
   label: { color:'#666', fontWeight:'bold', minWidth:'80px' },
   reasonBox: { backgroundColor:'#f8f9fa', padding:'15px', borderRadius:'10px', border:'1px solid #eee', color:'#333', lineHeight:'1.6', minHeight:'60px' },
   fileLink: { display:'inline-block', padding:'10px 15px', backgroundColor:'#e3f2fd', color:'#003675', borderRadius:'8px', textDecoration:'none', fontWeight:'bold', border:'1px solid #bbdefb', fontSize:'14px' },
