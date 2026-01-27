@@ -101,7 +101,7 @@ function TAAbsenceManage() {
           <div style={styles.filterBar}>
               <span style={{fontWeight:'bold', color:'#555', marginRight:'10px'}}></span>
               <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-                  <option value="all">전체</option>
+                  <option value="all">📅 전체 기간</option>
                   <option value="today">오늘</option>
                   <option value="week">이번 주</option>
                   <option value="month">이번 달</option>
@@ -109,7 +109,7 @@ function TAAbsenceManage() {
               </select>
 
               {/* [추가] 상태 필터 드롭박스 */}
-              <span style={{fontWeight:'bold', color:'#555', margin:'0 10px'}}>⚡ 상태:</span>
+              <span style={{fontWeight:'bold', color:'#555', margin:'0 10px'}}>상태:</span>
               <select style={styles.select} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                   <option value="all">전체</option>
                   <option value="pending">검토대기</option>
@@ -133,15 +133,7 @@ function TAAbsenceManage() {
                       >
                           <div style={{display:'flex', justifyContent:'space-between', marginBottom:'8px'}}>
                               <span style={{fontSize:'13px', color:'#666', fontWeight:'500'}}>{req.created_at.split('T')[0]}</span>
-                              <span style={{
-                                  fontSize:'14px', 
-                                  fontWeight:'bold', 
-                                  backgroundColor: statusStyle.bg, 
-                                  color: statusStyle.text, 
-                                  padding: '6px 12px', 
-                                  borderRadius: '8px'
-                              }}>
-                              </span>
+                              <span style={{fontSize:'14px', fontWeight:'bold', backgroundColor: statusStyle.bg, color: statusStyle.text, padding: '4px 8px', borderRadius: '6px'}}>{statusStyle.label}</span>
                           </div>
                           <div style={{fontWeight:'bold', fontSize:'17px', color:'#222', marginBottom:'5px'}}>
                               {req.department} {req.grade}학년 {req.student_name} ({req.student_no})
