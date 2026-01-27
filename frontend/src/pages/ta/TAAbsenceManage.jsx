@@ -125,7 +125,7 @@ function TAAbsenceManage() {
                   {/* [수정] PC는 왼쪽 정렬(flex-start) + 라벨 고정 너비, 모바일은 양끝 정렬(space-between) 유지 */}
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학과</span> 
-                      <span>{selectedReq.department}</span>
+                      <span style={{fontWeight:'bold'}}>{selectedReq.department}</span>
                   </div>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학년</span> 
