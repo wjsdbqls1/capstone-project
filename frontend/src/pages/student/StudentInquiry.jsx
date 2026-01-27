@@ -112,12 +112,12 @@ function StudentInquiry() {
            <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
         </button>
 
-        <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>문의하기</h2>
+        <h2 style={{margin: 0, fontSize: 'clamp(18px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>문의하기</h2>
         
         <div style={{width: '60px'}}></div>
       </div>
 
-      {/* 유리 박스 컨테이너 */}
+      {/* 스크롤 가능한 영역 (유리 박스 컨테이너) */}
       <div style={styles.glassContainer}>
         
         {/* 제목 */}
@@ -131,7 +131,7 @@ function StudentInquiry() {
           />
         </div>
 
-        {/* 유형 선택 (모바일에서 줄바꿈 가능) */}
+        {/* 유형 선택 */}
         <div style={styles.formGroup}>
           <label style={styles.label}>문의 유형</label>
           <div style={styles.typeBtnWrapper}>
@@ -150,7 +150,7 @@ function StudentInquiry() {
           </div>
         </div>
 
-        {/* 학사일정 드롭다운 */}
+        {/* 학사일정 드롭다운 (선택 시 나타남) */}
         {isRelatedToEvent && (
           <div style={styles.formGroup}>
             <label style={styles.label}>관련 일정</label>
@@ -173,7 +173,7 @@ function StudentInquiry() {
           </div>
         )}
 
-        {/* 내용 (반응형 높이) */}
+        {/* 내용 */}
         <div style={styles.formGroup}>
           <label style={styles.label}>내용</label>
           <textarea 
@@ -184,7 +184,7 @@ function StudentInquiry() {
           />
         </div>
 
-        {/* 버튼들 */}
+        {/* 하단 버튼 그룹 */}
         <div style={styles.buttonGroup}>
           <input 
             type="file" 
@@ -201,9 +201,7 @@ function StudentInquiry() {
             등록하기
           </button>
         </div>
-
       </div>
-      
     </div>
   );
 }
@@ -217,7 +215,8 @@ const styles = {
     width: '100vw',
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'hidden'
+    overflowY: 'auto', // 페이지 전체 스크롤 허용 (모바일 대응 핵심)
+    WebkitOverflowScrolling: 'touch'
   },
   
   header: {
@@ -252,10 +251,8 @@ const styles = {
   },
 
   glassContainer: {
-    flex: 1,
-    margin: '15px', // 여백 축소
-    // clamp(최소, 권장, 최대) -> 화면 크기에 따라 패딩 자동 조절
-    padding: 'clamp(15px, 3vw, 40px)', 
+    margin: '15px',
+    padding: 'clamp(20px, 4vw, 30px)', 
     backgroundColor: 'rgba(255, 255, 255, 0.65)', 
     backdropFilter: 'blur(15px)',
     borderRadius: '20px',
@@ -263,17 +260,19 @@ const styles = {
     border: '1px solid rgba(255, 255, 255, 0.4)',
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'hidden'
+    // 고정 높이 대신 내용에 따라 늘어나게 설정
+    flexShrink: 0, 
+    marginBottom: '40px' 
   },
   
-  formGroup: { marginBottom: '20px' },
+  formGroup: { marginBottom: '15px' },
   
   label: { 
     display: 'block', 
-    marginBottom: '8px', 
+    marginBottom: '6px', 
     fontWeight: 'bold', 
     color: '#333', 
-    fontSize: 'clamp(15px, 4vw, 16px)' // 반응형 폰트
+    fontSize: '15px' 
   },
   
   input: { 
@@ -281,7 +280,7 @@ const styles = {
     padding: '12px', 
     borderRadius: '10px', 
     border: '1px solid rgba(0,0,0,0.1)', 
-    fontSize: '16px', // 모바일에서 확대 방지용 16px 고정 추천
+    fontSize: '16px', 
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     boxSizing: 'border-box',
     outline: 'none'
@@ -289,8 +288,7 @@ const styles = {
   
   textarea: { 
     width: '100%', 
-    height: '30vh', // 화면 높이의 30% 사용
-    minHeight: '150px',
+    height: '150px', // 30vh에서 고정 높이로 변경 (모바일에서 너무 커지지 않게)
     padding: '12px', 
     borderRadius: '10px', 
     border: '1px solid rgba(0,0,0,0.1)', 
@@ -313,69 +311,62 @@ const styles = {
     cursor: 'pointer'
   },
 
-  // 버튼들을 감싸는 래퍼 (반응형 flex)
   typeBtnWrapper: {
     display: 'flex',
     gap: '10px',
-    flexWrap: 'wrap' // 화면 좁으면 줄바꿈
+    flexWrap: 'wrap' 
   },
   
   typeBtn: { 
-    flex: '1 1 120px', // 최소 너비 120px, 남으면 늘어남
-    padding: '12px', 
+    flex: '1 1 120px', 
+    padding: '10px', 
     border: '1px solid #ddd', 
     borderRadius: '10px', 
     backgroundColor: 'rgba(255, 255, 255, 0.5)', 
     color: '#666', 
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    fontSize: '15px',
+    fontSize: '14px',
     whiteSpace: 'nowrap'
   },
+
   typeBtnActive: { 
     flex: '1 1 120px',
-    padding: '12px', 
+    padding: '10px', 
     border: '1px solid #003675', 
     borderRadius: '10px', 
     backgroundColor: '#003675', 
     color: 'white', 
     fontWeight: 'bold', 
     cursor: 'pointer',
-    boxShadow: '0 4px 6px rgba(0, 54, 117, 0.2)',
-    fontSize: '15px',
+    fontSize: '14px',
     whiteSpace: 'nowrap'
   },
   
   buttonGroup: { 
-    marginTop: '20px', 
+    marginTop: '10px', 
     display: 'flex', 
     flexDirection: 'column', 
-    gap: '12px',
-    marginBottom: '20px'
+    gap: '10px'
   },
   
   attachBtn: { 
-    padding: '14px', 
+    padding: '12px', 
     border: '1px dashed #003675', 
     borderRadius: '10px', 
     backgroundColor: 'rgba(255, 255, 255, 0.5)', 
     color: '#003675', 
     cursor: 'pointer', 
     fontWeight: 'bold',
-    transition: 'background 0.2s',
-    fontSize: '16px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis' // 파일명 길면 ... 처리
+    fontSize: '15px'
   },
   
   submitBtn: { 
-    padding: '16px',
+    padding: '14px',
     border: 'none', 
     borderRadius: '10px', 
     backgroundColor: '#003675', 
     color: 'white', 
-    fontSize: '18px',
+    fontSize: '17px',
     fontWeight: 'bold', 
     cursor: 'pointer',
     boxShadow: '0 4px 10px rgba(0, 54, 117, 0.3)',
