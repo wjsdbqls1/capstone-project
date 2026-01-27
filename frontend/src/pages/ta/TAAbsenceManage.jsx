@@ -38,6 +38,7 @@ function TAAbsenceManage() {
         return reqDate >= monday;
       }
       if (dateFilter === 'month') return reqDate.getMonth() === now.getMonth() && reqDate.getFullYear() === now.getFullYear();
+      if (dateFilter === 'year') return reqDate.getFullYear() === now.getFullYear();
       return true;
     });
     setFilteredRequests(result);
@@ -72,7 +73,11 @@ function TAAbsenceManage() {
           <div style={styles.filterBar}>
               <span style={{fontWeight:'bold', color:'#555', marginRight:'10px'}}>📅 기간 선택:</span>
               <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-                  <option value="all">전체</option><option value="today">오늘</option><option value="week">이번 주</option><option value="month">이번 달</option>
+                  <option value="all">📅 전체 기간</option>
+                  <option value="today">오늘</option>
+                  <option value="week">이번 주</option>
+                  <option value="month">이번 달</option>
+                  <option value="year">올해</option>
               </select>
           </div>
       )}
