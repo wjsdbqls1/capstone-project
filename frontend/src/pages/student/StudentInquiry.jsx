@@ -26,7 +26,7 @@ function StudentInquiry() {
       return;
     }
 
-    axios.get('http://13.219.208.109:8000/academic-events')
+    axios.get('https://capstone-project-of74.onrender.com/academic-events')
       .then(res => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -72,7 +72,7 @@ function StudentInquiry() {
     }
 
     try {
-      await axios.post('http://13.219.208.109:8000/inquiries', formData, { 
+      await axios.post('https://capstone-project-of74.onrender.com/inquiries', formData, { 
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data' 

@@ -30,7 +30,7 @@ function StudentNotice() {
         return;
       }
       try {
-        const response = await axios.get('http://13.219.208.109:8000/users/me', {
+        const response = await axios.get('https://capstone-project-of74.onrender.com/users/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUserGrade(response.data.grade); 
@@ -45,7 +45,7 @@ function StudentNotice() {
 
     const fetchNotices = async () => {
       try {
-        const response = await axios.get('http://13.219.208.109:8000/notices?source=all&limit=1000');
+        const response = await axios.get('https://capstone-project-of74.onrender.com/notices?source=all&limit=1000');
         setNotices(response.data);
       } catch (error) {
         console.error("공지사항 로딩 실패:", error);

@@ -29,10 +29,10 @@ function TACalendarManage() {
 
   const fetchData = async () => {
     try {
-      const eventRes = await axios.get('http://13.219.208.109:8000/academic-events');
+      const eventRes = await axios.get('https://capstone-project-of74.onrender.com/academic-events');
       setAcademicEvents(eventRes.data);
       if (token) {
-        const memoRes = await axios.get('http://13.219.208.109:8000/memos', { headers: { Authorization: `Bearer ${token}` } });
+        const memoRes = await axios.get('https://capstone-project-of74.onrender.com/memos', { headers: { Authorization: `Bearer ${token}` } });
         setMyMemos(memoRes.data);
       }
     } catch (error) { console.error("로딩 실패:", error); }
@@ -44,17 +44,17 @@ function TACalendarManage() {
   const handleAddMemo = async () => {
     if (!memoInput.trim()) return;
     try {
-        await axios.post('http://13.219.208.109:8000/memos', { memo_date: selectedDate, content: memoInput }, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.post('https://capstone-project-of74.onrender.com/memos', { memo_date: selectedDate, content: memoInput }, { headers: { Authorization: `Bearer ${token}` } });
         setMemoInput(""); await fetchData(); updateSelectedItems(selectedDate);
     } catch (err) { alert("저장 실패"); }
   };
   const handleDeleteMemo = async (id) => {
     if(!window.confirm("삭제?")) return;
-    try { await axios.delete(`http://13.219.208.109:8000/memos/${id}`, { headers: { Authorization: `Bearer ${token}` } }); await fetchData(); updateSelectedItems(selectedDate); } catch (err) {}
+    try { await axios.delete(`https://capstone-project-of74.onrender.com/memos/${id}`, { headers: { Authorization: `Bearer ${token}` } }); await fetchData(); updateSelectedItems(selectedDate); } catch (err) {}
   };
   const handleRegister = async () => {
     if(!newEvent.title || !newEvent.start_date || !newEvent.end_date) return;
-    try { await axios.post('http://13.219.208.109:8000/academic-events', newEvent); alert("등록됨"); setIsRegisterModalOpen(false); setNewEvent({ title: '', start_date: '', end_date: '' }); fetchData(); } catch (error) { alert("실패"); }
+    try { await axios.post('https://capstone-project-of74.onrender.com/academic-events', newEvent); alert("등록됨"); setIsRegisterModalOpen(false); setNewEvent({ title: '', start_date: '', end_date: '' }); fetchData(); } catch (error) { alert("실패"); }
   };
 
   const updateSelectedItems = (dateStr) => {

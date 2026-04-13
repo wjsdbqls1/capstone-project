@@ -18,7 +18,7 @@ function StudentFaq() {
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
-        const response = await axios.get('http://13.219.208.109:8000/faqs');
+        const response = await axios.get('https://capstone-project-of74.onrender.com/faqs');
         setFaqs(response.data);
       } catch (error) {
         console.error("FAQ 로딩 실패:", error);
@@ -109,7 +109,7 @@ function StudentFaq() {
                           {item.file_path && (
                             <div style={styles.fileBox}>
                               <a 
-                                href={`http://13.219.208.109:8000/uploads/faqs/${item.file_path}`} 
+                                href={`https://capstone-project-of74.onrender.com/uploads/faqs/${item.file_path}`} 
                                 download={item.original_filename}
                                 style={styles.downloadLink}
                               >

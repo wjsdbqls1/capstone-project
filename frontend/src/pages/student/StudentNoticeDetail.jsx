@@ -17,7 +17,7 @@ function StudentNoticeDetail() {
   useEffect(() => {
     const fetchDetail = async () => {
       try {
-        const response = await axios.get(`http://13.219.208.109:8000/notices/internal/${id}`);
+        const response = await axios.get(`https://capstone-project-of74.onrender.com/notices/internal/${id}`);
         setNotice(response.data);
       } catch (error) {
         console.error("상세 정보 로딩 실패:", error);
@@ -39,9 +39,9 @@ function StudentNoticeDetail() {
   const getFileUrl = () => {
     if (!notice.file_path) return "";
     if (source === 'external') {
-      return `http://13.219.208.109:8000/uploads/external_notices/${notice.file_path}`;
+      return `https://capstone-project-of74.onrender.com/uploads/external_notices/${notice.file_path}`;
     }
-    return `http://13.219.208.109:8000/uploads/notices/${notice.file_path}`;
+    return `https://capstone-project-of74.onrender.com/uploads/notices/${notice.file_path}`;
   };
 
   return (

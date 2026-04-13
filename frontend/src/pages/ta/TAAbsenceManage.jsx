@@ -27,7 +27,7 @@ function TAAbsenceManage() {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("token"); 
-      const response = await axios.get('http://13.219.208.109:8000/admin/absence/list', { headers: { Authorization: `Bearer ${token}` } });
+      const response = await axios.get('https://capstone-project-of74.onrender.com/admin/absence/list', { headers: { Authorization: `Bearer ${token}` } });
       const sortedData = response.data.sort((a, b) => b.id - a.id);
       setRequests(sortedData);
       setFilteredRequests(sortedData);
@@ -76,7 +76,7 @@ function TAAbsenceManage() {
     if (!selectedReq) return;
     if (status === 'REJECTED' && !showRejectInput) { setShowRejectInput(true); return; }
     const token = localStorage.getItem("token");
-    await axios.put(`http://13.219.208.109:8000/admin/absence/${selectedReq.id}/status`, { status, reject_reason: rejectReason }, { headers: { Authorization: `Bearer ${token}` } });
+    await axios.put(`https://capstone-project-of74.onrender.com/admin/absence/${selectedReq.id}/status`, { status, reject_reason: rejectReason }, { headers: { Authorization: `Bearer ${token}` } });
     alert("처리 완료"); fetchRequests(); setView('list'); setSelectedReq(null);
   };
 
@@ -177,7 +177,7 @@ function TAAbsenceManage() {
                       <span style={{color:'#c62828', fontWeight:'bold'}}>{selectedReq.absent_date}</span>
                   </div>
                   <div style={{marginTop:'15px'}}><div style={styles.label}>결석 사유</div><div style={styles.reasonBox}>{selectedReq.reason}</div></div>
-                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`http://13.219.208.109:8000/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={styles.fileLink}>📎 증빙서류 다운로드 / 보기</a></div>)}
+                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`https://capstone-project-of74.onrender.com/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={styles.fileLink}>📎 증빙서류 다운로드 / 보기</a></div>)}
               </div>
 
               {selectedReq.status === 'SUBMITTED' ? (

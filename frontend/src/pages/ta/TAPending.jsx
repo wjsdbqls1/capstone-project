@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import TALayout from './TALayout';
 
-const API_BASE = 'http://13.219.208.109:8000';
+const API_BASE = 'https://capstone-project-of74.onrender.com';
 
 function TAPending() {
   const [inquiries, setInquiries] = useState([]);

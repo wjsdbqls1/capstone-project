@@ -19,7 +19,7 @@ function StudentCalendar() {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://13.219.208.109:8000/academic-events');
+      const response = await axios.get('https://capstone-project-of74.onrender.com/academic-events');
       setEvents(response.data);
     } catch (error) {
       console.error("일정 로딩 실패:", error);

@@ -23,7 +23,7 @@ function StudentHistory() {
       }
 
       try {
-        const response = await axios.get('http://13.219.208.109:8000/inquiries/me', {
+        const response = await axios.get('https://capstone-project-of74.onrender.com/inquiries/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setInquiries(response.data);
@@ -50,10 +50,10 @@ function StudentHistory() {
     }
 
     try {
-      const qRes = await axios.get(`http://13.219.208.109:8000/inquiries/${item.id}`, {
+      const qRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${item.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const rRes = await axios.get(`http://13.219.208.109:8000/inquiries/${item.id}/replies`, {
+      const rRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${item.id}/replies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -161,7 +161,7 @@ function StudentHistory() {
                   {detailData.attachment && (
                     <div style={modalStyles.section}>
                         <div style={modalStyles.label}>📎 내 첨부파일</div>
-                        <a href={`http://13.219.208.109:8000${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.link}>
+                        <a href={`https://capstone-project-of74.onrender.com${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.link}>
                             💾 다운로드 / 보기
                         </a>
                     </div>
@@ -183,7 +183,7 @@ function StudentHistory() {
                           {reply.attachment && (
                             <div style={{marginTop:'10px', fontSize:'14px', borderTop:'1px dashed #a6cbf3', paddingTop:'5px'}}>
                                 📎 <b>첨부파일:</b>
-                                <a href={`http://13.219.208.109:8000${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{marginLeft:'5px', color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
+                                <a href={`https://capstone-project-of74.onrender.com${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{marginLeft:'5px', color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
                                     확인하기
                                 </a>
                             </div>

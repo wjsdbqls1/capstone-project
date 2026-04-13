@@ -21,7 +21,7 @@ function TAFaqManage() {
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.get('http://13.219.208.109:8000/faqs', config);
+      const response = await axios.get('https://capstone-project-of74.onrender.com/faqs', config);
       setFaqs(response.data);
       setFilteredFaqs(response.data);
     } catch (error) { console.error("FAQ 로딩 실패:", error); }
@@ -82,10 +82,10 @@ function TAFaqManage() {
     try {
       const config = { headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` } };
       if (isEditMode) {
-        await axios.put(`http://13.219.208.109:8000/faqs/${targetId}`, sendData, config);
+        await axios.put(`https://capstone-project-of74.onrender.com/faqs/${targetId}`, sendData, config);
         alert("수정되었습니다.");
       } else {
-        await axios.post(`http://13.219.208.109:8000/faqs`, sendData, config);
+        await axios.post(`https://capstone-project-of74.onrender.com/faqs`, sendData, config);
         alert("등록되었습니다.");
       }
       setShowModal(false);
@@ -97,7 +97,7 @@ function TAFaqManage() {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       const token = localStorage.getItem('token');
       try {
-        await axios.delete(`http://13.219.208.109:8000/faqs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.delete(`https://capstone-project-of74.onrender.com/faqs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         fetchFaqs();
       } catch (error) { alert("삭제 실패"); }
     }

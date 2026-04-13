@@ -26,7 +26,7 @@ function StudentAbsence() {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       
-      const response = await axios.get('http://13.219.208.109:8000/absence/me', config);
+      const response = await axios.get('https://capstone-project-of74.onrender.com/absence/me', config);
       setAbsences(response.data);
     } catch (error) {
       console.error("공결 내역 로딩 실패:", error);
@@ -67,7 +67,7 @@ function StudentAbsence() {
       submitData.append('reason', formData.reason);
       submitData.append('file', file);
 
-      await axios.post('http://13.219.208.109:8000/absence', submitData, {
+      await axios.post('https://capstone-project-of74.onrender.com/absence', submitData, {
         headers: { 
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${token}`

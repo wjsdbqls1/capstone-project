@@ -53,9 +53,9 @@ function TACompleted() {
     const token = localStorage.getItem('token');
     if (!token) { navigate('/'); return; }
     try {
-      const response = await axios.get('http://13.219.208.109:8000/inquiries', { headers: { Authorization: `Bearer ${token}` } });
+      const response = await axios.get('https://capstone-project-of74.onrender.com/inquiries', { headers: { Authorization: `Bearer ${token}` } });
       const completedList = response.data.filter(item => item.status === 'COMPLETED' || item.status === '답변 완료');
-      const resEvents = await axios.get('http://13.219.208.109:8000/academic-events');
+      const resEvents = await axios.get('https://capstone-project-of74.onrender.com/academic-events');
       const eventMap = {}; resEvents.data.forEach(ev => { eventMap[ev.id] = ev; }); setAcademicEvents(eventMap);
       const sortedList = completedList.sort((a, b) => b.id - a.id);
       setInquiries(sortedList); setFilteredInquiries(sortedList);
@@ -65,8 +65,8 @@ function TACompleted() {
   const handleSelect = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const qRes = await axios.get(`http://13.219.208.109:8000/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      const rRes = await axios.get(`http://13.219.208.109:8000/inquiries/${id}/replies`, { headers: { Authorization: `Bearer ${token}` } });
+      const qRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const rRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${id}/replies`, { headers: { Authorization: `Bearer ${token}` } });
       setSelectedInquiry({ ...qRes.data, replies: rRes.data }); setEditingReplyId(null);
     } catch (error) { alert("상세 정보를 불러오지 못했습니다."); }
   };
@@ -78,7 +78,7 @@ function TACompleted() {
     formData.append("content", editContent);
     if (editFile) formData.append("file", editFile);
     try {
-      await axios.put(`http://13.219.208.109:8000/inquiries/${inquiryId}/replies/${replyId}`, formData, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } });
+      await axios.put(`https://capstone-project-of74.onrender.com/inquiries/${inquiryId}/replies/${replyId}`, formData, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } });
       alert("수정되었습니다."); handleSelect(inquiryId);
     } catch (error) { alert("수정 실패"); }
   };
@@ -143,7 +143,7 @@ function TACompleted() {
                   </div>
                   <div style={modalStyles.qTitle}>Q. {selectedInquiry.title}</div>
                   <div style={modalStyles.qText}>{selectedInquiry.content}</div>
-                  {selectedInquiry.attachment && (<div style={modalStyles.attachBox}><a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 학생 첨부파일 보기</a></div>)}
+                  {selectedInquiry.attachment && (<div style={modalStyles.attachBox}><a href={`https://capstone-project-of74.onrender.com${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 학생 첨부파일 보기</a></div>)}
                   {selectedInquiry.academic_event_id && academicEvents[selectedInquiry.academic_event_id] && (<div style={modalStyles.eventBox}><span>📅</span><span>관련 일정: {academicEvents[selectedInquiry.academic_event_id].title} (~{academicEvents[selectedInquiry.academic_event_id].end_date})</span></div>)}
                </div>
                <hr style={{margin:'25px 0', border:'0', borderTop:'1px dashed #ddd'}}/>
@@ -154,7 +154,7 @@ function TACompleted() {
                         {editingReplyId === r.id ? (
                             <div><textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/><div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}><button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button><button onClick={()=>handleUpdateReply(selectedInquiry.id, r.id)} style={modalStyles.saveBtn}>저장</button></div></div>
                         ) : (
-                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`http://13.219.208.109:8000${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none'}}>📎 답변 첨부파일</a></div>)}<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline'}}>✏️ 수정하기</button></div></div>
+                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`https://capstone-project-of74.onrender.com${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none'}}>📎 답변 첨부파일</a></div>)}<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline'}}>✏️ 수정하기</button></div></div>
                         )}
                     </div>
                   ))}

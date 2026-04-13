@@ -20,7 +20,7 @@ function StudentMain() {
       return;
     }
 
-    axios.get('http://13.219.208.109:8000/users/me', {
+    axios.get('https://capstone-project-of74.onrender.com/users/me', {
       headers: {
         Authorization: `Bearer ${token}`
       }
