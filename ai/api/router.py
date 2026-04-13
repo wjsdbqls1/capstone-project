@@ -22,10 +22,22 @@ AI_API_DIR = Path(__file__).parent
 if str(AI_API_DIR) not in sys.path:
     sys.path.insert(0, str(AI_API_DIR))
 
-from inference.predict import AnswerCandidatePredictor
-from inference.highlight import InquiryHighlighter
-from inference.forecast import forecast_next_week
-from inference.summarize import summarize_period
+# torch 의존 모듈은 지연 import (서버 시작 시 로드하지 않음)
+def _import_predictor():
+    from inference.predict import AnswerCandidatePredictor
+    return AnswerCandidatePredictor
+
+def _import_highlighter():
+    from inference.highlight import InquiryHighlighter
+    return InquiryHighlighter
+
+def _import_forecast():
+    from inference.forecast import forecast_next_week
+    return forecast_next_week
+
+def _import_summarize():
+    from inference.summarize import summarize_period
+    return summarize_period
 
 router = APIRouter()
 
@@ -46,14 +58,16 @@ RERANKER_PATH = os.getenv(
 # ──────────────────────────────
 
 @lru_cache(maxsize=1)
-def _get_predictor() -> AnswerCandidatePredictor:
+def _get_predictor():
     from backend_bridge import load_faq_db
     faq_db = load_faq_db()
+    AnswerCandidatePredictor = _import_predictor()
     return AnswerCandidatePredictor(CLASSIFIER_PATH, RERANKER_PATH, faq_db)
 
 
 @lru_cache(maxsize=1)
-def _get_highlighter() -> InquiryHighlighter:
+def _get_highlighter():
+    InquiryHighlighter = _import_highlighter()
     return InquiryHighlighter(CLASSIFIER_PATH)
 
 
@@ -116,6 +130,7 @@ async def forecast_inquiry():
     """
     try:
         from backend_bridge import load_inquiry_history
+        forecast_next_week = _import_forecast()
         inquiries = load_inquiry_history()
         alerts = forecast_next_week(inquiries)
         return {"alerts": alerts}
@@ -133,6 +148,7 @@ async def summarize_inquiry_period(req: SummarizeRequest):
         raise HTTPException(status_code=400, detail="start_date가 end_date보다 늦을 수 없습니다.")
     try:
         from backend_bridge import load_inquiry_history
+        summarize_period = _import_summarize()
         inquiries = load_inquiry_history()
         result = summarize_period(inquiries, req.start_date, req.end_date)
         return result
