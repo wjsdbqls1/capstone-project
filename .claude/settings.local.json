@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python merge_and_split.py)",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(python train_classifier.py --epochs 5 --batch_size 16)",
+      "Bash(python train_classifier.py --epochs 10 --batch_size 16 --lr 3e-5)",
+      "Bash(python generate_reranker_data.py)",
+      "Bash(python train_reranker.py --epochs 10 --batch_size 16 --lr 3e-5)",
+      "Bash(python -c ':*)",
+      "Bash(python -m alembic revision --autogenerate -m \"add_category_to_faqs\")",
+      "Bash(grep \"^revision\" c:/Users/ybjeo/OneDrive/Desktop/CapstoneDesign/backend/alembic/versions/*.py)",
+      "Bash(sort -t: -k2)"
+    ]
+  }
+}

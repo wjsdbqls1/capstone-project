@@ -128,7 +128,7 @@ class Notice(Base):
 # --- 4. FAQ 모델 ---
 class FAQ(Base):
     __tablename__ = "faqs"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     question = Column(String(255), nullable=False)
     answer_html = Column(Text, nullable=False)
@@ -136,6 +136,7 @@ class FAQ(Base):
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     file_path = Column(String(500), nullable=True)
     original_filename = Column(String(255), nullable=True)
+    category = Column(String(50), nullable=False, default="기타")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

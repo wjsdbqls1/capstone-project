@@ -3,21 +3,26 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import TALayout from './TALayout';
 
+const API_BASE = 'http://13.219.208.109:8000';
+
 function TAPending() {
   const [inquiries, setInquiries] = useState([]);
-  const [academicEvents, setAcademicEvents] = useState({}); 
+  const [academicEvents, setAcademicEvents] = useState({});
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [replyContent, setReplyContent] = useState("");
-  const [replyFile, setReplyFile] = useState(null); 
-  const [sortType, setSortType] = useState('latest'); 
+  const [replyFile, setReplyFile] = useState(null);
+  const [sortType, setSortType] = useState('latest');
+  const [aiCandidates, setAiCandidates] = useState([]);
+  const [aiKeywords, setAiKeywords] = useState([]);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const fetchData = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const resInq = await axios.get('http://13.219.208.109:8000/inquiries', { headers: { Authorization: `Bearer ${token}` } });
+      const resInq = await axios.get(`${API_BASE}/inquiries`, { headers: { Authorization: `Bearer ${token}` } });
       const pendingList = resInq.data.filter(item => item.status !== 'COMPLETED' && item.status !== '답변 완료');
-      const resEvents = await axios.get('http://13.219.208.109:8000/academic-events');
+      const resEvents = await axios.get(`${API_BASE}/academic-events`);
       const eventMap = {}; resEvents.data.forEach(ev => { eventMap[ev.id] = ev; });
       setAcademicEvents(eventMap);
       setInquiries(sortList(pendingList, 'latest', eventMap));
@@ -44,9 +49,39 @@ function TAPending() {
   const handleSelect = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.get(`http://13.219.208.109:8000/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      setSelectedInquiry(response.data); setReplyContent(""); setReplyFile(null); 
+      const response = await axios.get(`${API_BASE}/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const inquiry = response.data;
+      setSelectedInquiry(inquiry);
+      setReplyContent("");
+      setReplyFile(null);
+      setAiCandidates([]);
+      setAiKeywords([]);
+
+      // AI 답변 후보 + 키워드 하이라이팅 동시 호출
+      setAiLoading(true);
+      try {
+        const [predictRes, highlightRes] = await Promise.allSettled([
+          axios.post(`${API_BASE}/api/ai/predict`, { text: `${inquiry.title} ${inquiry.content}` }),
+          axios.post(`${API_BASE}/api/ai/highlight`, { text: inquiry.content }),
+        ]);
+        if (predictRes.status === 'fulfilled') setAiCandidates(predictRes.value.data.candidates || []);
+        if (highlightRes.status === 'fulfilled') setAiKeywords(highlightRes.value.data.keywords || []);
+      } catch (_) {}
+      setAiLoading(false);
     } catch (error) { alert("오류 발생"); }
+  };
+
+  // 키워드를 하이라이팅해서 렌더링
+  const renderHighlighted = (text, keywords) => {
+    if (!keywords || keywords.length === 0) return <span>{text}</span>;
+    const escaped = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      regex.test(part)
+        ? <mark key={i} style={{ backgroundColor: '#fff176', borderRadius: '3px', padding: '0 2px' }}>{part}</mark>
+        : <span key={i}>{part}</span>
+    );
   };
 
   const handleSubmitReply = async () => {
@@ -56,7 +91,7 @@ function TAPending() {
     formData.append('content', replyContent);
     if (replyFile) formData.append('file', replyFile);
     try {
-      await axios.post(`http://13.219.208.109:8000/inquiries/${selectedInquiry.id}/replies`, formData, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
+      await axios.post(`${API_BASE}/inquiries/${selectedInquiry.id}/replies`, formData, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
       alert("답변 완료"); setSelectedInquiry(null); fetchData(); 
     } catch (error) { alert("등록 실패"); }
   };
@@ -111,10 +146,33 @@ function TAPending() {
                     )}
                 </div>
                 <div style={modalStyles.qTitle}>{selectedInquiry.title}</div>
-                <div style={modalStyles.qText}>{selectedInquiry.content}</div>
-                {selectedInquiry.attachment && <div style={modalStyles.attachBox}><a href={`http://13.219.208.109:8000${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 첨부파일 보기</a></div>}
+                <div style={modalStyles.qText}>
+                  {renderHighlighted(selectedInquiry.content, aiKeywords)}
+                </div>
+                {selectedInquiry.attachment && <div style={modalStyles.attachBox}><a href={`${API_BASE}${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 첨부파일 보기</a></div>}
                 {selectedInquiry.academic_event_id && academicEvents[selectedInquiry.academic_event_id] && <div style={modalStyles.eventBox}>📅 관련 일정: {academicEvents[selectedInquiry.academic_event_id].title}</div>}
               </div>
+              {/* AI 답변 후보 */}
+              {aiLoading && (
+                <div style={modalStyles.aiBox}>
+                  <div style={modalStyles.aiTitle}>🤖 AI 답변 후보 분석 중...</div>
+                </div>
+              )}
+              {!aiLoading && aiCandidates.length > 0 && (
+                <div style={modalStyles.aiBox}>
+                  <div style={modalStyles.aiTitle}>🤖 AI 추천 답변 후보</div>
+                  {aiCandidates.map((c, i) => (
+                    <div key={i} style={modalStyles.candidateRow}>
+                      <div style={modalStyles.candidateText}>{c.answer}</div>
+                      <button
+                        style={modalStyles.useBtn}
+                        onClick={() => setReplyContent(c.answer)}
+                      >사용</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div style={modalStyles.answerArea}>
                 <div style={{fontWeight:'bold', marginBottom:'8px'}}>답변 입력</div>
                 <textarea style={modalStyles.textarea} placeholder="내용 입력..." value={replyContent} onChange={(e) => setReplyContent(e.target.value)}/>
@@ -159,6 +217,11 @@ const modalStyles = {
   attachBox: { marginTop:'10px', backgroundColor:'white', padding:'8px', borderRadius:'6px', border:'1px solid #eee', display:'inline-block' },
   fileLink: { display:'block', color:'#003675', fontWeight:'bold', textDecoration:'underline', fontSize:'13px' },
   eventBox: { marginTop:'10px', padding:'8px', backgroundColor:'#fff3e0', borderRadius:'8px', color:'#e65100', fontSize:'13px', fontWeight:'bold' },
+  aiBox: { backgroundColor:'#f0f4ff', border:'1px solid #c5d5f5', borderRadius:'10px', padding:'12px', marginBottom:'15px' },
+  aiTitle: { fontWeight:'bold', color:'#003675', fontSize:'13px', marginBottom:'8px' },
+  candidateRow: { display:'flex', alignItems:'flex-start', gap:'8px', marginBottom:'8px', backgroundColor:'white', borderRadius:'8px', padding:'8px', border:'1px solid #e0e8ff' },
+  candidateText: { flex:1, fontSize:'13px', color:'#333', lineHeight:'1.5' },
+  useBtn: { flexShrink:0, padding:'4px 10px', backgroundColor:'#003675', color:'white', border:'none', borderRadius:'6px', fontSize:'12px', cursor:'pointer', fontWeight:'bold' },
   answerArea: { marginBottom:'15px' },
   textarea: { width: '100%', minHeight: '120px', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', fontSize: '15px', resize: 'none', boxSizing: 'border-box' },
   fileInput: { width: '100%', marginTop:'10px', fontSize:'13px' },

@@ -20,14 +20,20 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def list_faqs(db: Session = Depends(get_db)):
     return db.query(FAQ).order_by(FAQ.id.desc()).all()
 
+VALID_CATEGORIES = ['수강신청', '성적', '졸업', '장학금', '휴복학', '등록금', '기숙사', '공결_출석', '증명서', '기타']
+
 # 2. FAQ 등록 (파일 포함)
 @r.post("")
 def create_faq(
     question: str = Form(...),
     answer_html: str = Form(...),
+    category: str = Form("기타"),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
+    if category not in VALID_CATEGORIES:
+        raise HTTPException(status_code=400, detail=f"유효하지 않은 카테고리입니다. 허용값: {VALID_CATEGORIES}")
+
     saved_filename = None
     original_filename = None
 
@@ -44,8 +50,9 @@ def create_faq(
         answer_html=answer_html,
         posted_date=date.today(),
         author_id=1,
-        file_path=saved_filename,       # ★ 저장
-        original_filename=original_filename # ★ 저장
+        category=category,
+        file_path=saved_filename,
+        original_filename=original_filename,
     )
     db.add(new_faq)
     db.commit()
@@ -58,15 +65,20 @@ def update_faq(
     faq_id: int,
     question: str = Form(...),
     answer_html: str = Form(...),
+    category: str = Form("기타"),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
     faq = db.query(FAQ).filter(FAQ.id == faq_id).first()
     if not faq:
         raise HTTPException(status_code=404, detail="FAQ not found")
-    
+
+    if category not in VALID_CATEGORIES:
+        raise HTTPException(status_code=400, detail=f"유효하지 않은 카테고리입니다. 허용값: {VALID_CATEGORIES}")
+
     faq.question = question
     faq.answer_html = answer_html
+    faq.category = category
 
     # 새 파일이 있으면 교체
     if file:
@@ -75,10 +87,9 @@ def update_faq(
         file_path = os.path.join(UPLOAD_DIR, saved_filename)
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-            
         faq.file_path = saved_filename
         faq.original_filename = file.filename
-    
+
     db.commit()
     return {"message": "updated"}
 

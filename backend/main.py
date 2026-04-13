@@ -1,7 +1,10 @@
 # backend/main.py
 import os  # ★ 파일 경로 제어를 위해 추가
 import re
+import sys
+import threading
 import requests
+from pathlib import Path
 from bs4 import BeautifulSoup
 from datetime import datetime, date
 from fastapi import FastAPI
@@ -15,9 +18,15 @@ from models import Base, AcademicEvent
 
 # 라우터들
 from routers import (
-    users, auth, academic_calendar, inquiries, 
+    users, auth, academic_calendar, inquiries,
     notices, notices_detail, faqs, absence, admin_notices, admin_absence, memos
 )
+
+# AI 라우터
+_AI_ROOT = Path(__file__).parent.parent / "ai"
+sys.path.insert(0, str(_AI_ROOT))
+sys.path.insert(0, str(_AI_ROOT / "api"))
+from router import router as ai_router
 
 # 테이블 자동 생성
 Base.metadata.create_all(bind=engine)
@@ -69,6 +78,7 @@ app.include_router(absence.r)
 app.include_router(admin_notices.r)
 app.include_router(admin_absence.router)
 app.include_router(memos.router)
+app.include_router(ai_router, prefix="/api/ai", tags=["AI"])
 
 
 # -----------------------------------------------------------
@@ -111,10 +121,17 @@ def fetch_and_save_events(db: Session, year: int):
         "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
     }
     
+    for attempt in range(1, 4):
+        try:
+            print(f"📡 [학사일정] {year}년 데이터 크롤링 시작... (시도 {attempt}/3)")
+            resp = requests.get(URL, params=params, headers=headers, timeout=30)
+            break
+        except requests.exceptions.Timeout:
+            print(f"⚠️ [학사일정] 타임아웃 (시도 {attempt}/3)")
+            if attempt == 3:
+                print("❌ [학사일정] 3회 모두 실패, 크롤링 건너뜀")
+                return
     try:
-        print(f"📡 [학사일정] {year}년 데이터 크롤링 시작... ({URL})")
-        resp = requests.get(URL, params=params, headers=headers, timeout=10)
-        
         if resp.status_code != 200:
             print(f"⚠️ 요청 실패: Status Code {resp.status_code}")
             return
@@ -165,6 +182,17 @@ def on_startup():
         fetch_and_save_events(db, 2026)
     finally:
         db.close()
+
+    # 공지사항 크롤링은 시간이 걸리므로 백그라운드 스레드로 실행
+    def _sync_notices():
+        try:
+            from scripts.sync_external_notices import main as sync_notices
+            sync_notices()
+        except Exception as e:
+            print(f"⚠️ [공지사항] 크롤링 오류: {e}")
+
+    t = threading.Thread(target=_sync_notices, daemon=True)
+    t.start()
 
 @app.get("/")
 def read_root():
