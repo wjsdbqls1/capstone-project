@@ -41,9 +41,8 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:3000",          # 리액트 기본 포트
-    "http://13.219.208.109:3000",     # ★ 작성자님의 AWS 서버 IP 추가
-    "http://13.219.208.109",          # 포트 없는 버전도 추가
+    "http://localhost:3000",
+    "https://capstone-project-1-q2nw.onrender.com",
 ]
 
 app.add_middleware(
