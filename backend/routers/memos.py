@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import List
 from datetime import date
 
-from database import SessionLocal
+from db import SessionLocal
 from models import CalendarMemo, User
 from deps import get_db, get_current_user
 

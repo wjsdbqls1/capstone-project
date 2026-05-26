@@ -61,8 +61,8 @@ function TAPending() {
       setAiLoading(true);
       try {
         const [predictRes, highlightRes] = await Promise.allSettled([
-          axios.post(`${API_BASE}/api/ai/predict`, { text: `${inquiry.title} ${inquiry.content}` }),
-          axios.post(`${API_BASE}/api/ai/highlight`, { text: inquiry.content }),
+          axios.post(`${API_BASE}/api/ai/predict`, { question: `${inquiry.title} ${inquiry.content}` }),
+          axios.post(`${API_BASE}/api/ai/highlight`, { question: inquiry.content }),
         ]);
         if (predictRes.status === 'fulfilled') setAiCandidates(predictRes.value.data.candidates || []);
         if (highlightRes.status === 'fulfilled') setAiKeywords(highlightRes.value.data.keywords || []);

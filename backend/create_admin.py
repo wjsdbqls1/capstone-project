@@ -5,7 +5,7 @@ import os
 # (경로 문제 방지를 위한 설정)
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from database import SessionLocal
+from db import SessionLocal
 from models import User
 from passlib.context import CryptContext
 

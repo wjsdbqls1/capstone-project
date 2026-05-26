@@ -13,7 +13,7 @@ from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 # DB 및 모델 관련
-from database import engine, SessionLocal
+from db import engine, SessionLocal
 from models import Base, AcademicEvent
 
 # 라우터들

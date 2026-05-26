@@ -20,7 +20,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.orm import Session
-from database import SessionLocal
+from db import SessionLocal
 from models import Notice, User
 
 # 설정
@@ -154,11 +154,19 @@ def main():
             time.sleep(sleep_time)
 
             print(f"   📄 목록 페이지 조회 중... (offset: {current_offset})")
-            
+
             params = {"mode": "list", "board_no": BOARD_NO, "pager.offset": current_offset}
-            
-            # ★ session.get 사용
-            resp = session.get(LIST_URL, params=params, timeout=30, verify=False)
+
+            resp = None
+            for attempt in range(1, 4):
+                try:
+                    resp = session.get(LIST_URL, params=params, timeout=30, verify=False)
+                    break
+                except Exception as e:
+                    print(f"   ⚠️ 목록 요청 실패 (시도 {attempt}/3): {e}")
+                    if attempt == 3:
+                        raise
+                    time.sleep(3 * attempt)
             soup = BeautifulSoup(resp.text, "html.parser")
 
             rows = soup.select("table.type_board td.subject a")

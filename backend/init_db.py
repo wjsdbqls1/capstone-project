@@ -1,5 +1,5 @@
 # backend/init_db.py
-from database import engine
+from db import engine
 from models import Base
 import models  # 모델들이 등록되도록 import
 

@@ -6,7 +6,7 @@ from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
-from database import SessionLocal
+from db import SessionLocal
 from models import User
 
 load_dotenv()

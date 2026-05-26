@@ -1,5 +1,5 @@
 # backend/create_student.py
-from database import SessionLocal
+from db import SessionLocal
 from models import User
 from passlib.context import CryptContext
 
