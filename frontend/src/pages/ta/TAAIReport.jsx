@@ -4,6 +4,7 @@ import axios from 'axios';
 import TALayout from './TALayout';
 
 const API_BASE = 'https://capstone-project-of74.onrender.com';
+const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
 function TAAIReport() {
   const [forecast, setForecast] = useState(null);
@@ -15,7 +16,7 @@ function TAAIReport() {
   const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API_BASE}/api/ai/forecast`)
+    axios.get(`${AI_BASE}/api/ai/forecast`)
       .then(res => setForecast(res.data))
       .catch(() => setForecast(null))
       .finally(() => setForecastLoading(false));
@@ -33,7 +34,7 @@ function TAAIReport() {
     setSummaryLoading(true);
     setSummary(null);
     try {
-      const res = await axios.post(`${API_BASE}/api/ai/summarize`, { start_date: startDate, end_date: endDate });
+      const res = await axios.post(`${AI_BASE}/api/ai/summarize`, { start_date: startDate, end_date: endDate });
       setSummary(res.data);
     } catch {
       alert('요약 생성에 실패했습니다.');

@@ -4,6 +4,7 @@ import axios from 'axios';
 import TALayout from './TALayout';
 
 const API_BASE = 'https://capstone-project-of74.onrender.com';
+const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
 function TAPending() {
   const [inquiries, setInquiries] = useState([]);
@@ -61,8 +62,8 @@ function TAPending() {
       setAiLoading(true);
       try {
         const [predictRes, highlightRes] = await Promise.allSettled([
-          axios.post(`${API_BASE}/api/ai/predict`, { question: `${inquiry.title} ${inquiry.content}` }),
-          axios.post(`${API_BASE}/api/ai/highlight`, { question: inquiry.content }),
+          axios.post(`${AI_BASE}/api/ai/predict`, { question: `${inquiry.title} ${inquiry.content}` }),
+          axios.post(`${AI_BASE}/api/ai/highlight`, { question: inquiry.content }),
         ]);
         if (predictRes.status === 'fulfilled') setAiCandidates(predictRes.value.data.candidates || []);
         if (highlightRes.status === 'fulfilled') setAiKeywords(highlightRes.value.data.keywords || []);
