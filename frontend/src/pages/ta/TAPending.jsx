@@ -162,15 +162,23 @@ function TAPending() {
               {!aiLoading && aiCandidates.length > 0 && (
                 <div style={modalStyles.aiBox}>
                   <div style={modalStyles.aiTitle}>🤖 AI 추천 답변 후보</div>
-                  {aiCandidates.map((c, i) => (
-                    <div key={i} style={modalStyles.candidateRow}>
-                      <div style={modalStyles.candidateText}>{c.answer}</div>
-                      <button
-                        style={modalStyles.useBtn}
-                        onClick={() => setReplyContent(c.answer)}
-                      >사용</button>
-                    </div>
-                  ))}
+                  {aiCandidates.map((c, i) => {
+                    const plainText = c.answer_html
+                      ? c.answer_html.replace(/<[^>]+>/g, '').trim()
+                      : '';
+                    return (
+                      <div key={i} style={modalStyles.candidateRow}>
+                        <div
+                          style={modalStyles.candidateText}
+                          dangerouslySetInnerHTML={{ __html: c.answer_html || '' }}
+                        />
+                        <button
+                          style={modalStyles.useBtn}
+                          onClick={() => setReplyContent(plainText)}
+                        >사용</button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
