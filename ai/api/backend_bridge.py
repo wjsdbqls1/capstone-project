@@ -19,7 +19,7 @@ def load_faq_db() -> list[dict]:
     FAQ 테이블 전체 로드.
     카테고리 컬럼이 없으므로 question 텍스트 기반으로 임시 분류 (추후 category 컬럼 추가 권장).
     """
-    from database import SessionLocal
+    from db import SessionLocal
     from models import FAQ
 
     db = SessionLocal()
@@ -43,7 +43,7 @@ def load_inquiry_history() -> list[dict]:
     문의 전체 로드 (예측/요약용).
     카테고리는 FAQ와 동일하게 임시 추론.
     """
-    from database import SessionLocal
+    from db import SessionLocal
     from models import Inquiry
 
     db = SessionLocal()
