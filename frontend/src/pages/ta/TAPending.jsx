@@ -66,7 +66,7 @@ function TAPending() {
           axios.post(`${AI_BASE}/api/ai/highlight`, { question: inquiry.content }),
         ]);
         if (predictRes.status === 'fulfilled') setAiCandidates(predictRes.value.data.candidates || []);
-        if (highlightRes.status === 'fulfilled') setAiKeywords(highlightRes.value.data.keywords || []);
+        if (highlightRes.status === 'fulfilled') setAiKeywords(highlightRes.value.data.highlights || []);
       } catch (_) {}
       setAiLoading(false);
     } catch (error) { alert("오류 발생"); }
