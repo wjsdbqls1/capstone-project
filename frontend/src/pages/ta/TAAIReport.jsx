@@ -7,26 +7,23 @@ const API_BASE = 'https://capstone-project-of74.onrender.com';
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
 function TAAIReport() {
-  const [forecast, setForecast] = useState(null);
+  const [alerts, setAlerts] = useState([]);
   const [forecastLoading, setForecastLoading] = useState(true);
 
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [summary, setSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     axios.get(`${AI_BASE}/api/ai/forecast`)
-      .then(res => setForecast(res.data))
-      .catch(() => setForecast(null))
+      .then(res => setAlerts(res.data.alerts || []))
+      .catch(() => setAlerts([]))
       .finally(() => setForecastLoading(false));
-
-    // 기본 날짜 범위: 지난 30일
-    const today = new Date();
-    const past = new Date();
-    past.setDate(today.getDate() - 30);
-    setEndDate(today.toISOString().split('T')[0]);
-    setStartDate(past.toISOString().split('T')[0]);
   }, []);
 
   const handleSummarize = async () => {
@@ -42,10 +39,10 @@ function TAAIReport() {
     setSummaryLoading(false);
   };
 
-  const getForecastLevel = (count) => {
-    if (count >= 10) return { label: '많음', color: '#d32f2f', bg: '#ffebee' };
-    if (count >= 5) return { label: '보통', color: '#f57c00', bg: '#fff3e0' };
-    return { label: '적음', color: '#388e3c', bg: '#e8f5e9' };
+  const getRatioLevel = (ratio) => {
+    if (ratio >= 2.0) return { label: '급증', color: '#d32f2f', bg: '#ffebee' };
+    if (ratio >= 1.5) return { label: '증가', color: '#f57c00', bg: '#fff3e0' };
+    return { label: '보통', color: '#388e3c', bg: '#e8f5e9' };
   };
 
   return (
@@ -57,15 +54,21 @@ function TAAIReport() {
         <div style={styles.sectionTitle}>📈 이번 주 문의량 예측</div>
         {forecastLoading ? (
           <div style={styles.loadingText}>분석 중...</div>
-        ) : forecast ? (
-          <div style={styles.forecastGrid}>
-            {(forecast.forecast || []).map((item, i) => {
-              const level = getForecastLevel(item.predicted_count);
+        ) : alerts.length > 0 ? (
+          <div style={styles.alertList}>
+            {alerts.map((item, i) => {
+              const level = getRatioLevel(item.increase_ratio);
               return (
-                <div key={i} style={{ ...styles.forecastItem, backgroundColor: level.bg, border: `1px solid ${level.color}33` }}>
-                  <div style={styles.forecastDate}>{item.date}</div>
-                  <div style={{ ...styles.forecastCount, color: level.color }}>{item.predicted_count}건</div>
-                  <div style={{ ...styles.forecastLabel, color: level.color }}>{level.label}</div>
+                <div key={i} style={{ ...styles.alertItem, backgroundColor: level.bg, border: `1px solid ${level.color}33` }}>
+                  <div style={styles.alertHeader}>
+                    <span style={{ ...styles.alertBadge, color: level.color }}>{level.label}</span>
+                    <span style={styles.alertCategory}>{item.category}</span>
+                    <span style={{ ...styles.alertRatio, color: level.color }}>평균 대비 {item.increase_ratio}배</span>
+                  </div>
+                  <div style={styles.alertMessage}>{item.message}</div>
+                  <div style={styles.alertStat}>
+                    예상 {item.expected_count}건 · 평균 {item.baseline_avg}건
+                  </div>
                 </div>
               );
             })}
@@ -73,30 +76,15 @@ function TAAIReport() {
         ) : (
           <div style={styles.emptyText}>예측 데이터가 없습니다. 문의 데이터가 충분하지 않습니다.</div>
         )}
-        {forecast && forecast.alert && (
-          <div style={styles.alertBanner}>
-            ⚠️ {forecast.alert}
-          </div>
-        )}
       </div>
 
       {/* 기간별 요약 섹션 */}
       <div style={styles.card}>
         <div style={styles.sectionTitle}>📋 기간별 문의 요약</div>
         <div style={styles.dateRow}>
-          <input
-            type="date"
-            value={startDate}
-            onChange={e => setStartDate(e.target.value)}
-            style={styles.dateInput}
-          />
+          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={styles.dateInput} />
           <span style={styles.dateSep}>~</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={e => setEndDate(e.target.value)}
-            style={styles.dateInput}
-          />
+          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={styles.dateInput} />
           <button style={styles.summarizeBtn} onClick={handleSummarize} disabled={summaryLoading}>
             {summaryLoading ? '분석 중...' : '요약 생성'}
           </button>
@@ -107,41 +95,37 @@ function TAAIReport() {
         {summary && (
           <div style={styles.summaryResult}>
             <div style={styles.summaryMeta}>
-              총 <strong>{summary.total_count}건</strong>의 문의 ({startDate} ~ {endDate})
+              총 <strong>{summary.total_count}건</strong>의 문의 ({summary.period})
             </div>
+            <div style={styles.summaryMessage}>{summary.message}</div>
 
-            {summary.category_breakdown && (
+            {summary.summary && summary.summary.length > 0 && (
               <div style={styles.categoryList}>
-                {Object.entries(summary.category_breakdown).map(([cat, cnt]) => (
-                  <div key={cat} style={styles.categoryItem}>
-                    <span style={styles.categoryName}>{cat}</span>
+                {summary.summary.map((item) => (
+                  <div key={item.category} style={styles.categoryItem}>
+                    <span style={styles.categoryName}>{item.category}</span>
                     <div style={styles.barWrapper}>
-                      <div
-                        style={{
-                          ...styles.bar,
-                          width: `${Math.min(100, (cnt / summary.total_count) * 100)}%`
-                        }}
-                      />
+                      <div style={{ ...styles.bar, width: `${Math.min(100, item.ratio * 100)}%` }} />
                     </div>
-                    <span style={styles.categoryCount}>{cnt}건</span>
+                    <span style={styles.categoryCount}>{item.count}건</span>
+                    <span style={styles.categoryRatio}>({Math.round(item.ratio * 100)}%)</span>
                   </div>
                 ))}
               </div>
             )}
 
-            {summary.keywords && summary.keywords.length > 0 && (
-              <div style={styles.keywordSection}>
-                <div style={styles.keywordTitle}>주요 키워드</div>
-                <div style={styles.keywordList}>
-                  {summary.keywords.map((kw, i) => (
-                    <span key={i} style={styles.keywordChip}>{kw}</span>
-                  ))}
-                </div>
+            {summary.summary && summary.summary.length > 0 && (
+              <div style={styles.representativeSection}>
+                <div style={styles.representativeTitle}>카테고리별 대표 문의</div>
+                {summary.summary.map((item) => (
+                  item.representative && (
+                    <div key={item.category} style={styles.representativeItem}>
+                      <span style={styles.repCategory}>{item.category}</span>
+                      <span style={styles.repText}>{item.representative}</span>
+                    </div>
+                  )
+                ))}
               </div>
-            )}
-
-            {summary.summary_text && (
-              <div style={styles.summaryText}>{summary.summary_text}</div>
             )}
           </div>
         )}
@@ -164,16 +148,14 @@ const styles = {
   sectionTitle: { fontSize: '16px', fontWeight: 'bold', color: '#003675', marginBottom: '15px' },
   loadingText: { color: '#666', fontSize: '14px', textAlign: 'center', padding: '20px' },
   emptyText: { color: '#999', fontSize: '14px', textAlign: 'center', padding: '20px' },
-  forecastGrid: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
-  forecastItem: { flex: '1 1 80px', minWidth: '80px', padding: '12px 8px', borderRadius: '10px', textAlign: 'center' },
-  forecastDate: { fontSize: '11px', color: '#555', marginBottom: '6px' },
-  forecastCount: { fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' },
-  forecastLabel: { fontSize: '11px', fontWeight: 'bold' },
-  alertBanner: {
-    marginTop: '15px', padding: '10px 14px',
-    backgroundColor: '#fff3e0', border: '1px solid #ffb74d',
-    borderRadius: '8px', color: '#e65100', fontSize: '13px', fontWeight: 'bold'
-  },
+  alertList: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  alertItem: { padding: '12px 14px', borderRadius: '10px' },
+  alertHeader: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' },
+  alertBadge: { fontSize: '11px', fontWeight: 'bold', padding: '2px 6px', backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: '4px' },
+  alertCategory: { fontSize: '14px', fontWeight: 'bold', color: '#222' },
+  alertRatio: { fontSize: '12px', fontWeight: 'bold', marginLeft: 'auto' },
+  alertMessage: { fontSize: '13px', color: '#444', marginBottom: '4px' },
+  alertStat: { fontSize: '12px', color: '#888' },
   dateRow: { display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '15px' },
   dateInput: { padding: '8px 12px', border: '1px solid #ced4da', borderRadius: '8px', fontSize: '14px', backgroundColor: 'white' },
   dateSep: { color: '#666', fontWeight: 'bold' },
@@ -182,18 +164,20 @@ const styles = {
     border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'
   },
   summaryResult: { backgroundColor: '#f8f9fa', borderRadius: '10px', padding: '15px' },
-  summaryMeta: { fontSize: '14px', color: '#333', marginBottom: '15px' },
+  summaryMeta: { fontSize: '14px', color: '#333', marginBottom: '6px' },
+  summaryMessage: { fontSize: '13px', color: '#555', marginBottom: '15px', padding: '8px 12px', backgroundColor: '#e3f2fd', borderRadius: '8px' },
   categoryList: { marginBottom: '15px' },
-  categoryItem: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' },
-  categoryName: { width: '80px', fontSize: '13px', color: '#333', flexShrink: 0 },
+  categoryItem: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' },
+  categoryName: { width: '75px', fontSize: '13px', color: '#333', flexShrink: 0 },
   barWrapper: { flex: 1, height: '10px', backgroundColor: '#e9ecef', borderRadius: '5px', overflow: 'hidden' },
   bar: { height: '100%', backgroundColor: '#003675', borderRadius: '5px', transition: 'width 0.5s ease' },
-  categoryCount: { width: '40px', fontSize: '13px', color: '#666', textAlign: 'right', flexShrink: 0 },
-  keywordSection: { marginBottom: '15px' },
-  keywordTitle: { fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '8px' },
-  keywordList: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
-  keywordChip: { backgroundColor: '#e3f2fd', color: '#1565c0', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' },
-  summaryText: { fontSize: '14px', color: '#444', lineHeight: '1.7', whiteSpace: 'pre-wrap', borderTop: '1px solid #dee2e6', paddingTop: '12px' }
+  categoryCount: { width: '35px', fontSize: '13px', color: '#666', textAlign: 'right', flexShrink: 0 },
+  categoryRatio: { width: '40px', fontSize: '12px', color: '#999', flexShrink: 0 },
+  representativeSection: { borderTop: '1px solid #dee2e6', paddingTop: '12px' },
+  representativeTitle: { fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '8px' },
+  representativeItem: { display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' },
+  repCategory: { fontSize: '12px', color: '#003675', fontWeight: 'bold', flexShrink: 0, width: '70px' },
+  repText: { fontSize: '13px', color: '#444', lineHeight: '1.4' },
 };
 
 export default TAAIReport;
