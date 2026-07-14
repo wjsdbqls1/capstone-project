@@ -57,7 +57,29 @@ def list_my_inquiries(
     current_user: User = Depends(get_current_user)
 ):
     rows = db.query(Inquiry).filter(Inquiry.user_id == current_user.id).order_by(Inquiry.id.desc()).all()
-    return rows
+
+    # 수정(재답변)된 답변이 있는 문의 id 집합
+    edited_ids = {
+        row[0]
+        for row in db.query(InquiryReply.inquiry_id)
+        .filter(InquiryReply.updated_at.isnot(None))
+        .distinct()
+        .all()
+    }
+
+    return [
+        {
+            "id": q.id,
+            "title": q.title,
+            "content": q.content,
+            "status": q.status,
+            "created_at": q.created_at,
+            "academic_event_id": q.academic_event_id,
+            "attachment": q.attachment,
+            "reply_edited": q.id in edited_ids,  # 답변 수정(재답변) 여부
+        }
+        for q in rows
+    ]
 
 # 3. 조교용 목록 조회
 @r.get("")

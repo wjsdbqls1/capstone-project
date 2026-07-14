@@ -110,9 +110,12 @@ function StudentHistory() {
               onClick={() => handleClickItem(item)}
             >
               <div style={styles.cardHeader}>
-                <span style={getStatusBadge(item.status)}>
-                  {item.status === 'COMPLETED' ? '답변 완료' : '답변 대기중'}
-                </span>
+                <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                  <span style={getStatusBadge(item.status)}>
+                    {item.status === 'COMPLETED' ? '답변 완료' : '답변 대기중'}
+                  </span>
+                  {item.reply_edited && <span style={styles.reAnswer}>재답변</span>}
+                </div>
                 <span style={styles.date}>{item.created_at.split('T')[0]}</span>
               </div>
               <h3 style={styles.title}>{item.title}</h3>
@@ -291,10 +294,15 @@ const styles = {
     border: '1px solid #ff9800', padding: '4px 8px', borderRadius: '6px', 
     backgroundColor: '#fff3e0', fontSize: '14px' 
   },
-  statusDone: { 
-    color: '#4caf50', fontWeight: 'bold', 
-    border: '1px solid #4caf50', padding: '4px 8px', borderRadius: '6px', 
-    backgroundColor: '#e8f5e9', fontSize: '14px' 
+  statusDone: {
+    color: '#4caf50', fontWeight: 'bold',
+    border: '1px solid #4caf50', padding: '4px 8px', borderRadius: '6px',
+    backgroundColor: '#e8f5e9', fontSize: '14px'
+  },
+  reAnswer: {
+    color: '#fff', fontWeight: 'bold',
+    padding: '4px 8px', borderRadius: '6px',
+    backgroundColor: '#e53935', fontSize: '14px'
   },
   
   date: { color: '#666', fontSize:'14px' },
