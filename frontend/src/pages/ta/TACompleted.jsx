@@ -110,6 +110,7 @@ function TACompleted() {
                 <div style={styles.cardHeader}>
                   <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
                     <span style={styles.statusDone}>답변 완료</span>
+                    {item.reply_edited && (<span style={styles.reAnswer}>재답변</span>)}
                     {item.author_info && (<span style={styles.nameTag}>{item.author_info.name}</span>)}
                   </div>
                   <span style={styles.date}>{item.created_at.split('T')[0]}</span>
@@ -180,6 +181,7 @@ const styles = {
   card: { backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: '15px', borderRadius: '16px', marginBottom: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.9)', borderLeft: '5px solid #4caf50' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems:'center' },
   statusDone: { color: '#2e7d32', fontWeight: 'bold', fontSize: '11px', backgroundColor:'#e8f5e9', padding:'3px 6px', borderRadius:'4px' },
+  reAnswer: { color: '#fff', fontWeight: 'bold', fontSize: '11px', backgroundColor:'#e53935', padding:'3px 7px', borderRadius:'4px' },
   nameTag: { fontSize: '12px', fontWeight: 'bold', color: '#495057' },
   date: { color: '#666', fontSize: '11px' },
   title: { fontSize: '15px', fontWeight: 'bold', color:'#212529', marginBottom:'4px' },

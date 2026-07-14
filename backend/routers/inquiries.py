@@ -74,6 +74,15 @@ def list_all_inquiries(
         .order_by(Inquiry.id.desc())\
         .all()
 
+    # 수정(재답변)된 답변이 있는 문의 id 집합 (updated_at이 채워진 답변)
+    edited_ids = {
+        row[0]
+        for row in db.query(InquiryReply.inquiry_id)
+        .filter(InquiryReply.updated_at.isnot(None))
+        .distinct()
+        .all()
+    }
+
     # (2) 프론트엔드가 원하는 형태로 데이터 가공
     results = []
     for q in inquiries:
@@ -105,8 +114,9 @@ def list_all_inquiries(
             "user_id": q.user_id,
             "attachment": q.attachment,
             "academic_event_id": q.academic_event_id,
-            "author_info": author_info, 
-            "academic_event": event_info
+            "author_info": author_info,
+            "academic_event": event_info,
+            "reply_edited": q.id in edited_ids,  # 답변 수정(재답변) 여부
         })
 
     return results
