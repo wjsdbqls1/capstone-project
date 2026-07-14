@@ -120,9 +120,11 @@ function StudentCalendar() {
                   zIndex: 10,
                   position: 'relative'
               };
+              // 시작일 또는 매주 시작(일요일)에 제목 표시 → 주가 넘어가도 무슨 일정인지 보이게
+              const showTitle = isStart || currentDayOfWeek === 0;
               return (
                 <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>
-                  {isStart ? ev.title : ''}
+                  {showTitle ? ev.title : ''}
                 </div>
               );
             })}
