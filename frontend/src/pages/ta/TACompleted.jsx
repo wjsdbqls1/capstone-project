@@ -168,13 +168,14 @@ function TACompleted() {
 }
 
 const styles = {
+  glassBox: { flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', minHeight: 0 },
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675', marginBottom: '15px' },
   filterBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.6)' },
   filterGroup: { display: 'flex', gap: '8px' },
   select: { padding: '8px 10px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: 'rgba(255,255,255,0.8)', fontSize: '13px', cursor: 'pointer', outline: 'none' },
   searchWrapper: { display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(255,255,255,0.8)', padding: '8px 12px', borderRadius: '8px', border: '1px solid #ced4da', flexGrow: 1, minWidth: '150px' },
   searchInput: { border: 'none', outline: 'none', fontSize: '13px', width: '100%', backgroundColor: 'transparent' },
-  listArea: { flex: 1, overflowY: 'auto', paddingRight: '2px' },
+  listArea: { flex: 1, overflowY: 'auto', paddingRight: '2px', minHeight: 0 },
   emptyMessage: { textAlign: 'center', marginTop: '50px', color: '#868e96', fontWeight: '500' },
   card: { backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: '15px', borderRadius: '16px', marginBottom: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.9)', borderLeft: '5px solid #4caf50' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems:'center' },
