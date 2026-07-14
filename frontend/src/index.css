@@ -1,0 +1,13 @@
+/* 전역 기본 폰트 (문의 제목 입력칸과 동일한 서체로 통일) */
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+}
+
+/* 폼 요소는 브라우저 기본(얇은/다른) 폰트 대신 페이지 폰트를 그대로 상속 */
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}

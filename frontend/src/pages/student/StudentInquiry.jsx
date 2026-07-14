@@ -174,10 +174,10 @@ function StudentInquiry() {
         )}
 
         {/* 내용 */}
-        <div style={styles.formGroup}>
+        <div style={styles.contentGroup}>
           <label style={styles.label}>내용</label>
-          <textarea 
-            style={styles.textarea} 
+          <textarea
+            style={styles.textarea}
             placeholder="궁금한 내용을 자세히 적어주세요."
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -262,12 +262,14 @@ const styles = {
     border: '1px solid rgba(255, 255, 255, 0.4)',
     display: 'flex',
     flexDirection: 'column',
-    // 고정 높이 대신 내용에 따라 늘어나게 설정
-    flexShrink: 0,
-    marginBottom: '40px'
+    // 세로로도 화면을 채우도록 (남는 공간을 차지)
+    flex: 1,
+    minHeight: 0
   },
-  
+
   formGroup: { marginBottom: '15px' },
+  // 내용 입력 영역: 남는 세로 공간을 채우도록
+  contentGroup: { marginBottom: '15px', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 },
   
   label: { 
     display: 'block', 
@@ -288,14 +290,16 @@ const styles = {
     outline: 'none'
   },
   
-  textarea: { 
-    width: '100%', 
-    height: '150px', // 30vh에서 고정 높이로 변경 (모바일에서 너무 커지지 않게)
-    padding: '12px', 
-    borderRadius: '10px', 
-    border: '1px solid rgba(0,0,0,0.1)', 
-    fontSize: '16px', 
-    resize: 'none', 
+  textarea: {
+    width: '100%',
+    flex: 1,            // 남는 세로 공간을 채우도록
+    minHeight: '150px', // 최소 높이 보장
+    padding: '12px',
+    borderRadius: '10px',
+    border: '1px solid rgba(0,0,0,0.1)',
+    fontSize: '16px',
+    fontWeight: '500',  // 얇게 보이지 않도록 약간 두껍게
+    resize: 'none',
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     boxSizing: 'border-box',
     outline: 'none',
