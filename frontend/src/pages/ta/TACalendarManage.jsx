@@ -143,23 +143,17 @@ function TACalendarManage() {
                     {allItems.slice(0, 5).map((ev, idx) => {
                         const isManual = ev.source === 'manual';
                         const isMemo = ev.type === 'memo';
-                        const isStartOfEvent = ev.start_date === dateStr;
-                        const shouldRenderBar = isStartOfEvent || currentDayOfWeek === 0;
-                        const remainingDaysTotal = getDiffDays(dateStr, ev.end_date);
-                        const span = Math.min(remainingDaysTotal, (6 - currentDayOfWeek) + 1);
-                        
+                        // 이벤트가 걸쳐 있는 모든 날짜에 막대를 표시 (시작일/일요일 조건 제거로 누락 방지)
                         const theme = isMemo ? { bg:'#e8f5e9', text:'#2e7d32', bar:'#2e7d32' } : isManual ? { bg:'#fff3e0', text:'#e65100', bar:'#e65100' } : { bg:'#e3f2fd', text:'#1565c0', bar:'#1565c0' };
-                        const itemStyle = { 
-                            backgroundColor: theme.bg, color: theme.text, 
-                            borderLeft: isStartOfEvent ? `3px solid ${theme.bar}` : 'none', 
-                            paddingLeft: '4px',
-                            width: `calc(${span * 100}% + ${span - 1}px)`, // 연속 일정 길이 계산
-                            zIndex: 10, position: 'relative' 
+                        const itemStyle = {
+                            backgroundColor: theme.bg, color: theme.text,
+                            borderLeft: `3px solid ${theme.bar}`,
+                            paddingLeft: '4px', width: '100%',
+                            zIndex: 10, position: 'relative'
                         };
-                        
-                        return shouldRenderBar ? (
+                        return (
                             <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>{ev.title}</div>
-                        ) : <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, opacity:0, pointerEvents:'none'}}>{ev.title}</div>;
+                        );
                     })}
                     {/* [PC] 5개 초과 시 +N 표시 */}
                     {allItems.length > 5 && <div style={calStyles.moreBtn}>+{allItems.length - 5}</div>}

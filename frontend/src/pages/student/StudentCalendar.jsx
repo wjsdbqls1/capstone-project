@@ -102,64 +102,25 @@ function StudentCalendar() {
           <div style={calStyles.eventList}>
             {visibleList.map((ev, idx) => {
               const isManual = ev.source === 'manual';
-              
-              const daysLeftInWeek = 6 - currentDayOfWeek; 
-              
-              const isStartOfEvent = ev.start_date === dateStr;
-              const isSunday = currentDayOfWeek === 0;
-              const shouldRenderBar = isStartOfEvent || isSunday;
-
-              const remainingDaysTotal = getDiffDays(dateStr, ev.end_date);
-              const span = Math.min(remainingDaysTotal, daysLeftInWeek + 1);
-              
-              const isEndOfEvent = remainingDaysTotal <= (daysLeftInWeek + 1);
-
-              // 색상 정의
-              const theme = isManual 
+              // 이벤트가 걸쳐 있는 모든 날짜에 막대를 표시 (시작일/일요일 조건 제거로 누락 방지)
+              const theme = isManual
                 ? { bg: '#fff3e0', text: '#e65100', bar: '#e65100' } // 학과 (주황)
                 : { bg: '#e3f2fd', text: '#1565c0', bar: '#1565c0' }; // 학교 (파랑)
-
-              // 스타일 계산 (띠 & 둥근 모서리)
               const itemStyle = {
                   backgroundColor: theme.bg,
                   color: theme.text,
-                  borderLeft: isStartOfEvent ? `4px solid ${theme.bar}` : 'none',
-                  borderTopLeftRadius: isStartOfEvent ? '4px' : '0',
-                  borderBottomLeftRadius: isStartOfEvent ? '4px' : '0',
-                  borderTopRightRadius: isEndOfEvent ? '4px' : '0',
-                  borderBottomRightRadius: isEndOfEvent ? '4px' : '0',
-                  paddingLeft: isStartOfEvent ? '4px' : '8px'
+                  borderLeft: `4px solid ${theme.bar}`,
+                  borderRadius: '4px',
+                  paddingLeft: '4px',
+                  width: '100%',
+                  zIndex: 10,
+                  position: 'relative'
               };
-
-              if (shouldRenderBar) {
-                return (
-                  <div key={`${ev.id}-${d}-${idx}`} style={{
-                    ...calStyles.eventItem,
-                    ...itemStyle,
-                    width: `calc(${span * 100}% + ${span - 1}px)`, 
-                    zIndex: 10, 
-                    position: 'relative',
-                    opacity: 1 
-                  }}>
-                    {ev.title}
-                  </div>
-                );
-              } else {
-                // 투명 Spacer
-                return (
-                  <div key={`${ev.id}-${d}-${idx}`} style={{
-                    ...calStyles.eventItem,
-                    ...itemStyle,
-                    borderLeft: 'none',
-                    backgroundColor: 'transparent',
-                    color: 'transparent',
-                    opacity: 0, 
-                    pointerEvents: 'none' 
-                  }}>
-                    {ev.title}
-                  </div>
-                );
-              }
+              return (
+                <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>
+                  {ev.title}
+                </div>
+              );
             })}
             
             {hiddenCount > 0 && (

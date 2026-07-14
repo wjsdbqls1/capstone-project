@@ -47,7 +47,7 @@ function TAAIReport() {
 
   return (
     <TALayout>
-      <div style={styles.pageTitle}>AI 조교 리포트</div>
+      <div style={styles.pageTitle}>문의 리포트</div>
 
       {/* 문의량 예측 섹션 */}
       <div style={styles.card}>
@@ -90,7 +90,7 @@ function TAAIReport() {
           </button>
         </div>
 
-        {summaryLoading && <div style={styles.loadingText}>AI가 문의 내용을 분석하고 있습니다...</div>}
+        {summaryLoading && <div style={styles.loadingText}>문의 내용을 요약하고 있습니다...</div>}
 
         {summary && (
           <div style={styles.summaryResult}>

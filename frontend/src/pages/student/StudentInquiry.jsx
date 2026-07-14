@@ -252,7 +252,7 @@ const styles = {
 
   glassContainer: {
     margin: '15px auto',
-    width: '100%',
+    width: 'calc(100% - 30px)',
     maxWidth: '640px',
     boxSizing: 'border-box',
     padding: 'clamp(20px, 4vw, 30px)',
