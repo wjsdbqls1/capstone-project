@@ -102,6 +102,10 @@ async def predict_answer_candidates(req: PredictRequest):
         raise HTTPException(status_code=400, detail="question이 비어 있습니다.")
     try:
         predictor = _get_predictor()
+        # 매 요청마다 최신 FAQ를 반영 (새 FAQ 등록 시 재시작 불필요).
+        # 무거운 모델은 캐시된 predictor를 재사용하고 FAQ 목록만 갱신한다.
+        from backend_bridge import load_faq_db
+        predictor.set_faq_db(load_faq_db())
         return predictor.predict(req.question)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

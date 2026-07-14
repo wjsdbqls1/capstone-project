@@ -1,19 +1,3 @@
-"""
-기능 1: 문의 답변 후보 제공 (2단계 파이프라인)
-
-1단계 - 분류: KoBERTClassifier로 문의 카테고리 예측
-2단계 - 리랭킹: 해당 카테고리의 FAQ 답변 후보를 Cross-Encoder로 점수화 후 정렬
-
-반환 예시:
-    {
-        "category": "수강신청",
-        "candidates": [
-            {"faq_id": 12, "question": "...", "answer": "...", "score": 0.92},
-            {"faq_id": 7,  "question": "...", "answer": "...", "score": 0.74},
-        ]
-    }
-"""
-
 import sys
 from pathlib import Path
 
@@ -54,10 +38,20 @@ class AnswerCandidatePredictor:
 
         # 카테고리별 FAQ 인덱스 구성
         self.faq_by_category: dict[str, list[dict]] = {cat: [] for cat in CATEGORY_LABELS}
+        self.set_faq_db(faq_db)
+
+    def set_faq_db(self, faq_db: list[dict]) -> None:
+        """FAQ 목록을 교체하고 카테고리별 인덱스를 재구성.
+
+        모델은 그대로 두고 FAQ만 갱신하므로, 새 FAQ 등록 시 재학습·재시작 없이
+        요청마다 최신 FAQ를 반영할 수 있다.
+        """
+        faq_by_category: dict[str, list[dict]] = {cat: [] for cat in CATEGORY_LABELS}
         for faq in faq_db:
             cat = faq.get("category", "기타")
-            if cat in self.faq_by_category:
-                self.faq_by_category[cat].append(faq)
+            if cat in faq_by_category:
+                faq_by_category[cat].append(faq)
+        self.faq_by_category = faq_by_category
 
     @torch.no_grad()
     def predict_category(self, question: str) -> tuple[str, float]:
