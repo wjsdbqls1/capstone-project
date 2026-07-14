@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register'; // ★ 회원가입 페이지 import 추가
 
@@ -28,7 +28,7 @@ import TAAIReport from './pages/ta/TAAIReport';
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} /> {/* ★ 회원가입 라우트 추가 */}
@@ -55,7 +55,7 @@ function App() {
         <Route path="/ta/students" element={<TAStudentManage />} />
         <Route path="/ta/ai" element={<TAAIReport />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
