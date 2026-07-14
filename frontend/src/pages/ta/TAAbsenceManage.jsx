@@ -82,9 +82,9 @@ function TAAbsenceManage() {
 
   const getStatusStyle = (status) => {
     switch (status) {
-        case 'APPROVED': return { bg: '#e8f5e9', text: '#2e7d32', label: '승인' };
-        case 'REJECTED': return { bg: '#ffebee', text: '#c62828', label: '반려' };
-        default: return { bg: '#fff3e0', text: '#ef6c00', label: '검토대기' };
+        case 'APPROVED': return { bg: '#e8f5e9', text: '#2e7d32', label: '승인', border: '#2e7d32', cardBg: '#f2faf3' };
+        case 'REJECTED': return { bg: '#ffebee', text: '#c62828', label: '반려', border: '#c62828', cardBg: '#fdf3f3' };
+        default: return { bg: '#fff3e0', text: '#ef6c00', label: '검토대기', border: '#ef6c00', cardBg: '#fff9f1' };
     }
   };
 
@@ -126,19 +126,25 @@ function TAAbsenceManage() {
               ) : (
                 filteredRequests.map((req) => {
                   const statusStyle = getStatusStyle(req.status);
+                  const courses = (req.course_name || '').split(',').map((c) => c.trim()).filter(Boolean);
                   return (
-                      <div key={req.id} style={styles.card} onClick={() => { setSelectedReq(req); setView('detail'); setShowRejectInput(false); }}
-                        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.6)'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.4)'; }}
+                      <div key={req.id} style={{...styles.card, borderLeft: `6px solid ${statusStyle.border}`, backgroundColor: statusStyle.cardBg}} onClick={() => { setSelectedReq(req); setView('detail'); setShowRejectInput(false); }}
+                        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 14px rgba(0,0,0,0.1)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)'; }}
                       >
-                          <div style={{display:'flex', justifyContent:'space-between', marginBottom:'8px'}}>
-                              <span style={{fontSize:'13px', color:'#666', fontWeight:'500'}}>{req.created_at.split('T')[0]}</span>
-                              <span style={{fontSize:'14px', fontWeight:'bold', backgroundColor: statusStyle.bg, color: statusStyle.text, padding: '4px 8px', borderRadius: '6px'}}>{statusStyle.label}</span>
+                          <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px'}}>
+                              <span style={{fontSize:'13px', color:'#666', fontWeight:'500'}}>신청일 {req.created_at.split('T')[0]}</span>
+                              <span style={{fontSize:'13px', fontWeight:'bold', backgroundColor: statusStyle.bg, color: statusStyle.text, padding: '3px 10px', borderRadius: '12px'}}>{statusStyle.label}</span>
                           </div>
-                          <div style={{fontWeight:'bold', fontSize:'17px', color:'#222', marginBottom:'5px'}}>
+                          <div style={{fontWeight:'bold', fontSize:'17px', color:'#222', marginBottom:'8px'}}>
                               {req.department} {req.grade}학년 {req.student_name} ({req.student_no})
                           </div>
-                          <div style={{fontSize:'14px', color:'#555'}}><span style={{fontWeight:'600', color:'#003675'}}>{req.course_name}</span> | <span style={{color:'#c62828'}}>{req.absent_date}</span></div>
+                          <div style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px'}}>
+                              {courses.map((c, i) => (
+                                <span key={i} style={styles.courseChip}>{c}</span>
+                              ))}
+                              <span style={{color:'#c62828', fontSize:'14px', fontWeight:'600', marginLeft:'4px'}}>{req.absent_date}</span>
+                          </div>
                       </div>
                   );
               })
@@ -169,8 +175,12 @@ function TAAbsenceManage() {
               <div style={styles.sectionBox}>
                   <h3 style={styles.sectionTitle}>📄 신청 내용</h3>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
-                      <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>과목명</span> 
-                      <strong>{selectedReq.course_name}</strong>
+                      <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>과목명</span>
+                      <span style={{display:'flex', flexWrap:'wrap', gap:'6px'}}>
+                        {(selectedReq.course_name || '').split(',').map((c) => c.trim()).filter(Boolean).map((c, i) => (
+                          <span key={i} style={styles.courseChip}>{c}</span>
+                        ))}
+                      </span>
                   </div>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>결석일</span> 
@@ -215,7 +225,8 @@ const styles = {
   filterBar: { marginBottom:'15px', padding:'10px 15px', backgroundColor:'rgba(255, 255, 255, 0.4)', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.6)', display:'flex', alignItems:'center', flexWrap: 'wrap' },
   select: { padding:'8px 12px', borderRadius:'8px', border:'1px solid #ced4da', backgroundColor:'rgba(255,255,255,0.8)', fontSize:'14px', cursor:'pointer', outline:'none', minWidth:'100px' },
   listArea: { flex: 1, overflowY: 'auto', padding: '5px' },
-  card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.8)', borderLeft: '6px solid #003675', transition: 'all 0.2s ease' },
+  card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid #eee', borderLeft: '6px solid #003675', transition: 'all 0.2s ease' },
+  courseChip: { display: 'inline-block', padding: '4px 10px', backgroundColor: '#e3f2fd', color: '#003675', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' },
   detailContainer: { overflowY:'auto', padding:'5px', maxWidth:'800px', margin:'0 auto', width:'100%' },
   sectionBox: { backgroundColor: 'rgba(255, 255, 255, 0.4)', padding: '25px', borderRadius: '16px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' },
   sectionTitle: { fontSize: '18px', color: '#003675', borderBottom: '2px solid #003675', paddingBottom: '10px', marginBottom: '20px', fontWeight:'800' },

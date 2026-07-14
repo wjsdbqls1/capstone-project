@@ -15,10 +15,20 @@ function StudentAbsence() {
   // 입력 폼 상태
   const [formData, setFormData] = useState({
     target_date: '',
-    subject: '',
     reason: ''
   });
-  const [file, setFile] = useState(null); 
+  // 강의명 여러 개 입력 (최소 1개)
+  const [courseList, setCourseList] = useState(['']);
+  const [file, setFile] = useState(null);
+
+  const updateCourse = (idx, value) => {
+    setCourseList(courseList.map((c, i) => (i === idx ? value : c)));
+  };
+  const addCourse = () => setCourseList([...courseList, '']);
+  const removeCourse = (idx) => {
+    if (courseList.length === 1) return;
+    setCourseList(courseList.filter((_, i) => i !== idx));
+  };
 
   // 1. 내 공결 내역 가져오기
   const fetchAbsences = async () => {
@@ -44,7 +54,9 @@ function StudentAbsence() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.target_date || !formData.subject || !formData.reason) {
+    // 여러 강의명을 ", "로 합쳐서 저장
+    const subject = courseList.map((c) => c.trim()).filter(Boolean).join(', ');
+    if (!formData.target_date || !subject || !formData.reason) {
       alert("날짜, 과목, 사유를 모두 입력해주세요.");
       return;
     }
@@ -63,7 +75,7 @@ function StudentAbsence() {
     try {
       const submitData = new FormData();
       submitData.append('target_date', formData.target_date);
-      submitData.append('subject', formData.subject);
+      submitData.append('subject', subject);
       submitData.append('reason', formData.reason);
       submitData.append('file', file);
 
@@ -76,9 +88,10 @@ function StudentAbsence() {
 
       alert("공결 신청이 완료되었습니다.");
       setShowForm(false);
-      setFormData({ target_date: '', subject: '', reason: '' });
+      setFormData({ target_date: '', reason: '' });
+      setCourseList(['']);
       setFile(null);
-      fetchAbsences(); 
+      fetchAbsences();
     } catch (error) {
       console.error("신청 실패:", error);
       const msg = error.response?.data?.detail || "신청 중 오류가 발생했습니다.";
@@ -138,7 +151,7 @@ function StudentAbsence() {
                 <div style={styles.emptyMessage}>신청 내역이 없습니다.</div>
               ) : (
                 absences.map((item) => (
-                  <div key={item.id} style={styles.card}>
+                  <div key={item.id} style={{...styles.card, borderLeft: `6px solid ${getStatusStyle(item.status).color}`}}>
                     <div style={styles.cardHeader}>
                       <span style={styles.submitDate}>
                          신청일: {item.created_at ? item.created_at.split('T')[0] : '-'}
@@ -149,7 +162,11 @@ function StudentAbsence() {
                     </div>
                     
                     <div style={styles.cardBody}>
-                      <div style={styles.cardTitle}>{item.course_name}</div>
+                      <div style={styles.courseChips}>
+                        {(item.course_name || '').split(',').map((c) => c.trim()).filter(Boolean).map((c, i) => (
+                          <span key={i} style={styles.courseChip}>{c}</span>
+                        ))}
+                      </div>
                       <div style={styles.targetDate}>결석일: {item.absent_date}</div>
                     </div>
 
@@ -181,14 +198,22 @@ function StudentAbsence() {
             </div>
             
             <div style={styles.inputGroup}>
-              <label style={styles.label}>과목명</label>
-              <input 
-                type="text" 
-                placeholder="과목명 / 모두:ALL" 
-                style={styles.input}
-                value={formData.subject}
-                onChange={(e) => setFormData({...formData, subject: e.target.value})}
-              />
+              <label style={styles.label}>과목명 (여러 개 추가 가능)</label>
+              {courseList.map((course, idx) => (
+                <div key={idx} style={{display:'flex', gap:'8px', alignItems:'center'}}>
+                  <input
+                    type="text"
+                    placeholder={idx === 0 ? "과목명 / 전체결석:ALL" : "추가 과목명"}
+                    style={{...styles.input, flex: 1}}
+                    value={course}
+                    onChange={(e) => updateCourse(idx, e.target.value)}
+                  />
+                  {courseList.length > 1 && (
+                    <button type="button" style={styles.removeCourseBtn} onClick={() => removeCourse(idx)}>✕</button>
+                  )}
+                </div>
+              ))}
+              <button type="button" style={styles.addCourseBtn} onClick={addCourse}>+ 과목 추가</button>
             </div>
             
             <div style={styles.inputGroup}>
@@ -310,7 +335,8 @@ const styles = {
   badge: { fontSize: '13px', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' },
   
   cardBody: { marginBottom: '8px' },
-  cardTitle: { fontSize: '18px', fontWeight: 'bold', color: '#333', marginBottom: '4px' },
+  courseChips: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' },
+  courseChip: { display: 'inline-block', padding: '4px 10px', backgroundColor: '#e3f2fd', color: '#003675', borderRadius: '14px', fontSize: '14px', fontWeight: 'bold' },
   targetDate: { fontSize: '15px', color: '#003675', fontWeight: '600' },
   cardReason: { fontSize: '15px', color: '#555', lineHeight: '1.4' },
   
@@ -337,12 +363,14 @@ const styles = {
     outline: 'none',
     backgroundColor: 'rgba(255,255,255,0.9)'
   },
-  fileInput: { 
-    padding: '10px', 
-    backgroundColor: 'white', 
-    borderRadius: '8px', 
-    border: '1px dashed #ccc' 
+  fileInput: {
+    padding: '10px',
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    border: '1px dashed #ccc'
   },
+  addCourseBtn: { alignSelf: 'flex-start', marginTop: '4px', padding: '8px 14px', backgroundColor: '#e3f2fd', color: '#003675', border: '1px dashed #90caf9', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
+  removeCourseBtn: { flexShrink: 0, width: '38px', height: '38px', backgroundColor: '#ffebee', color: '#c62828', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' },
   textarea: { 
     padding: '12px', 
     border: '1px solid #ccc', 
