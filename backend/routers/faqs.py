@@ -18,7 +18,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # 1. 목록 조회
 @r.get("")
 def list_faqs(db: Session = Depends(get_db)):
-    return db.query(FAQ).order_by(FAQ.id.desc()).all()
+    # 등록일(created_at) 내림차순 정렬, 동일 등록일은 최신 등록 순(id)으로
+    return db.query(FAQ).order_by(FAQ.created_at.desc(), FAQ.id.desc()).all()
 
 VALID_CATEGORIES = ['수강신청', '성적', '졸업', '장학금', '휴복학', '등록금', '기숙사', '공결_출석', '증명서', '기타']
 
