@@ -152,8 +152,8 @@ function TACalendarManage() {
                             borderLeft: isStart ? `3px solid ${theme.bar}` : 'none',
                             borderTopLeftRadius: isStart ? '3px' : 0, borderBottomLeftRadius: isStart ? '3px' : 0,
                             borderTopRightRadius: isEnd ? '3px' : 0, borderBottomRightRadius: isEnd ? '3px' : 0,
-                            marginLeft: isStart ? '2px' : 0, marginRight: isEnd ? '2px' : 0,
-                            paddingLeft: '4px', width: '100%',
+                            margin: 0, marginLeft: isStart ? '2px' : 0, marginRight: isEnd ? '2px' : 0,
+                            paddingLeft: '4px', width: '100%', boxSizing: 'border-box',
                             zIndex: 10, position: 'relative'
                         };
                         return (
