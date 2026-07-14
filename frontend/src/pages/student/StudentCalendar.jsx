@@ -102,15 +102,19 @@ function StudentCalendar() {
           <div style={calStyles.eventList}>
             {visibleList.map((ev, idx) => {
               const isManual = ev.source === 'manual';
-              // 이벤트가 걸쳐 있는 모든 날짜에 막대를 표시 (시작일/일요일 조건 제거로 누락 방지)
+              // 걸쳐 있는 모든 날짜에 표시하되, 시작/끝만 둥글게 하여 하나의 띠로 이어 보이게
+              const isStart = ev.start_date === dateStr;
+              const isEnd = ev.end_date === dateStr;
               const theme = isManual
                 ? { bg: '#fff3e0', text: '#e65100', bar: '#e65100' } // 학과 (주황)
                 : { bg: '#e3f2fd', text: '#1565c0', bar: '#1565c0' }; // 학교 (파랑)
               const itemStyle = {
                   backgroundColor: theme.bg,
                   color: theme.text,
-                  borderLeft: `4px solid ${theme.bar}`,
-                  borderRadius: '4px',
+                  borderLeft: isStart ? `4px solid ${theme.bar}` : 'none',
+                  borderTopLeftRadius: isStart ? '4px' : 0, borderBottomLeftRadius: isStart ? '4px' : 0,
+                  borderTopRightRadius: isEnd ? '4px' : 0, borderBottomRightRadius: isEnd ? '4px' : 0,
+                  marginLeft: isStart ? '2px' : 0, marginRight: isEnd ? '2px' : 0,
                   paddingLeft: '4px',
                   width: '100%',
                   zIndex: 10,
@@ -118,7 +122,7 @@ function StudentCalendar() {
               };
               return (
                 <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>
-                  {ev.title}
+                  {isStart ? ev.title : ''}
                 </div>
               );
             })}

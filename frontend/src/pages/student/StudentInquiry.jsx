@@ -251,9 +251,8 @@ const styles = {
   },
 
   glassContainer: {
-    margin: '15px auto',
-    width: 'calc(100% - 30px)',
-    maxWidth: '640px',
+    // 다른 학생 화면들과 동일하게 화면을 꽉 채우도록 (좌우 15px 여백)
+    margin: '15px',
     boxSizing: 'border-box',
     padding: 'clamp(20px, 4vw, 30px)',
     backgroundColor: 'rgba(255, 255, 255, 0.65)',
@@ -264,8 +263,8 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     // 고정 높이 대신 내용에 따라 늘어나게 설정
-    flexShrink: 0, 
-    marginBottom: '40px' 
+    flexShrink: 0,
+    marginBottom: '40px'
   },
   
   formGroup: { marginBottom: '15px' },

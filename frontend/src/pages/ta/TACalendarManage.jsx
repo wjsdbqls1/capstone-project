@@ -143,16 +143,21 @@ function TACalendarManage() {
                     {allItems.slice(0, 5).map((ev, idx) => {
                         const isManual = ev.source === 'manual';
                         const isMemo = ev.type === 'memo';
-                        // 이벤트가 걸쳐 있는 모든 날짜에 막대를 표시 (시작일/일요일 조건 제거로 누락 방지)
+                        // 걸쳐 있는 모든 날짜에 표시하되, 시작/끝만 둥글게 하여 하나의 띠로 이어 보이게
+                        const isStart = ev.start_date === dateStr;
+                        const isEnd = ev.end_date === dateStr;
                         const theme = isMemo ? { bg:'#e8f5e9', text:'#2e7d32', bar:'#2e7d32' } : isManual ? { bg:'#fff3e0', text:'#e65100', bar:'#e65100' } : { bg:'#e3f2fd', text:'#1565c0', bar:'#1565c0' };
                         const itemStyle = {
                             backgroundColor: theme.bg, color: theme.text,
-                            borderLeft: `3px solid ${theme.bar}`,
+                            borderLeft: isStart ? `3px solid ${theme.bar}` : 'none',
+                            borderTopLeftRadius: isStart ? '3px' : 0, borderBottomLeftRadius: isStart ? '3px' : 0,
+                            borderTopRightRadius: isEnd ? '3px' : 0, borderBottomRightRadius: isEnd ? '3px' : 0,
+                            marginLeft: isStart ? '2px' : 0, marginRight: isEnd ? '2px' : 0,
                             paddingLeft: '4px', width: '100%',
                             zIndex: 10, position: 'relative'
                         };
                         return (
-                            <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>{ev.title}</div>
+                            <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>{isStart ? ev.title : ''}</div>
                         );
                     })}
                     {/* [PC] 5개 초과 시 +N 표시 */}
