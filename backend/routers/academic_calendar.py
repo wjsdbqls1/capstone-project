@@ -85,3 +85,39 @@ def create_academic_event(data: AcademicEventCreate, db: Session = Depends(get_d
     
     print(f"[SUCCESS] Event created: {new_event.id} ({new_event.title})")
     return {"id": new_event.id, "title": new_event.title}
+
+
+@r.put("/{event_id}")
+def update_academic_event(event_id: int, data: AcademicEventCreate, db: Session = Depends(get_db)):
+    ev = db.query(AcademicEvent).filter(AcademicEvent.id == event_id).first()
+    if not ev:
+        raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다.")
+    if ev.source != "manual":
+        raise HTTPException(status_code=403, detail="크롤링된 학사일정은 수정할 수 없습니다.")
+
+    try:
+        s_date = datetime.strptime(data.start_date, "%Y-%m-%d").date()
+        e_date = datetime.strptime(data.end_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. (YYYY-MM-DD)")
+    if e_date < s_date:
+        raise HTTPException(status_code=400, detail="종료 날짜가 시작 날짜보다 빠를 수 없습니다.")
+
+    ev.title = data.title
+    ev.start_date = s_date
+    ev.end_date = e_date
+    ev.year = s_date.year
+    db.commit()
+    return {"id": ev.id, "title": ev.title}
+
+
+@r.delete("/{event_id}")
+def delete_academic_event(event_id: int, db: Session = Depends(get_db)):
+    ev = db.query(AcademicEvent).filter(AcademicEvent.id == event_id).first()
+    if not ev:
+        raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다.")
+    if ev.source != "manual":
+        raise HTTPException(status_code=403, detail="크롤링된 학사일정은 삭제할 수 없습니다.")
+    db.delete(ev)
+    db.commit()
+    return {"ok": True, "id": event_id}

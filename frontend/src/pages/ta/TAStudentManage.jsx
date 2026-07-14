@@ -44,8 +44,8 @@ const statusColor = (s) => {
 function TAStudentManage() {
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [gradeFilter, setGradeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('재학'); // 기본: 재학
+  const [gradeFilter, setGradeFilter] = useState('all');    // 기본: 전체 학년
 
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ student_no: '', name: '', department: '', grade: 1 });

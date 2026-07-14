@@ -2,7 +2,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
-import Register from './pages/Register'; // ★ 회원가입 페이지 import 추가
 
 // 학생 페이지
 import StudentMain from './pages/student/StudentMain';
@@ -31,8 +30,7 @@ function App() {
     <HashRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} /> {/* ★ 회원가입 라우트 추가 */}
-        
+
         {/* 1. 학생 화면 라우팅 */}
         <Route path="/student/main" element={<StudentMain />} />
         <Route path="/student/inquiry" element={<StudentInquiry />} />

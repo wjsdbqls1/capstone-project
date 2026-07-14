@@ -90,17 +90,11 @@ function Login() {
           </button>
         </div>
         
-        {/* 하단 링크 영역 */}
+        {/* 하단 안내 영역 */}
         <div style={styles.footerLink}>
-          <span style={{fontSize:'14px', color:'#555'}}>
-            계정이 없으신가요?
+          <span style={{fontSize:'14px', color:'#555', textAlign:'center', lineHeight:'1.5'}}>
+            계정이 없으신가요? 학과 사무실에 문의하세요.<br/>010-0000-0000
           </span>
-          <button 
-            onClick={() => navigate('/register')}
-            style={styles.registerBtn}
-          >
-            회원가입 하기
-          </button>
         </div>
       </div>
     </div>

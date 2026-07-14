@@ -16,7 +16,8 @@ function TACalendarManage() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false); 
   const [memoInput, setMemoInput] = useState("");
   const [newEvent, setNewEvent] = useState({ title: '', start_date: '', end_date: '' });
-  
+  const [editingEventId, setEditingEventId] = useState(null); // null=신규, 값 있으면 수정
+
   // 모바일 감지
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const token = localStorage.getItem('token');
@@ -29,7 +30,8 @@ function TACalendarManage() {
 
   const fetchData = async () => {
     try {
-      const eventRes = await axios.get('https://capstone-project-of74.onrender.com/academic-events');
+      // 현재 보고 있는 연도의 일정을 불러옴 (연도 이동 시에도 표시되도록)
+      const eventRes = await axios.get(`https://capstone-project-of74.onrender.com/academic-events?year=${currentDate.getFullYear()}&limit=500`);
       setAcademicEvents(eventRes.data);
       if (token) {
         const memoRes = await axios.get('https://capstone-project-of74.onrender.com/memos', { headers: { Authorization: `Bearer ${token}` } });
@@ -54,7 +56,36 @@ function TACalendarManage() {
   };
   const handleRegister = async () => {
     if(!newEvent.title || !newEvent.start_date || !newEvent.end_date) return;
-    try { await axios.post('https://capstone-project-of74.onrender.com/academic-events', newEvent); alert("등록됨"); setIsRegisterModalOpen(false); setNewEvent({ title: '', start_date: '', end_date: '' }); fetchData(); } catch (error) { alert("실패"); }
+    const base = 'https://capstone-project-of74.onrender.com/academic-events';
+    try {
+      if (editingEventId) {
+        await axios.put(`${base}/${editingEventId}`, newEvent);
+        alert("수정됨");
+      } else {
+        await axios.post(base, newEvent);
+        alert("등록됨");
+      }
+      closeRegisterModal();
+      await fetchData();
+      if (selectedDate) updateSelectedItems(selectedDate);
+    } catch (error) { alert(error.response?.data?.detail || "실패"); }
+  };
+
+  const openCreateModal = () => { setEditingEventId(null); setNewEvent({ title: '', start_date: '', end_date: '' }); setIsRegisterModalOpen(true); };
+  const openEditModal = (ev) => {
+    setEditingEventId(ev.id);
+    setNewEvent({ title: ev.title, start_date: ev.start_date, end_date: ev.end_date });
+    setIsRegisterModalOpen(true);
+  };
+  const closeRegisterModal = () => { setIsRegisterModalOpen(false); setEditingEventId(null); setNewEvent({ title: '', start_date: '', end_date: '' }); };
+
+  const handleDeleteEvent = async (id) => {
+    if(!window.confirm("이 일정을 삭제하시겠습니까?")) return;
+    try {
+      await axios.delete(`https://capstone-project-of74.onrender.com/academic-events/${id}`);
+      await fetchData();
+      if (selectedDate) updateSelectedItems(selectedDate);
+    } catch (error) { alert(error.response?.data?.detail || "삭제 실패"); }
   };
 
   const updateSelectedItems = (dateStr) => {
@@ -162,7 +193,7 @@ function TACalendarManage() {
           <h3 style={{margin:0, fontSize:'20px', fontWeight:'800', color:'#333'}}>{currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}</h3>
           <button onClick={nextMonth} style={calStyles.navBtn}>▶</button>
         </div>
-        <button onClick={() => setIsRegisterModalOpen(true)} style={calStyles.addBtn}>+ 일정 등록</button>
+        <button onClick={openCreateModal} style={calStyles.addBtn}>+ 일정 등록</button>
       </div>
       
       {/* 캘린더 영역 */}
@@ -195,6 +226,12 @@ function TACalendarManage() {
                             <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
                                 <div><div style={{fontWeight:'bold', fontSize:'15px', color:'#333'}}>{ev.title}</div>{ev.type!=='memo' && <div style={{fontSize:'12px', color:'#666', marginTop:'4px'}}>{ev.start_date} ~ {ev.end_date}</div>}</div>
                                 {ev.type==='memo' && <button onClick={() => handleDeleteMemo(ev.id.replace('memo-',''))} style={{background:'none', border:'none', cursor:'pointer', color:'#999'}}>🗑️</button>}
+                                {ev.type!=='memo' && ev.source==='manual' && (
+                                    <div style={{display:'flex', gap:'6px', flexShrink:0}}>
+                                        <button onClick={() => openEditModal(ev)} style={{padding:'4px 10px', backgroundColor:'#e3f2fd', color:'#003675', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontWeight:'bold'}}>수정</button>
+                                        <button onClick={() => handleDeleteEvent(ev.id)} style={{padding:'4px 10px', backgroundColor:'#ffebee', color:'#c62828', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontWeight:'bold'}}>삭제</button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -203,7 +240,7 @@ function TACalendarManage() {
         </div>
       )}
       {isRegisterModalOpen && (
-        <div style={modalStyles.overlay}><div style={modalStyles.modal}><div style={modalStyles.header}><h3 style={{margin:0}}>일정 등록</h3><button onClick={() => setIsRegisterModalOpen(false)} style={modalStyles.closeBtn}>✕</button></div><div style={{padding:'20px'}}><div style={modalStyles.inputGroup}><label style={modalStyles.label}>제목</label><input placeholder="예: 수강신청" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.inputGroup}><label style={modalStyles.label}>시작</label><input type="date" value={newEvent.start_date} onChange={e => setNewEvent({...newEvent, start_date: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.inputGroup}><label style={modalStyles.label}>종료</label><input type="date" value={newEvent.end_date} onChange={e => setNewEvent({...newEvent, end_date: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.btnGroup}><button onClick={() => setIsRegisterModalOpen(false)} style={modalStyles.cancelBtn}>취소</button><button onClick={handleRegister} style={modalStyles.submitBtn}>등록</button></div></div></div></div>
+        <div style={modalStyles.overlay}><div style={modalStyles.modal}><div style={modalStyles.header}><h3 style={{margin:0}}>{editingEventId ? '일정 수정' : '일정 등록'}</h3><button onClick={closeRegisterModal} style={modalStyles.closeBtn}>✕</button></div><div style={{padding:'20px'}}><div style={modalStyles.inputGroup}><label style={modalStyles.label}>제목</label><input placeholder="예: 수강신청" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.inputGroup}><label style={modalStyles.label}>시작</label><input type="date" value={newEvent.start_date} onChange={e => setNewEvent({...newEvent, start_date: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.inputGroup}><label style={modalStyles.label}>종료</label><input type="date" value={newEvent.end_date} onChange={e => setNewEvent({...newEvent, end_date: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.btnGroup}><button onClick={closeRegisterModal} style={modalStyles.cancelBtn}>취소</button><button onClick={handleRegister} style={modalStyles.submitBtn}>{editingEventId ? '수정' : '등록'}</button></div></div></div></div>
       )}
     </TALayout>
   );

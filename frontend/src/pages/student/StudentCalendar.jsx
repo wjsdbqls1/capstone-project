@@ -19,7 +19,8 @@ function StudentCalendar() {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('https://capstone-project-of74.onrender.com/academic-events');
+      // 현재 보고 있는 연도의 일정을 불러옴 (연도 이동 시에도 표시되도록)
+      const response = await axios.get(`https://capstone-project-of74.onrender.com/academic-events?year=${currentDate.getFullYear()}&limit=500`);
       setEvents(response.data);
     } catch (error) {
       console.error("일정 로딩 실패:", error);
@@ -28,7 +29,8 @@ function StudentCalendar() {
 
   useEffect(() => {
     fetchEvents();
-  }, []); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDate]);
 
   const handleDateClick = (dateStr, dayEvents) => {
     setSelectedDate(dateStr);

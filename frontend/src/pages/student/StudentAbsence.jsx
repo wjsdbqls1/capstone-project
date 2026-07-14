@@ -21,6 +21,19 @@ function StudentAbsence() {
   const [courseList, setCourseList] = useState(['']);
   const [file, setFile] = useState(null);
 
+  // 결석 날짜 선택 가능 범위: 이번 달 1일 ~ 말일
+  const monthRange = (() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const pad = (n) => String(n).padStart(2, '0');
+    const lastDay = new Date(y, m + 1, 0).getDate();
+    return {
+      min: `${y}-${pad(m + 1)}-01`,
+      max: `${y}-${pad(m + 1)}-${pad(lastDay)}`,
+    };
+  })();
+
   const updateCourse = (idx, value) => {
     setCourseList(courseList.map((c, i) => (i === idx ? value : c)));
   };
@@ -188,11 +201,13 @@ function StudentAbsence() {
             <h3 style={{margin:'0 0 20px 0', textAlign:'center', color:'#003675'}}>신청서 작성</h3>
             
             <div style={styles.inputGroup}>
-              <label style={styles.label}>결석 날짜</label>
-              <input 
-                type="date" 
+              <label style={styles.label}>결석 날짜 <span style={{fontSize:'13px', color:'#888', fontWeight:'normal'}}>(이번 달만 신청 가능)</span></label>
+              <input
+                type="date"
                 style={styles.input}
                 value={formData.target_date}
+                min={monthRange.min}
+                max={monthRange.max}
                 onChange={(e) => setFormData({...formData, target_date: e.target.value})}
               />
             </div>

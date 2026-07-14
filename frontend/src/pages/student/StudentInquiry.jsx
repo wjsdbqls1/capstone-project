@@ -251,9 +251,12 @@ const styles = {
   },
 
   glassContainer: {
-    margin: '15px',
-    padding: 'clamp(20px, 4vw, 30px)', 
-    backgroundColor: 'rgba(255, 255, 255, 0.65)', 
+    margin: '15px auto',
+    width: '100%',
+    maxWidth: '640px',
+    boxSizing: 'border-box',
+    padding: 'clamp(20px, 4vw, 30px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
     backdropFilter: 'blur(15px)',
     borderRadius: '20px',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',

@@ -88,12 +88,12 @@ function TALayout({ children }) {
 
           <div style={layoutStyles.divider}></div>
 
-          <div 
+          <div
             style={layoutStyles.aiMenuItem}
             onClick={() => handleMenuClick('/ta/ai')}
           >
-            <span style={{fontSize:'22px'}}>🤖</span> 
-            <span style={{position:'relative', top:'1px'}}>AI 조교 리포트</span>
+            <span style={{fontSize:'22px'}}>📊</span>
+            <span style={{position:'relative', top:'1px'}}>문의 리포트</span>
           </div>
         </nav>
 
