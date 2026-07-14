@@ -92,9 +92,6 @@ function TAAbsenceManage() {
     <TALayout>
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
           <div style={styles.pageTitle}>{view === 'detail' ? '신청서 검토' : '공결 신청 관리'}</div>
-          {view === 'detail' && (
-            <button onClick={() => setView('list')} style={styles.backBtn}>‹ 목록으로</button>
-          )}
       </div>
       
       {view === 'list' && (
@@ -152,7 +149,8 @@ function TAAbsenceManage() {
           </div>
       ) : (
           <div style={styles.detailContainer}>
-              <div style={styles.sectionBox}>
+              <div style={{...styles.sectionBox, position: 'relative'}}>
+                  <button onClick={() => setView('list')} style={styles.cardBackBtn}>‹ 목록으로</button>
                   <h3 style={styles.sectionTitle}>👤 신청자 정보</h3>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학과</span> 
@@ -222,6 +220,7 @@ function TAAbsenceManage() {
 const styles = {
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675' },
   backBtn: { cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 12px', borderRadius:'20px', fontSize:'13px', color:'#555', fontWeight:'bold', transition:'all 0.2s' },
+  cardBackBtn: { position:'absolute', top:'18px', right:'18px', cursor:'pointer', border:'1px solid #ccc', backgroundColor:'white', padding:'6px 14px', borderRadius:'20px', fontSize:'13px', color:'#555', fontWeight:'bold', boxShadow:'0 1px 3px rgba(0,0,0,0.08)', zIndex:2 },
   filterBar: { marginBottom:'15px', padding:'10px 15px', backgroundColor:'rgba(255, 255, 255, 0.4)', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.6)', display:'flex', alignItems:'center', flexWrap: 'wrap' },
   select: { padding:'8px 12px', borderRadius:'8px', border:'1px solid #ced4da', backgroundColor:'rgba(255,255,255,0.8)', fontSize:'14px', cursor:'pointer', outline:'none', minWidth:'100px' },
   listArea: { flex: 1, overflowY: 'auto', padding: '5px' },
