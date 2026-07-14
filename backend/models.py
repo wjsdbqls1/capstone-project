@@ -10,10 +10,11 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     student_no = Column(String(20), unique=True, nullable=False)
-    grade = Column(Integer, nullable=True)
+    grade = Column(Integer, nullable=True)  # 1~4 (휴학/졸업이어도 마지막 학년 보존)
     name = Column(String(50), nullable=False)
     department = Column(String(100), nullable=True)
     role = Column(String(20), nullable=False, default="student")  # student/assistant/admin
+    status = Column(String(20), nullable=False, default="재학")  # 재학/휴학/졸업
     password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     # email 컬럼 삭제 (DB 충돌 방지)

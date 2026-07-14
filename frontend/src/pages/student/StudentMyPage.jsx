@@ -7,9 +7,43 @@ import '../../App.css';
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
 
+const API = 'https://capstone-project-of74.onrender.com';
+
 function StudentMyPage() {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
+
+  // 비밀번호 변경 모달
+  const [showPwModal, setShowPwModal] = useState(false);
+  const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
+
+  const handleChangePassword = async () => {
+    if (!pwForm.current_password || !pwForm.new_password) {
+      alert('현재 비밀번호와 새 비밀번호를 입력해주세요.');
+      return;
+    }
+    if (pwForm.new_password.length < 4) {
+      alert('새 비밀번호는 4자 이상이어야 합니다.');
+      return;
+    }
+    if (pwForm.new_password !== pwForm.confirm_password) {
+      alert('새 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    const token = localStorage.getItem('token');
+    try {
+      await axios.post(
+        `${API}/users/me/password`,
+        { current_password: pwForm.current_password, new_password: pwForm.new_password },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert('비밀번호가 변경되었습니다.');
+      setShowPwModal(false);
+      setPwForm({ current_password: '', new_password: '', confirm_password: '' });
+    } catch (e) {
+      alert(e.response?.data?.detail || '비밀번호 변경 실패');
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -120,15 +154,65 @@ function StudentMyPage() {
             </div>
             )}
 
+            <button style={styles.changePwButton} onClick={() => setShowPwModal(true)}>
+                비밀번호 변경
+            </button>
+
             <button style={styles.logoutButton} onClick={handleLogout}>
                 로그아웃
             </button>
         </div>
 
       </div>
+
+      {/* 비밀번호 변경 모달 */}
+      {showPwModal && (
+        <div style={pwStyles.overlay}>
+          <div style={pwStyles.modal}>
+            <div style={pwStyles.header}>
+              <h3 style={{ margin: 0, color: '#003675' }}>비밀번호 변경</h3>
+              <button onClick={() => setShowPwModal(false)} style={pwStyles.closeBtn}>✕</button>
+            </div>
+            <div style={pwStyles.content}>
+              <input
+                type="password"
+                style={pwStyles.input}
+                placeholder="현재 비밀번호"
+                value={pwForm.current_password}
+                onChange={(e) => setPwForm({ ...pwForm, current_password: e.target.value })}
+              />
+              <input
+                type="password"
+                style={pwStyles.input}
+                placeholder="새 비밀번호 (4자 이상)"
+                value={pwForm.new_password}
+                onChange={(e) => setPwForm({ ...pwForm, new_password: e.target.value })}
+              />
+              <input
+                type="password"
+                style={pwStyles.input}
+                placeholder="새 비밀번호 확인"
+                value={pwForm.confirm_password}
+                onChange={(e) => setPwForm({ ...pwForm, confirm_password: e.target.value })}
+              />
+              <button style={pwStyles.saveBtn} onClick={handleChangePassword}>변경하기</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+const pwStyles = {
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 },
+  modal: { width: '90%', maxWidth: '400px', backgroundColor: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' },
+  header: { padding: '18px 25px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9' },
+  closeBtn: { border: 'none', background: 'transparent', fontSize: '24px', cursor: 'pointer', color: '#666' },
+  content: { padding: '25px', display: 'flex', flexDirection: 'column', gap: '12px' },
+  input: { width: '100%', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', boxSizing: 'border-box', fontSize: '15px' },
+  saveBtn: { width: '100%', padding: '14px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '5px' },
+};
 
 const styles = {
   pageContainer: {
@@ -272,8 +356,21 @@ const styles = {
     width: '100%'
   },
   
-  logoutButton: {
+  changePwButton: {
     marginTop: '30px',
+    padding: '12px 30px',
+    border: '1px solid #003675',
+    backgroundColor: 'white',
+    color: '#003675',
+    borderRadius: '25px',
+    fontSize: '15px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+  },
+  logoutButton: {
+    marginTop: '12px',
     padding: '12px 30px',
     border: '1px solid #ff5252',
     backgroundColor: 'white',

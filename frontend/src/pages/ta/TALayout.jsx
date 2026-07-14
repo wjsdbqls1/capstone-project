@@ -84,7 +84,8 @@ function TALayout({ children }) {
           <div style={isActive('/ta/faq') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/faq')}>FAQ</div>
           <div style={isActive('/ta/absence') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/absence')}>공결 신청</div>
           <div style={isActive('/ta/calendar') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/calendar')}>캘린더</div>
-          
+          <div style={isActive('/ta/students') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/students')}>학생 관리</div>
+
           <div style={layoutStyles.divider}></div>
 
           <div 

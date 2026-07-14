@@ -23,6 +23,7 @@ import TANoticeManage from './pages/ta/TANoticeManage';
 import TAFAQManage from './pages/ta/TAFAQManage';
 import TAAbsenceManage from './pages/ta/TAAbsenceManage';
 import TACalendarManage from './pages/ta/TACalendarManage';
+import TAStudentManage from './pages/ta/TAStudentManage';
 import TAAIReport from './pages/ta/TAAIReport';
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
         <Route path="/ta/faq" element={<TAFAQManage />} />
         <Route path="/ta/absence" element={<TAAbsenceManage />} />
         <Route path="/ta/calendar" element={<TACalendarManage />} />
+        <Route path="/ta/students" element={<TAStudentManage />} />
         <Route path="/ta/ai" element={<TAAIReport />} />
       </Routes>
     </BrowserRouter>
