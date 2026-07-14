@@ -12,8 +12,8 @@ function TAAbsenceManage() {
   const [rejectReason, setRejectReason] = useState('');
   
   const [dateFilter, setDateFilter] = useState('all');
-  // [추가] 상태 필터 State
-  const [statusFilter, setStatusFilter] = useState('all');
+  // [추가] 상태 필터 State (기본값: 검토대기)
+  const [statusFilter, setStatusFilter] = useState('pending');
 
   // 모바일 감지
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
