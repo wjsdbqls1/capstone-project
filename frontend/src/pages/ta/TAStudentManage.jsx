@@ -29,15 +29,23 @@ const statusLabel = (s) => {
 };
 
 const statusColor = (s) => {
-  if (s.status === '휴학') return { bg: '#fff3e0', fg: '#e65100' };
-  if (s.status === '졸업') return { bg: '#eceff1', fg: '#455a64' };
-  return { bg: '#e3f2fd', fg: '#003675' };
+  if (s.status === '휴학') return { bg: '#e0e0e0', fg: '#212121' }; // 검은색
+  if (s.status === '졸업') return { bg: '#f5f5f5', fg: '#9e9e9e' }; // 회색
+  // 재학: 학년별 색상
+  switch (s.grade) {
+    case 1: return { bg: '#e8f5e9', fg: '#2e7d32' }; // 1학년 초록
+    case 2: return { bg: '#e3f2fd', fg: '#1565c0' }; // 2학년 파랑
+    case 3: return { bg: '#fff3e0', fg: '#e65100' }; // 3학년 주황
+    case 4: return { bg: '#ffebee', fg: '#c62828' }; // 4학년 빨강
+    default: return { bg: '#eceff1', fg: '#455a64' };
+  }
 };
 
 function TAStudentManage() {
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [gradeFilter, setGradeFilter] = useState('all');
 
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ student_no: '', name: '', department: '', grade: 1 });
@@ -52,6 +60,7 @@ function TAStudentManage() {
       const params = {};
       if (searchTerm) params.search = searchTerm;
       if (statusFilter !== 'all') params.status = statusFilter;
+      if (gradeFilter !== 'all') params.grade = gradeFilter;
       const res = await axios.get(`${API}/admin/students`, { ...authConfig(), params });
       setStudents(res.data);
     } catch (e) {
@@ -63,7 +72,7 @@ function TAStudentManage() {
   useEffect(() => {
     fetchStudents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, gradeFilter]);
 
   // 학생 등록
   const handleCreate = async () => {
@@ -144,6 +153,13 @@ function TAStudentManage() {
             <option value="휴학">휴학</option>
             <option value="졸업">졸업</option>
           </select>
+          <select style={styles.select} value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)}>
+            <option value="all">🎓 전체 학년</option>
+            <option value="1">1학년</option>
+            <option value="2">2학년</option>
+            <option value="3">3학년</option>
+            <option value="4">4학년</option>
+          </select>
           <div style={styles.searchWrapper}>
             <span style={{ fontSize: '16px', color: '#666' }}>🔍</span>
             <input
@@ -161,7 +177,7 @@ function TAStudentManage() {
       <div style={styles.listArea}>
         {students.length === 0 ? (
           <div style={styles.emptyMessage}>
-            {searchTerm || statusFilter !== 'all' ? '검색 조건에 맞는 학생이 없습니다.' : '등록된 학생이 없습니다.'}
+            {searchTerm || statusFilter !== 'all' || gradeFilter !== 'all' ? '검색 조건에 맞는 학생이 없습니다.' : '등록된 학생이 없습니다.'}
           </div>
         ) : (
           <table style={styles.table}>
