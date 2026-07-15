@@ -128,17 +128,29 @@ def get_next_offset(next_url):
         pass
     return None
 
-def main():
+def main(max_pages=None, reset=False):
+    """외부 공지 크롤링.
+
+    max_pages: 크롤링할 목록 페이지 수 제한 (None이면 전체)
+    reset: True이면 기존 external 공지를 모두 삭제 후 새로 크롤링
+           (첨부파일을 서버 디스크에 다시 내려받기 위함)
+    """
     db = SessionLocal()
-    
+
     # ★ 먼저 관리자 계정(ID=1)이 있는지 확인 (안전장치)
     admin_check = db.query(User).filter(User.id == 1).first()
     if not admin_check:
         print("❌ 오류: ID가 1인 관리자 계정이 없습니다.")
         print("   먼저 'python backend/create_admin.py'를 실행해주세요.")
-        return
+        db.close()
+        return 0
 
-    print("📡 [외부공지] 학과 홈페이지(CSW) 전체 크롤링 시작...")
+    if reset:
+        deleted = db.query(Notice).filter(Notice.source == "external").delete()
+        db.commit()
+        print(f"🗑️  기존 external 공지 {deleted}건 삭제 (재크롤링 준비)")
+
+    print("📡 [외부공지] 학과 홈페이지(CSW) 크롤링 시작...")
 
     # ★ 세션 생성 (브라우저처럼 행동)
     session = get_browser_session()
@@ -146,8 +158,13 @@ def main():
     try:
         current_offset = 0
         total_count = 0
-        
+        page_count = 0
+
         while True:
+            page_count += 1
+            if max_pages is not None and page_count > max_pages:
+                print(f"   ℹ️ 최대 페이지({max_pages}) 도달, 종료")
+                break
             # 2~4초 대기 (조금 더 늘림)
             sleep_time = random.uniform(2, 4)
             print(f"   ⏳ {sleep_time:.1f}초 대기 후 요청...")
@@ -231,12 +248,19 @@ def main():
             print(f"✅ [외부공지] 총 {total_count}개 신규 저장 완료!")
         else:
             print("ℹ️ [외부공지] 새로운 공지사항이 없습니다.")
+        return total_count
 
     except Exception as e:
         print(f"❌ 크롤링 중 치명적 오류: {e}")
+        return 0
     finally:
         db.close()
         session.close() # 세션 닫기
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--reset", action="store_true", help="기존 external 공지 삭제 후 재크롤링")
+    ap.add_argument("--max-pages", type=int, default=None, help="크롤링할 목록 페이지 수 제한")
+    args = ap.parse_args()
+    main(max_pages=args.max_pages, reset=args.reset)

@@ -90,9 +90,52 @@ def delete_notice(notice_id: int, db: Session = Depends(get_db)):
     notice = db.query(Notice).filter(Notice.id == notice_id).first()
     if not notice:
         raise HTTPException(status_code=404, detail="notice not found")
-    
+
     # (선택) 실제 파일도 삭제하고 싶다면 여기서 os.remove 사용
-    
+
     db.delete(notice)
     db.commit()
     return {"message": "deleted"}
+
+
+# 4. 외부 공지 크롤링 (서버에서 실행 → 첨부파일을 서버 디스크에 저장)
+import threading
+import importlib.util
+
+_crawl_state = {"running": False, "last_result": None}
+
+
+@r.post("/sync-external")
+def sync_external_notices_endpoint(reset: bool = False, max_pages: int = 5):
+    """학과 홈페이지 외부 공지를 서버에서 크롤링하여 첨부파일까지 서버에 저장.
+
+    reset=true 이면 기존 external 공지를 삭제 후 재크롤링(첨부파일 서버에 재저장).
+    max_pages 로 크롤링 페이지 수를 제한(기본 5페이지).
+    """
+    if _crawl_state["running"]:
+        return {"message": "이미 크롤링이 진행 중입니다.", "running": True}
+
+    def run():
+        _crawl_state["running"] = True
+        try:
+            script_path = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), "scripts", "sync_external_notices.py"
+            )
+            spec = importlib.util.spec_from_file_location("sync_external_notices", script_path)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            count = mod.main(max_pages=max_pages, reset=reset)
+            _crawl_state["last_result"] = f"신규 {count}건"
+        except Exception as e:
+            _crawl_state["last_result"] = f"오류: {e}"
+            print("[sync-external] 크롤링 오류:", e)
+        finally:
+            _crawl_state["running"] = False
+
+    threading.Thread(target=run, daemon=True).start()
+    return {"message": "외부 공지 크롤링을 백그라운드에서 시작했습니다.", "reset": reset, "max_pages": max_pages}
+
+
+@r.get("/sync-external/status")
+def sync_external_status():
+    return _crawl_state
