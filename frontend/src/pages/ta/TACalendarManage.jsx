@@ -33,11 +33,14 @@ function TACalendarManage() {
       // 현재 보고 있는 연도의 일정을 불러옴 (연도 이동 시에도 표시되도록)
       const eventRes = await axios.get(`https://capstone-project-of74.onrender.com/academic-events?year=${currentDate.getFullYear()}&limit=500`);
       setAcademicEvents(eventRes.data);
+      let memos = [];
       if (token) {
         const memoRes = await axios.get('https://capstone-project-of74.onrender.com/memos', { headers: { Authorization: `Bearer ${token}` } });
-        setMyMemos(memoRes.data);
+        memos = memoRes.data;
+        setMyMemos(memos);
       }
-    } catch (error) { console.error("로딩 실패:", error); }
+      return { events: eventRes.data, memos };
+    } catch (error) { console.error("로딩 실패:", error); return { events: [], memos: [] }; }
   };
 
   useEffect(() => { fetchData(); }, [currentDate]);
@@ -45,14 +48,21 @@ function TACalendarManage() {
   const handleDateClick = (dateStr, items) => { setSelectedDate(dateStr); setSelectedItems(items); setMemoInput(""); setIsDetailModalOpen(true); };
   const handleAddMemo = async () => {
     if (!memoInput.trim()) return;
+    if (!token) { alert("조교 로그인이 필요합니다."); return; }
     try {
         await axios.post('https://capstone-project-of74.onrender.com/memos', { memo_date: selectedDate, content: memoInput }, { headers: { Authorization: `Bearer ${token}` } });
-        setMemoInput(""); await fetchData(); updateSelectedItems(selectedDate);
-    } catch (err) { alert("저장 실패"); }
+        setMemoInput("");
+        const { events, memos } = await fetchData();
+        updateSelectedItems(selectedDate, events, memos); // 최신 데이터로 모달 갱신
+    } catch (err) { alert("메모 저장 실패"); }
   };
   const handleDeleteMemo = async (id) => {
     if(!window.confirm("삭제?")) return;
-    try { await axios.delete(`https://capstone-project-of74.onrender.com/memos/${id}`, { headers: { Authorization: `Bearer ${token}` } }); await fetchData(); updateSelectedItems(selectedDate); } catch (err) {}
+    try {
+      await axios.delete(`https://capstone-project-of74.onrender.com/memos/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const { events, memos } = await fetchData();
+      updateSelectedItems(selectedDate, events, memos);
+    } catch (err) {}
   };
   const handleRegister = async () => {
     if(!newEvent.title || !newEvent.start_date || !newEvent.end_date) return;
@@ -66,8 +76,8 @@ function TACalendarManage() {
         alert("등록됨");
       }
       closeRegisterModal();
-      await fetchData();
-      if (selectedDate) updateSelectedItems(selectedDate);
+      const { events, memos } = await fetchData();
+      if (selectedDate) updateSelectedItems(selectedDate, events, memos);
     } catch (error) { alert(error.response?.data?.detail || "실패"); }
   };
 
@@ -83,14 +93,16 @@ function TACalendarManage() {
     if(!window.confirm("이 일정을 삭제하시겠습니까?")) return;
     try {
       await axios.delete(`https://capstone-project-of74.onrender.com/academic-events/${id}`);
-      await fetchData();
-      if (selectedDate) updateSelectedItems(selectedDate);
+      const { events, memos } = await fetchData();
+      if (selectedDate) updateSelectedItems(selectedDate, events, memos);
     } catch (error) { alert(error.response?.data?.detail || "삭제 실패"); }
   };
 
-  const updateSelectedItems = (dateStr) => {
-    const dayEvents = academicEvents.filter(ev => ev.start_date <= dateStr && ev.end_date >= dateStr);
-    const dayMemos = myMemos.filter(m => m.memo_date === dateStr).map(m => ({...m, type:'memo', title: m.content}));
+  const updateSelectedItems = (dateStr, events = academicEvents, memos = myMemos) => {
+    const dayEvents = events.filter(ev => ev.start_date <= dateStr && ev.end_date >= dateStr);
+    const dayMemos = memos
+      .filter(m => m.memo_date === dateStr)
+      .map(m => ({ id: `memo-${m.id}`, title: m.content, start_date: m.memo_date, end_date: m.memo_date, type: 'memo' }));
     setSelectedItems([...dayEvents, ...dayMemos]);
   };
 
