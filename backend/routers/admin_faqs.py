@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from auth import require_assistant
 from deps import get_db
-from models import FAQ
+from models import FAQ, User
+from push_service import send_push_to_users
 
 r = APIRouter(prefix="/admin/faqs", tags=["admin-faqs"])
 
@@ -31,6 +32,15 @@ def create_faq(data: FAQCreateIn, a=Depends(require_assistant), db: Session = De
     db.add(f)
     db.commit()
     db.refresh(f)
+
+    student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
+    send_push_to_users(
+        db, student_ids,
+        title="새 FAQ 등록",
+        body=f.question,
+        url="/student/faq",
+    )
+
     return {"id": f.id, "posted_date": str(f.posted_date)}
 
 class FAQUpdateIn(BaseModel):

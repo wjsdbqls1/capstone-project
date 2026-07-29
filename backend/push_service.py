@@ -45,3 +45,8 @@ def send_push_to_user(db: Session, user_id: int, title: str, body: str, url: str
         except Exception as e:
             # 푸시 발송 실패가 문의답변/공결처리 같은 본 기능을 막지 않도록 방어
             print(f"⚠️ [push] 알림 발송 실패: {e}")
+
+
+def send_push_to_users(db: Session, user_ids, title: str, body: str, url: str = "/"):
+    for uid in user_ids:
+        send_push_to_user(db, uid, title, body, url)

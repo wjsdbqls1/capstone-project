@@ -7,7 +7,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from deps import get_db
-from models import Notice
+from models import Notice, User
+from push_service import send_push_to_users
 
 r = APIRouter(prefix="/admin/notices", tags=["admin-notices"])
 
@@ -49,6 +50,17 @@ def create_notice(
     db.add(new_notice)
     db.commit()
     db.refresh(new_notice)
+
+    q = db.query(User).filter(User.role == "student")
+    if new_notice.target_grade != 0:
+        q = q.filter(User.grade == new_notice.target_grade)
+    send_push_to_users(
+        db, [u.id for u in q.all()],
+        title="새 공지사항",
+        body=new_notice.title,
+        url="/student/notice",
+    )
+
     return new_notice
 
 # 2. 수정 (간단하게 구현: 새 파일 올리면 교체, 안 올리면 유지)

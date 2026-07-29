@@ -6,7 +6,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from deps import get_db
-from models import AcademicEvent
+from models import AcademicEvent, User
+from push_service import send_push_to_users
 
 r = APIRouter(prefix="/academic-events", tags=["academic-events"])
 
@@ -82,8 +83,17 @@ def create_academic_event(data: AcademicEventCreate, db: Session = Depends(get_d
     db.add(new_event)
     db.commit()
     db.refresh(new_event)
-    
+
     print(f"[SUCCESS] Event created: {new_event.id} ({new_event.title})")
+
+    student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
+    send_push_to_users(
+        db, student_ids,
+        title="새 일정 등록",
+        body=new_event.title,
+        url="/student/calendar",
+    )
+
     return {"id": new_event.id, "title": new_event.title}
 
 
