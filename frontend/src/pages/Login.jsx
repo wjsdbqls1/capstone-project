@@ -38,7 +38,14 @@ function Login() {
 
     } catch (error) {
       console.error("로그인 실패:", error);
-      alert("로그인 정보가 올바르지 않습니다.");
+      if (error.response && error.response.status === 401) {
+        alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+      } else if (error.response) {
+        alert(`로그인 오류가 발생했습니다. (코드 ${error.response.status})`);
+      } else {
+        // 응답 자체가 없음 = 네트워크/차단/서비스워커 등 연결 문제
+        alert("서버에 연결할 수 없습니다. 네트워크(사설 릴레이/콘텐츠 차단) 또는 캐시를 확인해주세요.");
+      }
     }
   };
 
