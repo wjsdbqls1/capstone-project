@@ -64,6 +64,15 @@ def update_faq(faq_id: int, data: FAQUpdateIn, a=Depends(require_assistant), db:
         f.category = data.category
 
     db.commit()
+
+    student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
+    send_push_to_users(
+        db, student_ids,
+        title="FAQ 수정",
+        body=f.question,
+        url="/student/faq",
+    )
+
     return {"id": f.id}
 
 @r.delete("/{faq_id}")

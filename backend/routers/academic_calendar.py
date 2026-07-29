@@ -118,6 +118,15 @@ def update_academic_event(event_id: int, data: AcademicEventCreate, db: Session 
     ev.end_date = e_date
     ev.year = s_date.year
     db.commit()
+
+    student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
+    send_push_to_users(
+        db, student_ids,
+        title="일정 수정",
+        body=ev.title,
+        url="/student/calendar",
+    )
+
     return {"id": ev.id, "title": ev.title}
 
 

@@ -92,8 +92,19 @@ def update_notice(
             
         notice.file_path = saved_filename
         notice.original_filename = file.filename
-    
+
     db.commit()
+
+    q = db.query(User).filter(User.role == "student")
+    if notice.target_grade != 0:
+        q = q.filter(User.grade == notice.target_grade)
+    send_push_to_users(
+        db, [u.id for u in q.all()],
+        title="공지사항 수정",
+        body=notice.title,
+        url="/student/notice",
+    )
+
     return {"message": "updated"}
 
 # 3. 삭제
