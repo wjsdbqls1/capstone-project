@@ -38,7 +38,7 @@ app = FastAPI()
 # [1] 설정 및 미들웨어
 # -----------------------------------------------------------
 
-# CORS 설정: 로컬 주소와 현재 AWS 서버 IP를 모두 추가합니다.
+# CORS 설정: 로컬 + 모든 onrender.com 배포 주소 허용
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -48,7 +48,9 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,            # 허용 목록 적용
+    allow_origins=origins,
+    # onrender.com 하위 어떤 배포 주소로 접속해도 허용 (프론트 URL이 바뀌어도 안전)
+    allow_origin_regex=r"https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
