@@ -227,21 +227,31 @@ def update_reply(
     reply = db.query(InquiryReply).filter(InquiryReply.id == reply_id).first()
     if not reply:
         raise HTTPException(status_code=404, detail="Reply not found")
-    
+
     # 권한 확인 (본인이 작성한 답변인지)
     if reply.assistant_id != current_user.id:
          raise HTTPException(status_code=403, detail="Permission denied")
 
     # 내용 업데이트
     reply.content = content
-    
+
     # 새 파일이 업로드된 경우에만 교체
     if file:
         attachment_url = save_upload_file(file)
         reply.attachment = attachment_url
-        
+
     # models.py에서 onupdate=func.now() 설정이 되어 있다면
     # commit 시 자동으로 updated_at이 갱신됩니다.
-    
+
     db.commit()
+
+    q = db.query(Inquiry).filter(Inquiry.id == inquiry_id).first()
+    if q:
+        send_push_to_user(
+            db, q.user_id,
+            title="문의 답변 수정",
+            body=f"'{q.title}' 문의의 답변이 수정되었습니다.",
+            url="/student/history",
+        )
+
     return {"message": "updated"}
