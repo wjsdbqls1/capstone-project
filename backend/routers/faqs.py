@@ -7,7 +7,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from deps import get_db
-from models import FAQ
+from models import FAQ, User
+from push_service import send_push_to_users
 
 r = APIRouter(prefix="/faqs", tags=["faqs"])
 
@@ -58,6 +59,15 @@ def create_faq(
     db.add(new_faq)
     db.commit()
     db.refresh(new_faq)
+
+    student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
+    send_push_to_users(
+        db, student_ids,
+        title="새 FAQ 등록",
+        body=new_faq.question,
+        url="/student/faq",
+    )
+
     return new_faq
 
 # 3. FAQ 수정
@@ -92,6 +102,15 @@ def update_faq(
         faq.original_filename = file.filename
 
     db.commit()
+
+    student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
+    send_push_to_users(
+        db, student_ids,
+        title="FAQ 수정",
+        body=faq.question,
+        url="/student/faq",
+    )
+
     return {"message": "updated"}
 
 # 4. 삭제
