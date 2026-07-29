@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import '../../App.css';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import NotificationToggle from '../../components/NotificationToggle';
+import { unsubscribeFromPush } from '../../pushNotifications';
 
 function TALayout({ children }) {
   const navigate = useNavigate();
@@ -22,8 +23,13 @@ function TALayout({ children }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (window.confirm("로그아웃 하시겠습니까?")) {
+      try {
+        await unsubscribeFromPush();
+      } catch (e) {
+        console.error('푸시 구독 해지 실패:', e);
+      }
       localStorage.clear();
       navigate('/');
     }

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../App.css';
 import NotificationToggle from '../../components/NotificationToggle';
+import { unsubscribeFromPush } from '../../pushNotifications';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -71,8 +72,13 @@ function StudentMyPage() {
     });
   }, [navigate]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if(window.confirm("로그아웃 하시겠습니까?")) {
+        try {
+          await unsubscribeFromPush();
+        } catch (e) {
+          console.error('푸시 구독 해지 실패:', e);
+        }
         localStorage.clear();
         navigate('/');
     }

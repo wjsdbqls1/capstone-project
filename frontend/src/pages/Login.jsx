@@ -1,14 +1,37 @@
 // src/pages/Login.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
-import bgImage from '../assets/로그인 이미지.jpg'; 
+import bgImage from '../assets/로그인 이미지.jpg';
+
+const API = 'https://capstone-project-of74.onrender.com';
 
 function Login() {
   const navigate = useNavigate();
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  // 앱을 다시 열었을 때 유효한 토큰이 있으면 로그인 화면을 건너뛰고 바로 메인으로 이동
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+
+    if (!token) {
+      setCheckingSession(false);
+      return;
+    }
+
+    axios.get(`${API}/users/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(() => {
+        navigate(role === 'assistant' || role === 'admin' ? '/ta/main' : '/student/main', { replace: true });
+      })
+      .catch(() => {
+        localStorage.clear();
+        setCheckingSession(false);
+      });
+  }, [navigate]);
 
   const handleLogin = async () => {
     if (!id || !password) {
@@ -17,7 +40,7 @@ function Login() {
     }
 
     try {
-      const response = await axios.post('https://capstone-project-of74.onrender.com/auth/login', {
+      const response = await axios.post(`${API}/auth/login`, {
           student_no: id.trim(),   // 모바일 자동수정/공백 방지
           password: password
       });
@@ -49,11 +72,15 @@ function Login() {
     }
   };
 
+  if (checkingSession) {
+    return <div style={styles.pageContainer} />;
+  }
+
   return (
     <div style={styles.pageContainer}>
       {/* 유리 박스 컨테이너 */}
       <div style={styles.glassBox}>
-        
+
         {/* 타이틀 영역 */}
         <div style={styles.titleArea}>
           <h1 style={styles.mainTitle}>SCH 순천향대학교</h1>
