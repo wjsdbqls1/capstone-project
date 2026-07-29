@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../App.css';
+import NotificationToggle from '../../components/NotificationToggle';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -153,6 +154,8 @@ function StudentMyPage() {
                 정보를 불러오는 중입니다...
             </div>
             )}
+
+            <NotificationToggle style={styles.changePwButton} activeStyle={styles.notifyActive} />
 
             <button style={styles.changePwButton} onClick={() => setShowPwModal(true)}>
                 비밀번호 변경
@@ -368,6 +371,10 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s',
     boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+  },
+  notifyActive: {
+    backgroundColor: '#003675',
+    color: 'white',
   },
   logoutButton: {
     marginTop: '12px',

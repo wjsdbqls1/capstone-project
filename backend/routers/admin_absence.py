@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from deps import get_db, get_current_user
 from models import AbsenceRequest, User, AbsenceHistory, AbsenceAttachment
+from push_service import send_push_to_user
 
 router = APIRouter(prefix="/admin/absence", tags=["admin-absence"])
 
@@ -95,5 +96,13 @@ def update_absence_status(
     )
     db.add(new_history)
     db.commit()
-    
+
+    status_label = "승인" if update_data.status == "APPROVED" else "반려"
+    send_push_to_user(
+        db, req.student_id,
+        title="공결 신청 처리 결과",
+        body=f"'{req.course_name}' 공결 신청이 {status_label}되었습니다.",
+        url="/student/absence",
+    )
+
     return {"message": "처리되었습니다.", "status": req.status}

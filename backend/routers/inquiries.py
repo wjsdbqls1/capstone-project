@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from deps import get_db, get_current_user
 from models import Inquiry, InquiryReply, InquiryHistory, AcademicEvent, User
+from push_service import send_push_to_user
 
 r = APIRouter(prefix="/inquiries", tags=["inquiries"])
 
@@ -200,8 +201,16 @@ def create_reply(
     )
     db.add(new_reply)
     q.status = "COMPLETED" # 답변 달리면 완료 상태로 변경
-    
+
     db.commit()
+
+    send_push_to_user(
+        db, q.user_id,
+        title="문의 답변 등록",
+        body=f"'{q.title}' 문의에 답변이 등록되었습니다.",
+        url="/student/history",
+    )
+
     return {"message": "reply created"}
 
 # ★ 7. 답변 수정 (새로 추가됨)

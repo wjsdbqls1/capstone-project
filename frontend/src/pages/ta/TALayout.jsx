@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../../App.css';
 import bgImage from '../../assets/로그인 이미지.jpg';
+import NotificationToggle from '../../components/NotificationToggle';
 
 function TALayout({ children }) {
   const navigate = useNavigate();
@@ -51,9 +52,12 @@ function TALayout({ children }) {
                 <h1 style={layoutStyles.logo}>행정조교 시스템</h1>
             </div>
         </div>
-        <button style={layoutStyles.logoutBtn} onClick={handleLogout}>
-          로그아웃
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <NotificationToggle style={layoutStyles.notifyBtn} activeStyle={layoutStyles.notifyBtnActive} />
+          <button style={layoutStyles.logoutBtn} onClick={handleLogout}>
+            로그아웃
+          </button>
+        </div>
       </header>
 
       <div style={layoutStyles.body}>
@@ -140,6 +144,21 @@ const layoutStyles = {
     fontWeight: '600',
     cursor: 'pointer',
     whiteSpace: 'nowrap'
+  },
+  notifyBtn: {
+    padding: '8px 16px',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    border: '1px solid rgba(255, 255, 255, 0.5)',
+    borderRadius: '20px',
+    color: 'white',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap'
+  },
+  notifyBtnActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    color: '#003675',
   },
   
   body: { display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' },

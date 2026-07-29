@@ -20,7 +20,7 @@ from models import Base, AcademicEvent
 from routers import (
     users, auth, academic_calendar, inquiries,
     notices, notices_detail, faqs, absence, admin_notices, admin_absence, memos,
-    admin_students
+    admin_students, push
 )
 
 # AI 라우터
@@ -79,6 +79,7 @@ app.include_router(admin_notices.r)
 app.include_router(admin_absence.router)
 app.include_router(admin_students.r)
 app.include_router(memos.router)
+app.include_router(push.r)
 app.include_router(ai_router, prefix="/api/ai", tags=["AI"])
 
 
