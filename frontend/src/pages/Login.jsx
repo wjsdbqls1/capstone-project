@@ -18,7 +18,7 @@ function Login() {
 
     try {
       const response = await axios.post('https://capstone-project-of74.onrender.com/auth/login', {
-          student_no: id, 
+          student_no: id.trim(),   // 모바일 자동수정/공백 방지
           password: password
       });
 
@@ -55,12 +55,16 @@ function Login() {
 
         {/* 입력 폼 영역 */}
         <div style={styles.formArea}>
-          <input 
-            className="input-field" 
-            placeholder="학번 / 아이디" 
-            value={id} 
-            onChange={(e)=>setId(e.target.value)} 
+          <input
+            className="input-field"
+            placeholder="학번 / 아이디"
+            value={id}
+            onChange={(e)=>setId(e.target.value)}
             style={styles.input}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="username"
           />
           <input 
             className="input-field" 
