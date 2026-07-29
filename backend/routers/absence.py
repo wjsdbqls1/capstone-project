@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from deps import get_db, get_current_user
 from models import AbsenceRequest, AbsenceAttachment, User
+from push_service import send_push_to_staff
 
 r = APIRouter(prefix="/absence", tags=["absence"])
 UPLOAD_DIR = "uploads/absence"
@@ -51,6 +52,13 @@ def create_absence(
     )
     db.add(new_attachment)
     db.commit()
+
+    send_push_to_staff(
+        db,
+        title="새 공결 신청",
+        body=f"{current_user.name} 학생: '{subject}' ({target_date})",
+        url="/ta/absence",
+    )
 
     return new_absence
 

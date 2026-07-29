@@ -7,7 +7,7 @@ from py_vapid import Vapid01
 from pywebpush import webpush, WebPushException
 from sqlalchemy.orm import Session
 
-from models import PushSubscription
+from models import PushSubscription, User
 
 load_dotenv()
 
@@ -50,3 +50,8 @@ def send_push_to_user(db: Session, user_id: int, title: str, body: str, url: str
 def send_push_to_users(db: Session, user_ids, title: str, body: str, url: str = "/"):
     for uid in user_ids:
         send_push_to_user(db, uid, title, body, url)
+
+
+def send_push_to_staff(db: Session, title: str, body: str, url: str = "/"):
+    staff_ids = [u.id for u in db.query(User).filter(User.role.in_(("assistant", "admin"))).all()]
+    send_push_to_users(db, staff_ids, title, body, url)

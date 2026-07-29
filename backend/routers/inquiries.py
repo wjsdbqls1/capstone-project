@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from deps import get_db, get_current_user
 from models import Inquiry, InquiryReply, InquiryHistory, AcademicEvent, User
-from push_service import send_push_to_user
+from push_service import send_push_to_user, send_push_to_staff
 
 r = APIRouter(prefix="/inquiries", tags=["inquiries"])
 
@@ -49,6 +49,14 @@ def create_inquiry(
     )
     db.add(q)
     db.commit()
+
+    send_push_to_staff(
+        db,
+        title="새 문의 등록",
+        body=f"{current_user.name} 학생: '{title}'",
+        url="/ta/pending",
+    )
+
     return {"message": "registered"}
 
 # 2. 내 문의 목록 조회
