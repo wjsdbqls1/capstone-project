@@ -24,7 +24,11 @@ function Login() {
     }
 
     axios.get(`${API}/users/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(() => {
+      .then((res) => {
+        if (res.data.must_change_password) {
+          navigate('/change-password', { replace: true });
+          return;
+        }
         navigate(role === 'assistant' || role === 'admin' ? '/ta/main' : '/student/main', { replace: true });
       })
       .catch(() => {
@@ -45,15 +49,17 @@ function Login() {
           password: password
       });
 
-      const { access_token, role } = response.data;
+      const { access_token, role, must_change_password } = response.data;
 
-      localStorage.setItem('token', access_token); 
+      localStorage.setItem('token', access_token);
       localStorage.setItem('role', role);
       localStorage.setItem('student_no', id);
 
       console.log("로그인 성공! 권한:", role);
 
-      if (role === 'assistant' || role === 'admin') {
+      if (must_change_password) {
+        navigate('/change-password');
+      } else if (role === 'assistant' || role === 'admin') {
         navigate('/ta/main');
       } else {
         navigate('/student/main');

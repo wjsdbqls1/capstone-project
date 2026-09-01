@@ -2,6 +2,7 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
+import ForcePasswordChange from './pages/ForcePasswordChange';
 
 // 학생 페이지
 import StudentMain from './pages/student/StudentMain';
@@ -30,6 +31,7 @@ function App() {
     <HashRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/change-password" element={<ForcePasswordChange />} />
 
         {/* 1. 학생 화면 라우팅 */}
         <Route path="/student/main" element={<StudentMain />} />

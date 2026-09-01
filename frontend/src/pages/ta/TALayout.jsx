@@ -1,10 +1,13 @@
 // src/pages/ta/TALayout.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import '../../App.css';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import NotificationToggle from '../../components/NotificationToggle';
 import { unsubscribeFromPush } from '../../pushNotifications';
+
+const API = 'https://capstone-project-of74.onrender.com';
 
 function TALayout({ children }) {
   const navigate = useNavigate();
@@ -22,6 +25,19 @@ function TALayout({ children }) {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // 비밀번호 변경이 필요한 계정이면 강제로 변경 화면으로 이동
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    axios.get(`${API}/users/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        if (res.data.must_change_password) {
+          navigate('/change-password', { replace: true });
+        }
+      })
+      .catch(() => {});
+  }, [navigate]);
 
   const handleLogout = async () => {
     if (window.confirm("로그아웃 하시겠습니까?")) {

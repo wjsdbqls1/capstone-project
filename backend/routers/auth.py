@@ -65,11 +65,12 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="invalid credentials")
 
     token = create_token(u.id)
-    
+
     # ★ [수정] role과 name을 함께 반환하도록 변경
     return {
-        "access_token": token, 
+        "access_token": token,
         "token_type": "bearer",
         "role": u.role,      # 프론트엔드에서 페이지 이동 분기 처리에 필요
-        "name": u.name       # (선택) 환영 메시지 등에 사용 가능
+        "name": u.name,      # (선택) 환영 메시지 등에 사용 가능
+        "must_change_password": u.must_change_password,
     }

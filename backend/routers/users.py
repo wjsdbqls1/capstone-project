@@ -21,6 +21,7 @@ def read_users_me(current_user: User = Depends(get_current_user)):
         "role": current_user.role,
         "grade": current_user.grade,  # ★ 이 부분이 빠져 있었을 것입니다.
         "status": current_user.status,
+        "must_change_password": current_user.must_change_password,
     }
 
 
@@ -43,5 +44,6 @@ def change_my_password(
         raise HTTPException(status_code=400, detail="새 비밀번호는 4자 이상이어야 합니다.")
 
     current_user.password_hash = pwd.hash(data.new_password)
+    current_user.must_change_password = False
     db.commit()
     return {"ok": True}

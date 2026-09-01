@@ -1,5 +1,5 @@
 # backend/models.py
-from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, Enum, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from db import Base
@@ -16,6 +16,7 @@ class User(Base):
     role = Column(String(20), nullable=False, default="student")  # student/assistant/admin
     status = Column(String(20), nullable=False, default="재학")  # 재학/휴학/졸업
     password_hash = Column(String(255), nullable=False)
+    must_change_password = Column(Boolean, nullable=False, default=False, server_default="false")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     # email 컬럼 삭제 (DB 충돌 방지)
 

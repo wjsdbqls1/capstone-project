@@ -88,6 +88,7 @@ def create_student(
         role="student",
         status="재학",
         password_hash=pwd.hash(init_password),
+        must_change_password=True,
     )
     db.add(u)
     db.commit()
@@ -139,6 +140,7 @@ def reset_password(
     # 초기 비밀번호(학번 + "!")로 초기화
     init_password = f"{u.student_no}!"
     u.password_hash = pwd.hash(init_password)
+    u.must_change_password = True
     db.commit()
     return {"id": u.id, "student_no": u.student_no, "init_password": init_password}
 

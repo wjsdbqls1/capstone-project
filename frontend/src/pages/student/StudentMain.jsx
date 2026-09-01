@@ -26,6 +26,10 @@ function StudentMain() {
       }
     })
     .then(response => {
+      if (response.data.must_change_password) {
+        navigate('/change-password', { replace: true });
+        return;
+      }
       setUserName(response.data.name);
     })
     .catch(error => {
