@@ -168,10 +168,9 @@ function TAPending() {
                       : '';
                     return (
                       <div key={i} style={modalStyles.candidateRow}>
-                        <div
-                          style={modalStyles.candidateText}
-                          dangerouslySetInnerHTML={{ __html: c.answer_html || '' }}
-                        />
+                        <div style={modalStyles.candidateText}>
+                          {plainText}
+                        </div>
                         <button
                           style={modalStyles.useBtn}
                           onClick={() => setReplyContent(plainText)}

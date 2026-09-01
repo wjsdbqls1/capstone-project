@@ -109,9 +109,10 @@ function StudentNoticeDetail() {
                  overflowX: 'auto',
                  textAlign: 'justify', // 양쪽 정렬로 깔끔하게
                  letterSpacing: '-0.3px' // 자간을 살짝 좁혀 응집력 강화
-             }} 
-             dangerouslySetInnerHTML={{ __html: notice.content_html }} 
-          />
+             }}
+          >
+            {notice.content_html}
+          </div>
         </div>
 
       </div>
