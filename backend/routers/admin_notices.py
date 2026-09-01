@@ -1,7 +1,5 @@
 # backend/routers/admin_notices.py
 import os
-import shutil
-import uuid
 from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
@@ -10,6 +8,7 @@ from deps import get_db
 from auth import require_assistant
 from models import Notice, User
 from push_service import send_push_to_users
+from upload_utils import save_upload
 
 r = APIRouter(prefix="/admin/notices", tags=["admin-notices"])
 
@@ -31,13 +30,7 @@ def create_notice(
 
     # 파일이 있으면 저장
     if file:
-        file_ext = os.path.splitext(file.filename)[1]
-        saved_filename = f"{uuid.uuid4()}{file_ext}" # 중복 방지 랜덤 이름
-        file_path = os.path.join(UPLOAD_DIR, saved_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
+        saved_filename = save_upload(file, UPLOAD_DIR)
         original_filename = file.filename
 
     new_notice = Notice(
@@ -86,14 +79,7 @@ def update_notice(
 
     # 새 파일이 들어오면 기존 파일 정보 덮어쓰기 (기존 파일 삭제는 생략함)
     if file:
-        file_ext = os.path.splitext(file.filename)[1]
-        saved_filename = f"{uuid.uuid4()}{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, saved_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-            
-        notice.file_path = saved_filename
+        notice.file_path = save_upload(file, UPLOAD_DIR)
         notice.original_filename = file.filename
 
     db.commit()

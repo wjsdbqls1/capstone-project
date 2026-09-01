@@ -1,14 +1,13 @@
 # backend/routers/inquiries.py
 import os
-import uuid
-import shutil
 from typing import Optional
-from sqlalchemy.orm import Session, joinedload 
+from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from deps import get_db, get_current_user
 from auth import require_assistant
 from models import Inquiry, InquiryReply, InquiryHistory, AcademicEvent, User
 from push_service import send_push_to_user, send_push_to_staff
+from upload_utils import save_upload
 
 r = APIRouter(prefix="/inquiries", tags=["inquiries"])
 
@@ -18,13 +17,7 @@ UPLOAD_DIR = "uploads"
 def save_upload_file(file: UploadFile) -> str:
     if not file:
         return None
-    # 파일명 중복 방지를 위해 UUID 사용
-    file_name = f"{uuid.uuid4()}_{file.filename}"
-    file_path = os.path.join(UPLOAD_DIR, file_name)
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
+    file_name = save_upload(file, UPLOAD_DIR)
     # DB에 저장할 접근 URL
     return f"/uploads/{file_name}"
 

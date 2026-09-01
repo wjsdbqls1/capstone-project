@@ -1,7 +1,5 @@
 # backend/routers/faqs.py
 import os
-import shutil
-import uuid
 from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
@@ -10,6 +8,7 @@ from deps import get_db
 from auth import require_assistant
 from models import FAQ, User
 from push_service import send_push_to_users
+from upload_utils import save_upload
 
 r = APIRouter(prefix="/faqs", tags=["faqs"])
 
@@ -42,11 +41,7 @@ def create_faq(
     original_filename = None
 
     if file:
-        file_ext = os.path.splitext(file.filename)[1]
-        saved_filename = f"{uuid.uuid4()}{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, saved_filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        saved_filename = save_upload(file, UPLOAD_DIR)
         original_filename = file.filename
 
     new_faq = FAQ(
@@ -96,12 +91,7 @@ def update_faq(
 
     # 새 파일이 있으면 교체
     if file:
-        file_ext = os.path.splitext(file.filename)[1]
-        saved_filename = f"{uuid.uuid4()}{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, saved_filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        faq.file_path = saved_filename
+        faq.file_path = save_upload(file, UPLOAD_DIR)
         faq.original_filename = file.filename
 
     db.commit()

@@ -1,12 +1,11 @@
 # backend/routers/absence.py
 import os
-import shutil
-import uuid
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from deps import get_db, get_current_user
 from models import AbsenceRequest, AbsenceAttachment, User
 from push_service import send_push_to_staff
+from upload_utils import save_upload
 
 r = APIRouter(prefix="/absence", tags=["absence"])
 UPLOAD_DIR = "uploads/absence"
@@ -35,13 +34,8 @@ def create_absence(
     db.commit()
     db.refresh(new_absence)
 
-    # 파일 저장 (이후 코드는 동일)
-    file_ext = os.path.splitext(file.filename)[1]
-    stored_filename = f"{uuid.uuid4()}{file_ext}"
-    file_path = os.path.join(UPLOAD_DIR, stored_filename)
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # 파일 저장
+    stored_filename = save_upload(file, UPLOAD_DIR)
 
     new_attachment = AbsenceAttachment(
         request_id=new_absence.id,
