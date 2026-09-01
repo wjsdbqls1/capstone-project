@@ -12,6 +12,12 @@ function StudentAbsence() {
   const [absences, setAbsences] = useState([]);
   const [showForm, setShowForm] = useState(false);
 
+  // 공결 서류 제출 기능 임시 비활성화
+  useEffect(() => {
+    alert('추후에 추가될 기능입니다.');
+    navigate('/student/main', { replace: true });
+  }, [navigate]);
+
   // 입력 폼 상태
   const [formData, setFormData] = useState({
     target_date: '',

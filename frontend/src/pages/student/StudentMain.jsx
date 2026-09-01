@@ -68,7 +68,7 @@ function StudentMain() {
         <MenuButton onClick={() => navigate('/student/faq')} icon="❓" text="FAQ" />
         <MenuButton onClick={() => navigate('/student/notice')} icon="📢" text="공지사항" />
         <MenuButton onClick={() => navigate('/student/calendar')} icon="📅" text="캘린더" />
-        <MenuButton onClick={() => navigate('/student/absence')} icon="📄" text="공결 서류 제출" />
+        <MenuButton onClick={() => alert('추후에 추가될 기능입니다.')} icon="📄" text="공결 서류 제출" />
       
       </div>
 
