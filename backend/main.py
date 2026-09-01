@@ -1,10 +1,8 @@
 # backend/main.py
 import os  # ★ 파일 경로 제어를 위해 추가
 import re
-import sys
 import threading
 import requests
-from pathlib import Path
 from bs4 import BeautifulSoup
 from datetime import datetime, date
 from fastapi import FastAPI
@@ -22,12 +20,6 @@ from routers import (
     notices, notices_detail, faqs, absence, admin_notices, admin_absence, memos,
     admin_students, push
 )
-
-# AI 라우터
-_AI_ROOT = Path(__file__).parent.parent / "ai"
-sys.path.insert(0, str(_AI_ROOT))
-sys.path.insert(0, str(_AI_ROOT / "api"))
-from router import router as ai_router
 
 # 테이블 자동 생성
 Base.metadata.create_all(bind=engine)
@@ -82,7 +74,6 @@ app.include_router(admin_absence.router)
 app.include_router(admin_students.r)
 app.include_router(memos.router)
 app.include_router(push.r)
-app.include_router(ai_router, prefix="/api/ai", tags=["AI"])
 
 
 # -----------------------------------------------------------
