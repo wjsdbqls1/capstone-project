@@ -40,8 +40,8 @@ def change_my_password(
     if not pwd.verify(data.current_password, current_user.password_hash):
         raise HTTPException(status_code=400, detail="현재 비밀번호가 일치하지 않습니다.")
 
-    if len(data.new_password) < 4:
-        raise HTTPException(status_code=400, detail="새 비밀번호는 4자 이상이어야 합니다.")
+    if len(data.new_password) < 8:
+        raise HTTPException(status_code=400, detail="새 비밀번호는 8자 이상이어야 합니다.")
 
     current_user.password_hash = pwd.hash(data.new_password)
     current_user.must_change_password = False

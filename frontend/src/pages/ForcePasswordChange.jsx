@@ -23,8 +23,8 @@ function ForcePasswordChange() {
       alert('현재 비밀번호와 새 비밀번호를 입력해주세요.');
       return;
     }
-    if (newPassword.length < 4) {
-      alert('새 비밀번호는 4자 이상이어야 합니다.');
+    if (newPassword.length < 8) {
+      alert('새 비밀번호는 8자 이상이어야 합니다.');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -68,7 +68,7 @@ function ForcePasswordChange() {
         />
         <input
           type="password"
-          placeholder="새 비밀번호 (4자 이상)"
+          placeholder="새 비밀번호 (8자 이상)"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           style={styles.input}

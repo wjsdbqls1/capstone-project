@@ -24,8 +24,8 @@ function StudentMyPage() {
       alert('현재 비밀번호와 새 비밀번호를 입력해주세요.');
       return;
     }
-    if (pwForm.new_password.length < 4) {
-      alert('새 비밀번호는 4자 이상이어야 합니다.');
+    if (pwForm.new_password.length < 8) {
+      alert('새 비밀번호는 8자 이상이어야 합니다.');
       return;
     }
     if (pwForm.new_password !== pwForm.confirm_password) {
@@ -193,7 +193,7 @@ function StudentMyPage() {
               <input
                 type="password"
                 style={pwStyles.input}
-                placeholder="새 비밀번호 (4자 이상)"
+                placeholder="새 비밀번호 (8자 이상)"
                 value={pwForm.new_password}
                 onChange={(e) => setPwForm({ ...pwForm, new_password: e.target.value })}
               />
