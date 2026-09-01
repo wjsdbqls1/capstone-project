@@ -9,10 +9,14 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 # DB 및 모델 관련
 from db import engine, SessionLocal
 from models import Base, AcademicEvent
+from rate_limit import limiter
 
 # 라우터들
 from routers import (
@@ -25,12 +29,17 @@ from routers import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # -----------------------------------------------------------
 # [1] 설정 및 미들웨어
 # -----------------------------------------------------------
 
-# CORS 설정: 로컬 + 모든 onrender.com 배포 주소 허용
+# CORS 설정: 실제 배포된 프론트엔드 주소만 허용
+# (Render는 누구나 *.onrender.com에 배포 가능한 공용 플랫폼이라
+#  와일드카드 허용은 위험 - 정확한 주소만 명시)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -41,8 +50,6 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    # onrender.com 하위 어떤 배포 주소로 접속해도 허용 (프론트 URL이 바뀌어도 안전)
-    allow_origin_regex=r"https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
