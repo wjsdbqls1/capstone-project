@@ -49,11 +49,11 @@ function StudentCalendar() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   };
 
-  // 이 달에 걸치는 이벤트들에게 겹치지 않는 고정 "줄(lane)"을 배정.
+  // 겹치지 않는 고정 "줄(lane)"을 배정 (구글 캘린더처럼 주 단위로 호출됨).
   // (day별로 따로 쌓으면, 먼저 끝난 일정 자리로 다음 일정이 당겨 올라와서
   //  서로 다른 일정인데 하나로 이어진 것처럼 보이는 문제가 생김)
-  const assignEventLanes = (monthStart, monthEnd) => {
-    const relevant = events.filter(ev => ev.start_date <= monthEnd && ev.end_date >= monthStart);
+  const assignEventLanes = (rangeStart, rangeEnd) => {
+    const relevant = events.filter(ev => ev.start_date <= rangeEnd && ev.end_date >= rangeStart);
 
     const sorted = [...relevant].sort((a, b) => {
       if (a.start_date !== b.start_date) return a.start_date.localeCompare(b.start_date);
@@ -74,15 +74,32 @@ function StudentCalendar() {
     return laneOf;
   };
 
+  const formatDate = (dateObj) => {
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   const renderCalendar = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
 
-    const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-    const monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
-    const laneOf = assignEventLanes(monthStart, monthEnd);
+    // 구글 캘린더처럼 일요일(주 시작)마다 줄 배정을 새로 계산 →
+    // 지난 주에 끝난 일정이 다음 주까지 자리를 차지하지 않게 됨
+    const weekLaneCache = new Map();
+    const getLanesForDay = (d) => {
+      const dateObj = new Date(year, month, d);
+      const dow = dateObj.getDay();
+      const weekStart = formatDate(new Date(year, month, d - dow));
+      const weekEnd = formatDate(new Date(year, month, d - dow + 6));
+      if (!weekLaneCache.has(weekStart)) {
+        weekLaneCache.set(weekStart, assignEventLanes(weekStart, weekEnd));
+      }
+      return weekLaneCache.get(weekStart);
+    };
 
     const days = [];
 
@@ -95,6 +112,7 @@ function StudentCalendar() {
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const currentDayOfWeek = new Date(year, month, d).getDay();
+      const laneOf = getLanesForDay(d);
 
       let dayEvents = events.filter(ev => {
         return ev.start_date <= dateStr && ev.end_date >= dateStr;
