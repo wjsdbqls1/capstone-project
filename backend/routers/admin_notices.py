@@ -7,6 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from deps import get_db
+from auth import require_assistant
 from models import Notice, User
 from push_service import send_push_to_users
 
@@ -22,7 +23,8 @@ def create_notice(
     content_html: str = Form(...),
     target_grade: int = Form(0),
     file: Optional[UploadFile] = File(None), # 파일은 선택사항
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_assistant)
 ):
     saved_filename = None
     original_filename = None
@@ -43,7 +45,7 @@ def create_notice(
         content_html=content_html,
         target_grade=target_grade,
         posted_date=date.today(),
-        author_id=1,
+        author_id=current_user.id,
         file_path=saved_filename,       # ★ 저장
         original_filename=original_filename # ★ 저장
     )
@@ -71,7 +73,8 @@ def update_notice(
     content_html: str = Form(...),
     target_grade: int = Form(...),
     file: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_assistant)
 ):
     notice = db.query(Notice).filter(Notice.id == notice_id).first()
     if not notice:
@@ -109,7 +112,7 @@ def update_notice(
 
 # 3. 삭제
 @r.delete("/{notice_id}")
-def delete_notice(notice_id: int, db: Session = Depends(get_db)):
+def delete_notice(notice_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
     notice = db.query(Notice).filter(Notice.id == notice_id).first()
     if not notice:
         raise HTTPException(status_code=404, detail="notice not found")
@@ -129,7 +132,7 @@ _crawl_state = {"running": False, "last_result": None}
 
 
 @r.post("/sync-external")
-def sync_external_notices_endpoint(reset: bool = False, max_pages: int = 5):
+def sync_external_notices_endpoint(reset: bool = False, max_pages: int = 5, current_user: User = Depends(require_assistant)):
     """학과 홈페이지 외부 공지를 서버에서 크롤링하여 첨부파일까지 서버에 저장.
 
     reset=true 이면 기존 external 공지를 삭제 후 재크롤링(첨부파일 서버에 재저장).

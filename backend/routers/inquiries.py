@@ -6,6 +6,7 @@ from typing import Optional
 from sqlalchemy.orm import Session, joinedload 
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from deps import get_db, get_current_user
+from auth import require_assistant
 from models import Inquiry, InquiryReply, InquiryHistory, AcademicEvent, User
 from push_service import send_push_to_user, send_push_to_staff
 
@@ -94,7 +95,7 @@ def list_my_inquiries(
 @r.get("")
 def list_all_inquiries(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_assistant)
 ):
     # (1) DB에서 문의글 가져오기 (작성자 정보와 학사일정 정보를 미리 같이 로딩) 
     inquiries = db.query(Inquiry)\
@@ -158,7 +159,10 @@ def inquiry_detail(inquiry_id: int, db: Session = Depends(get_db), current_user:
     q = db.query(Inquiry).filter(Inquiry.id == inquiry_id).first()
     if not q:
         raise HTTPException(status_code=404, detail="not found")
-    
+
+    if current_user.role not in ("assistant", "admin") and current_user.id != q.user_id:
+        raise HTTPException(status_code=403, detail="접근 권한이 없습니다.")
+
     # 작성자 정보
     author = db.query(User).filter(User.id == q.user_id).first()
     
@@ -183,7 +187,14 @@ def inquiry_detail(inquiry_id: int, db: Session = Depends(get_db), current_user:
 
 # 5. 답변 목록 조회
 @r.get("/{inquiry_id}/replies")
-def inquiry_replies(inquiry_id: int, db: Session = Depends(get_db)):
+def inquiry_replies(inquiry_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    q = db.query(Inquiry).filter(Inquiry.id == inquiry_id).first()
+    if not q:
+        raise HTTPException(status_code=404, detail="not found")
+
+    if current_user.role not in ("assistant", "admin") and current_user.id != q.user_id:
+        raise HTTPException(status_code=403, detail="접근 권한이 없습니다.")
+
     return db.query(InquiryReply).filter(InquiryReply.inquiry_id == inquiry_id).all()
 
 # 6. 답변 등록
@@ -193,12 +204,12 @@ def create_reply(
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_assistant)
 ):
     q = db.query(Inquiry).filter(Inquiry.id == inquiry_id).first()
     if not q:
         raise HTTPException(status_code=404, detail="not found")
-    
+
     attachment_url = save_upload_file(file)
 
     new_reply = InquiryReply(
@@ -229,7 +240,7 @@ def update_reply(
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_assistant)
 ):
     # 수정할 답변 찾기
     reply = db.query(InquiryReply).filter(InquiryReply.id == reply_id).first()

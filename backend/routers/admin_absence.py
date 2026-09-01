@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from pydantic import BaseModel
 
-from deps import get_db, get_current_user
+from deps import get_db
+from auth import require_assistant
 from models import AbsenceRequest, User, AbsenceHistory, AbsenceAttachment
 from push_service import send_push_to_user
 
@@ -17,7 +18,7 @@ class AbsenceStatusUpdate(BaseModel):
 
 # 1. 공결 신청 목록 조회 (최신순)
 @router.get("/list")
-def get_absence_list(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_absence_list(db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
     
     # 신청자(User)와 첨부파일(Attachments) 정보를 한 번에 가져옵니다 (Join)
     requests = db.query(AbsenceRequest).options(
@@ -69,7 +70,7 @@ def update_absence_status(
     request_id: int, 
     update_data: AbsenceStatusUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_assistant)
 ):
     req = db.query(AbsenceRequest).filter(AbsenceRequest.id == request_id).first()
     if not req:

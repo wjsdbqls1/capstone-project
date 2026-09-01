@@ -7,6 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from deps import get_db
+from auth import require_assistant
 from models import FAQ, User
 from push_service import send_push_to_users
 
@@ -31,7 +32,8 @@ def create_faq(
     answer_html: str = Form(...),
     category: str = Form("기타"),
     file: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_assistant)
 ):
     if category not in VALID_CATEGORIES:
         raise HTTPException(status_code=400, detail=f"유효하지 않은 카테고리입니다. 허용값: {VALID_CATEGORIES}")
@@ -51,7 +53,7 @@ def create_faq(
         question=question,
         answer_html=answer_html,
         posted_date=date.today(),
-        author_id=1,
+        author_id=current_user.id,
         category=category,
         file_path=saved_filename,
         original_filename=original_filename,
@@ -78,7 +80,8 @@ def update_faq(
     answer_html: str = Form(...),
     category: str = Form("기타"),
     file: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_assistant)
 ):
     faq = db.query(FAQ).filter(FAQ.id == faq_id).first()
     if not faq:
@@ -115,7 +118,7 @@ def update_faq(
 
 # 4. 삭제
 @r.delete("/{faq_id}")
-def delete_faq(faq_id: int, db: Session = Depends(get_db)):
+def delete_faq(faq_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
     faq = db.query(FAQ).filter(FAQ.id == faq_id).first()
     if not faq:
         raise HTTPException(status_code=404, detail="FAQ not found")

@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from deps import get_db
+from auth import require_assistant
 from models import AcademicEvent, User
 from push_service import send_push_to_users
 
@@ -58,7 +59,7 @@ def list_events(
     ]
 
 @r.post("")
-def create_academic_event(data: AcademicEventCreate, db: Session = Depends(get_db)):
+def create_academic_event(data: AcademicEventCreate, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
     print(f"[DEBUG] Received event data: {data}")
     
     try:
@@ -98,7 +99,7 @@ def create_academic_event(data: AcademicEventCreate, db: Session = Depends(get_d
 
 
 @r.put("/{event_id}")
-def update_academic_event(event_id: int, data: AcademicEventCreate, db: Session = Depends(get_db)):
+def update_academic_event(event_id: int, data: AcademicEventCreate, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
     ev = db.query(AcademicEvent).filter(AcademicEvent.id == event_id).first()
     if not ev:
         raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다.")
@@ -131,7 +132,7 @@ def update_academic_event(event_id: int, data: AcademicEventCreate, db: Session 
 
 
 @r.delete("/{event_id}")
-def delete_academic_event(event_id: int, db: Session = Depends(get_db)):
+def delete_academic_event(event_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
     ev = db.query(AcademicEvent).filter(AcademicEvent.id == event_id).first()
     if not ev:
         raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다.")
