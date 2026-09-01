@@ -49,14 +49,43 @@ function StudentCalendar() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   };
 
+  // 이 달에 걸치는 이벤트들에게 겹치지 않는 고정 "줄(lane)"을 배정.
+  // (day별로 따로 쌓으면, 먼저 끝난 일정 자리로 다음 일정이 당겨 올라와서
+  //  서로 다른 일정인데 하나로 이어진 것처럼 보이는 문제가 생김)
+  const assignEventLanes = (monthStart, monthEnd) => {
+    const relevant = events.filter(ev => ev.start_date <= monthEnd && ev.end_date >= monthStart);
+
+    const sorted = [...relevant].sort((a, b) => {
+      if (a.start_date !== b.start_date) return a.start_date.localeCompare(b.start_date);
+      const durationA = getDiffDays(a.start_date, a.end_date);
+      const durationB = getDiffDays(b.start_date, b.end_date);
+      if (durationA !== durationB) return durationB - durationA;
+      return a.title.localeCompare(b.title);
+    });
+
+    const laneLastEnd = []; // laneLastEnd[i] = 그 줄에 마지막으로 배정된 일정의 종료일
+    const laneOf = new Map();
+    for (const ev of sorted) {
+      let lane = laneLastEnd.findIndex(endDate => endDate < ev.start_date);
+      if (lane === -1) lane = laneLastEnd.length;
+      laneLastEnd[lane] = ev.end_date;
+      laneOf.set(ev.id, lane);
+    }
+    return laneOf;
+  };
+
   const renderCalendar = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
-    
+
+    const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+    const laneOf = assignEventLanes(monthStart, monthEnd);
+
     const days = [];
-    
+
     // 1. 빈 칸 (z-index 설정으로 가림 방지)
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} style={{...calStyles.dayCellEmpty, zIndex: 100}}></div>);
@@ -65,42 +94,36 @@ function StudentCalendar() {
     // 2. 날짜 채우기
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const currentDayOfWeek = new Date(year, month, d).getDay(); 
+      const currentDayOfWeek = new Date(year, month, d).getDay();
 
       let dayEvents = events.filter(ev => {
         return ev.start_date <= dateStr && ev.end_date >= dateStr;
       });
 
-      // 정렬 (시작일 빠른 순 -> 긴 일정 우선 -> 제목 순)
-      dayEvents.sort((a, b) => {
-        if (a.start_date !== b.start_date) return a.start_date.localeCompare(b.start_date);
-        
-        const durationA = getDiffDays(a.start_date, a.end_date);
-        const durationB = getDiffDays(b.start_date, b.end_date);
-        if (durationA !== durationB) return durationB - durationA; 
-        
-        return a.title.localeCompare(b.title);
-      });
-
-      const MAX_VISIBLE = 4; 
-      const visibleList = dayEvents.slice(0, MAX_VISIBLE);
-      const hiddenCount = dayEvents.length - MAX_VISIBLE;
+      const MAX_VISIBLE = 4;
+      const maxLane = Math.max(-1, ...dayEvents.map(ev => laneOf.get(ev.id) ?? 0));
+      const hiddenCount = dayEvents.filter(ev => (laneOf.get(ev.id) ?? 0) >= MAX_VISIBLE).length;
 
       // ★ 핵심 수정: 날짜가 빠를수록 높은 z-index 부여 (겹침 방지)
-      const cellZIndex = 50 - d; 
+      const cellZIndex = 50 - d;
 
       days.push(
-        <div 
-            key={d} 
+        <div
+            key={d}
             style={{
                 ...calStyles.dayCell,
                 zIndex: cellZIndex // 여기서 z-index 강제 지정
-            }} 
+            }}
             onClick={() => handleDateClick(dateStr, dayEvents)}
         >
           <div style={calStyles.dayNum}>{d}</div>
           <div style={calStyles.eventList}>
-            {visibleList.map((ev, idx) => {
+            {Array.from({ length: Math.min(maxLane + 1, MAX_VISIBLE) }, (_, lane) => {
+              const ev = dayEvents.find(e => (laneOf.get(e.id) ?? 0) === lane);
+              if (!ev) {
+                // 이 줄에 해당하는 일정이 이 날짜엔 없음 → 빈 칸으로 줄만 맞춤
+                return <div key={`empty-lane-${lane}`} style={calStyles.eventItem} />;
+              }
               const isManual = ev.source === 'manual';
               // 걸쳐 있는 모든 날짜에 표시하되, 시작/끝만 둥글게 하여 하나의 띠로 이어 보이게
               const isStart = ev.start_date === dateStr;
@@ -123,12 +146,12 @@ function StudentCalendar() {
               // 시작일 또는 매주 시작(일요일)에 제목 표시 → 주가 넘어가도 무슨 일정인지 보이게
               const showTitle = isStart || currentDayOfWeek === 0;
               return (
-                <div key={`${ev.id}-${d}-${idx}`} style={{...calStyles.eventItem, ...itemStyle}}>
+                <div key={`${ev.id}-${d}`} style={{...calStyles.eventItem, ...itemStyle}}>
                   {showTitle ? ev.title : ''}
                 </div>
               );
             })}
-            
+
             {hiddenCount > 0 && (
                 <div style={calStyles.moreBtn}>+{hiddenCount}</div>
             )}
