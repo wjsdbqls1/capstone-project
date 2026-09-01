@@ -361,13 +361,13 @@ const calStyles = {
     borderBottom: '1px solid #eee',
     height: '30px' 
   },
-  dayHeader: { 
+  dayHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRight:'1px solid #eee', 
+    borderRight:'1px solid #eee',
     fontWeight:'bold',
-    fontSize: '12px'
+    fontSize: 'clamp(12px, 1vw, 16px)'
   },
 
   calendarGrid: { 
@@ -394,41 +394,41 @@ const calStyles = {
     borderRight:'1px solid #eee', 
     borderBottom:'1px solid #eee' 
   },
-  dayNum: { 
-      fontSize: '12px', 
-      fontWeight: 'bold', 
-      padding: '4px', 
-      color: '#444' 
+  dayNum: {
+      fontSize: 'clamp(12px, 1vw, 16px)',
+      fontWeight: 'bold',
+      padding: '4px',
+      color: '#444'
   },
-  
-  eventList: { 
-    display: 'flex', 
-    flexDirection: 'column', 
-    gap: '1px', 
+
+  eventList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1px',
     width: '100%',
-    position: 'absolute', 
-    top: '25px', 
+    position: 'absolute',
+    top: 'clamp(24px, 2.2vw, 30px)',
     left: 0,
     right: 0,
     overflow: 'visible'
   },
-  
-  eventItem: { 
-    fontSize: '10px', 
+
+  eventItem: {
+    fontSize: 'clamp(10px, 0.9vw, 14px)',
     padding: '1px 3px',
-    whiteSpace: 'nowrap', 
-    overflow: 'hidden', 
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
     textOverflow: 'ellipsis',
     fontWeight: '500',
     margin: '0 1px',
     lineHeight: '1.2',
-    height: '16px',
+    height: 'clamp(16px, 1.6vw, 22px)',
     boxSizing: 'border-box' // 테두리 포함 사이즈 계산
   },
-  moreBtn: { 
-      fontSize: '9px', 
-      color: '#888', 
-      paddingLeft: '4px', 
+  moreBtn: {
+      fontSize: 'clamp(9px, 0.8vw, 12px)',
+      color: '#888',
+      paddingLeft: '4px',
       fontWeight: 'bold',
       marginTop: '0px'
   }
