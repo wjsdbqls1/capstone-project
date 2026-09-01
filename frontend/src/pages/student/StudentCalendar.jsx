@@ -167,8 +167,9 @@ function StudentCalendar() {
                   zIndex: 10,
                   position: 'relative'
               };
-              // 시작일 또는 매주 시작(일요일)에 제목 표시 → 주가 넘어가도 무슨 일정인지 보이게
-              const showTitle = isStart || currentDayOfWeek === 0;
+              // 시작일 / 매주 시작(일요일) / 달의 첫날에 제목 표시
+              // → 주・달이 넘어가도, 이전 달에서 이어진 일정이라도 무슨 일정인지 바로 보이게
+              const showTitle = isStart || currentDayOfWeek === 0 || d === 1;
               return (
                 <div key={`${ev.id}-${d}`} style={{...calStyles.eventItem, ...itemStyle}}>
                   {showTitle ? ev.title : ''}
