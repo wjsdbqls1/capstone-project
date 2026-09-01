@@ -74,6 +74,10 @@ function StudentCalendar() {
     return laneOf;
   };
 
+  // 대한민국 공휴일 여부 판별 (학교 사이트 크롤링 데이터 제목 기준)
+  // 개교기념일은 학교 자체 휴일이라 "대체휴일"이 붙어도 국가 공휴일에서 제외
+  const isHoliday = (title) => !title.includes('개교기념일') && /휴일|현충일|추석/.test(title);
+
   const formatDate = (dateObj) => {
     const y = dateObj.getFullYear();
     const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -148,6 +152,8 @@ function StudentCalendar() {
               const isEnd = ev.end_date === dateStr;
               const theme = isManual
                 ? { bg: '#fff3e0', text: '#e65100', bar: '#e65100' } // 학과 (주황)
+                : isHoliday(ev.title)
+                ? { bg: '#e8f5e9', text: '#2e7d32', bar: '#2e7d32' } // 대한민국 휴일 (초록)
                 : { bg: '#e3f2fd', text: '#1565c0', bar: '#1565c0' }; // 학교 (파랑)
               const itemStyle = {
                   backgroundColor: theme.bg,
@@ -234,6 +240,10 @@ function StudentCalendar() {
               <div style={{width:'10px', height:'10px', backgroundColor:'#ff9800', borderRadius:'2px'}}></div>
               <span>학과</span>
             </div>
+            <div style={calStyles.legendItem}>
+              <div style={{width:'10px', height:'10px', backgroundColor:'#2e7d32', borderRadius:'2px'}}></div>
+              <span>휴일</span>
+            </div>
           </div>
         </div>
 
@@ -271,10 +281,11 @@ function StudentCalendar() {
                     ) : (
                         selectedEvents.map((ev) => {
                             const isManual = ev.source === 'manual';
+                            const borderColor = isManual ? '#ff9800' : isHoliday(ev.title) ? '#2e7d32' : '#1565c0';
                             return (
                                 <div key={ev.id} style={{
-                                    ...modalStyles.item, 
-                                    borderLeft: isManual ? '4px solid #ff9800' : '4px solid #1565c0'
+                                    ...modalStyles.item,
+                                    borderLeft: `4px solid ${borderColor}`
                                 }}>
                                     <div style={{fontWeight:'bold', fontSize:'16px', color:'#333'}}>{ev.title}</div>
                                     <div style={{fontSize:'13px', color:'#666', marginTop:'4px'}}>
