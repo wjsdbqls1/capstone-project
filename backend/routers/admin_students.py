@@ -60,7 +60,7 @@ def list_students(
     if grade is not None:
         q = q.filter(User.grade == grade)
 
-    rows = q.order_by(User.student_no.asc()).all()
+    rows = q.order_by(User.grade.desc().nullslast(), User.student_no.asc()).all()
     return [_serialize(u) for u in rows]
 
 
