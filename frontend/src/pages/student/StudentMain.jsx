@@ -116,10 +116,9 @@ function StudentMain() {
         </div>
       </div>
 
-      {/* 3. 스크롤 가능한 본문 — 카드 패널을 화면 중앙에 배치 (margin:auto 는 내용이 넘칠 때도
-          잘리지 않고 자연스럽게 위쪽 정렬 + 스크롤로 전환되어 PC의 큰 화면에서도 빈 공간 없이 안정적) */}
-      <div style={styles.contentArea}>
-        <div style={styles.panel}>
+      {/* 3. 유리 박스 — 다른 페이지(FAQ/공지사항 등)와 동일한 크기·투명도 규칙 적용 */}
+      <div style={styles.glassContainer}>
+        <div style={styles.innerContent}>
 
           {/* 3-1. 정보 스트립 (최근 공지 / 다가오는 일정) — 단색 톤으로 통일 */}
           <div style={styles.infoStrip}>
@@ -270,28 +269,28 @@ const styles = {
     flexShrink: 0
   },
 
-  contentArea: {
+  // 다른 페이지(StudentNotice, StudentFAQ 등)의 glassContainer와 동일한 크기/투명도 규칙
+  glassContainer: {
     flex: 1,
+    margin: '15px',
+    padding: 'clamp(15px, 3vw, 30px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    backdropFilter: 'blur(15px)',
+    borderRadius: '20px',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    padding: 'clamp(15px, 4vw, 30px)',
-    overflowY: 'auto',
-    boxSizing: 'border-box'
+    overflowY: 'auto'
   },
 
-  // margin: 'auto' 로 카드 패널을 화면 정중앙에 배치.
-  // 내용이 넘치면 자동으로 위쪽 정렬 + 스크롤로 전환되어(overflow-safe) 잘리지 않음.
-  panel: {
+  // 큰 유리 박스 안에서도 리스트형 콘텐츠가 과하게 넓어지지 않도록 폭을 제한하고,
+  // margin:auto 로 세로 중앙 정렬(내용이 넘치면 자동으로 상단 정렬+스크롤로 안전하게 전환됨)
+  innerContent: {
     width: '100%',
-    maxWidth: '440px',
+    maxWidth: '520px',
     margin: 'auto',
-    backgroundColor: 'rgba(255, 255, 255, 0.82)',
-    backdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255, 255, 255, 0.7)',
-    borderRadius: '24px',
-    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.16)',
-    padding: 'clamp(18px, 4vw, 26px)',
-    boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
     gap: '18px'
