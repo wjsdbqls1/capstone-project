@@ -385,13 +385,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '15px',
-    padding: '21px 16px',
+    padding: '21.5px 16px',
     cursor: 'pointer'
   },
 
   menuRowIconWrap: {
-    width: '42px',
-    height: '42px',
+    width: '42.5px',
+    height: '42.5px',
     borderRadius: '12px',
     backgroundColor: 'rgba(0, 54, 117, 0.08)',
     color: '#003675',
@@ -403,7 +403,7 @@ const styles = {
 
   menuRowText: {
     flex: 1,
-    fontSize: 'clamp(17px, 4.4vw, 18px)',
+    fontSize: 'clamp(17.5px, 4.4vw, 18.5px)',
     fontWeight: '600',
     color: '#222'
   },
