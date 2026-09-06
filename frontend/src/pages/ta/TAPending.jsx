@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Calendar, ArrowDown, ArrowUp, PartyPopper, Pin, X, User, Paperclip, Bot } from 'lucide-react';
+import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdAttachFile, MdSmartToy } from 'react-icons/md';
 import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 
@@ -104,12 +104,12 @@ function TAPending() {
     <TALayout>
       <div style={styles.pageTitle}>대기중인 문의</div>
       <div style={styles.sortBar}>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('deadline'); setInquiries(sortList(inquiries, 'deadline', academicEvents)); }} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}><Calendar size={13} /> 마감순</motion.button>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('latest'); setInquiries(sortList(inquiries, 'latest', academicEvents)); }} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}><ArrowDown size={13} /> 최신순</motion.button>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('old'); setInquiries(sortList(inquiries, 'old', academicEvents)); }} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}><ArrowUp size={13} /> 오래된순</motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('deadline'); setInquiries(sortList(inquiries, 'deadline', academicEvents)); }} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}><MdCalendarToday size={13} /> 마감순</motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('latest'); setInquiries(sortList(inquiries, 'latest', academicEvents)); }} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}><MdArrowDownward size={13} /> 최신순</motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('old'); setInquiries(sortList(inquiries, 'old', academicEvents)); }} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}><MdArrowUpward size={13} /> 오래된순</motion.button>
       </div>
       <div style={styles.listArea}>
-          {inquiries.length === 0 ? <div style={styles.emptyMessage}><PartyPopper size={18} style={{ verticalAlign: 'middle', marginRight: '6px' }} />대기 중인 문의가 없습니다.</div> :
+          {inquiries.length === 0 ? <div style={styles.emptyMessage}><MdCelebration size={18} style={{ verticalAlign: 'middle', marginRight: '6px' }} />대기 중인 문의가 없습니다.</div> :
               inquiries.map((item) => {
                   const eventInfo = item.academic_event_id ? academicEvents[item.academic_event_id] : null;
                   return (
@@ -122,7 +122,7 @@ function TAPending() {
                               <span style={styles.date}>{item.created_at.split('T')[0]}</span>
                           </div>
                           <div style={styles.title}>{item.title}</div>
-                          {eventInfo && <div style={styles.relatedEvent}><Pin size={12} style={{ verticalAlign: 'middle', marginRight: '3px' }} />{eventInfo.title}</div>}
+                          {eventInfo && <div style={styles.relatedEvent}><MdPushPin size={12} style={{ verticalAlign: 'middle', marginRight: '3px' }} />{eventInfo.title}</div>}
                           {/* 목록 카드에 학생 정보 복구 */}
                           <div style={styles.writerInfo}>
                               {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name} (${item.author_info.student_no})` : `ID: ${item.user_id}`}
@@ -140,13 +140,13 @@ function TAPending() {
               return (
             <>
             <div style={modalStyles.header}>
-              <h3 style={{margin:0, color:'#003675'}}>답변 작성</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><X size={20} /></button>
+              <h3 style={{margin:0, color:'#003675'}}>답변 작성</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.questionBox}>
                 {/* 모달 내 학생 정보 복구 */}
                 <div style={modalStyles.infoRow}>
-                    <span style={{fontWeight:'bold', marginRight:'5px', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><User size={13} /> 학생 정보: </span>
+                    <span style={{fontWeight:'bold', marginRight:'5px', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdPerson size={13} /> 학생 정보: </span>
                     {inq.author_info ? (
                         <span>{inq.author_info.department} / {inq.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{inq.author_info.name}</span> ({inq.author_info.student_no})</span>
                     ) : (
@@ -157,18 +157,18 @@ function TAPending() {
                 <div style={modalStyles.qText}>
                   {renderHighlighted(inq.content, aiKeywords)}
                 </div>
-                {inq.attachment && <div style={modalStyles.attachBox}><a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><Paperclip size={13} /> 첨부파일 보기</a></div>}
-                {inq.academic_event_id && academicEvents[inq.academic_event_id] && <div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><Calendar size={13} /> 관련 일정: {academicEvents[inq.academic_event_id].title}</div>}
+                {inq.attachment && <div style={modalStyles.attachBox}><a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={13} /> 첨부파일 보기</a></div>}
+                {inq.academic_event_id && academicEvents[inq.academic_event_id] && <div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><MdCalendarToday size={13} /> 관련 일정: {academicEvents[inq.academic_event_id].title}</div>}
               </div>
               {/* AI 답변 후보 */}
               {aiLoading && (
                 <div style={modalStyles.aiBox}>
-                  <div style={{...modalStyles.aiTitle, display: 'flex', alignItems: 'center', gap: '5px'}}><Bot size={15} /> AI 답변 후보 분석 중...</div>
+                  <div style={{...modalStyles.aiTitle, display: 'flex', alignItems: 'center', gap: '5px'}}><MdSmartToy size={15} /> AI 답변 후보 분석 중...</div>
                 </div>
               )}
               {!aiLoading && aiCandidates.length > 0 && (
                 <div style={modalStyles.aiBox}>
-                  <div style={{...modalStyles.aiTitle, display: 'flex', alignItems: 'center', gap: '5px'}}><Bot size={15} /> AI 추천 답변 후보</div>
+                  <div style={{...modalStyles.aiTitle, display: 'flex', alignItems: 'center', gap: '5px'}}><MdSmartToy size={15} /> AI 추천 답변 후보</div>
                   {aiCandidates.map((c, i) => {
                     const plainText = c.answer_html
                       ? c.answer_html.replace(/<[^>]+>/g, '').trim()

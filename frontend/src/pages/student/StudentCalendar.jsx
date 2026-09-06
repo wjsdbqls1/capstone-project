@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { MdChevronLeft, MdChevronRight, MdClose } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -214,7 +214,7 @@ function StudentCalendar() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
+           <MdChevronLeft size={20} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>학사 일정</h2>
@@ -228,11 +228,11 @@ function StudentCalendar() {
         {/* 컨트롤러 */}
         <div style={calStyles.controls}>
           <div style={calStyles.monthNav}>
-            <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={prevMonth} style={calStyles.navBtn}><ChevronLeft size={16} /></motion.button>
+            <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={prevMonth} style={calStyles.navBtn}><MdChevronLeft size={18} /></motion.button>
             <h3 style={{margin:0, fontSize: 'clamp(18px, 4vw, 22px)'}}>
                 {currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}
             </h3>
-            <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={nextMonth} style={calStyles.navBtn}><ChevronRight size={16} /></motion.button>
+            <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={nextMonth} style={calStyles.navBtn}><MdChevronRight size={18} /></motion.button>
           </div>
           
           <div style={calStyles.legend}>
@@ -280,7 +280,7 @@ function StudentCalendar() {
       >
           <div style={modalStyles.header}>
               <h3 style={{margin:0, color:'#003675'}}>{formatHeaderDate(selectedDate)}</h3>
-              <button onClick={() => setIsModalOpen(false)} style={modalStyles.closeBtn}><X size={20} /></button>
+              <button onClick={() => setIsModalOpen(false)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
           </div>
           <div style={modalStyles.list}>
               {selectedEvents.length === 0 ? (

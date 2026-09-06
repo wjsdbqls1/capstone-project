@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Search, X, Paperclip, Plus } from 'lucide-react';
+import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
 import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
@@ -124,7 +124,7 @@ function TAFaqManage() {
                     <option value="year">올해</option>
                 </select>
                 <div style={styles.searchWrapper}>
-                    <Search size={16} color="#666" />
+                    <MdSearch size={16} color="#666" />
                     <input
                         type="text"
                         placeholder="질문 또는 답변 검색..."
@@ -134,7 +134,7 @@ function TAFaqManage() {
                     />
                 </div>
             </div>
-            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{...styles.createBtn, display: 'flex', alignItems: 'center', gap: '4px'}} onClick={handleOpenCreate}><Plus size={16} /> 등록</motion.button>
+            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{...styles.createBtn, display: 'flex', alignItems: 'center', gap: '4px'}} onClick={handleOpenCreate}><MdAdd size={16} /> 등록</motion.button>
         </div>
 
         <div style={styles.listArea}>
@@ -153,7 +153,7 @@ function TAFaqManage() {
                             {item.created_at && (
                                 <div style={{fontSize:'12px', color:'#999', marginBottom:'5px'}}>{item.created_at.split('T')[0]}</div>
                             )}
-                            <div style={styles.question}><span style={{color:'#003675', marginRight:'5px'}}>Q.</span>{item.question}{item.original_filename && <Paperclip size={13} style={{marginLeft: '5px', verticalAlign: 'middle'}} />}</div>
+                            <div style={styles.question}><span style={{color:'#003675', marginRight:'5px'}}>Q.</span>{item.question}{item.original_filename && <MdAttachFile size={13} style={{marginLeft: '5px', verticalAlign: 'middle'}} />}</div>
                             <div style={styles.answer}><span style={{color:'#666', marginRight:'5px', fontWeight:'bold'}}>A.</span>{item.answer_html}</div>
                         </div>
                         <div style={styles.actionButtons}>
@@ -168,7 +168,7 @@ function TAFaqManage() {
       <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
             <div style={modalStyles.header}>
               <h3 style={{margin:0, color:'#003675'}}>{isEditMode ? "질문 수정" : "새 질문 등록"}</h3>
-              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><X size={20} /></button>
+              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.inputGroup}>

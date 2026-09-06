@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ChevronLeft, User, FileText, Paperclip, CheckCircle2, Ban } from 'lucide-react';
+import { MdChevronLeft, MdPerson, MdDescription, MdAttachFile, MdCheckCircle, MdBlock } from 'react-icons/md';
 import TALayout from './TALayout';
 
 function TAAbsenceManage() {
@@ -152,8 +152,8 @@ function TAAbsenceManage() {
       ) : (
           <div style={styles.detailContainer}>
               <div style={{...styles.sectionBox, position: 'relative'}}>
-                  <button onClick={() => setView('list')} style={styles.cardBackBtn}><ChevronLeft size={14} style={{verticalAlign: 'middle'}} /> 목록으로</button>
-                  <h3 style={{...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '8px'}}><User size={18} /> 신청자 정보</h3>
+                  <button onClick={() => setView('list')} style={styles.cardBackBtn}><MdChevronLeft size={14} style={{verticalAlign: 'middle'}} /> 목록으로</button>
+                  <h3 style={{...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '8px'}}><MdPerson size={18} /> 신청자 정보</h3>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학과</span> 
                       <span style={{fontWeight:'bold'}}>{selectedReq.department}</span>
@@ -173,7 +173,7 @@ function TAAbsenceManage() {
               </div>
 
               <div style={styles.sectionBox}>
-                  <h3 style={{...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '8px'}}><FileText size={18} /> 신청 내용</h3>
+                  <h3 style={{...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '8px'}}><MdDescription size={18} /> 신청 내용</h3>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>과목명</span>
                       <span style={{display:'flex', flexWrap:'wrap', gap:'6px'}}>
@@ -187,7 +187,7 @@ function TAAbsenceManage() {
                       <span style={{color:'#c62828', fontWeight:'bold'}}>{selectedReq.absent_date}</span>
                   </div>
                   <div style={{marginTop:'15px'}}><div style={styles.label}>결석 사유</div><div style={styles.reasonBox}>{selectedReq.reason}</div></div>
-                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`https://capstone-project-of74.onrender.com/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={{...styles.fileLink, display: 'inline-flex', alignItems: 'center', gap: '6px'}}><Paperclip size={14} /> 증빙서류 다운로드 / 보기</a></div>)}
+                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`https://capstone-project-of74.onrender.com/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={{...styles.fileLink, display: 'inline-flex', alignItems: 'center', gap: '6px'}}><MdAttachFile size={14} /> 증빙서류 다운로드 / 보기</a></div>)}
               </div>
 
               {selectedReq.status === 'SUBMITTED' ? (
@@ -210,7 +210,7 @@ function TAAbsenceManage() {
                   </div>
               ) : (
                 <div style={{marginTop:'30px', padding:'15px', borderRadius:'10px', textAlign:'center', fontWeight:'bold', backgroundColor: selectedReq.status === 'APPROVED' ? '#e8f5e9' : '#ffebee', color: selectedReq.status === 'APPROVED' ? '#2e7d32' : '#c62828', border: selectedReq.status === 'APPROVED' ? '1px solid #c8e6c9' : '1px solid #ffcdd2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-                    {selectedReq.status === 'APPROVED' ? <><CheckCircle2 size={18} /> 승인 처리되었습니다.</> : <><Ban size={18} /> 반려되었습니다. (사유: {selectedReq.reject_reason || '-'})</>}
+                    {selectedReq.status === 'APPROVED' ? <><MdCheckCircle size={18} /> 승인 처리되었습니다.</> : <><MdBlock size={18} /> 반려되었습니다. (사유: {selectedReq.reject_reason || '-'})</>}
                 </div>
               )}
           </div>

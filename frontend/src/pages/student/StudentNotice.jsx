@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Search } from 'lucide-react';
+import { MdChevronLeft, MdSearch } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -115,7 +115,7 @@ function StudentNotice() {
           style={styles.backBtn} 
           onClick={() => navigate('/student/main')} 
         >
-           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
+           <MdChevronLeft size={20} /> 뒤로가기
         </button>
         <h2 style={{margin: 0, fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: '600'}}>공지사항</h2>
         <div style={{width: '60px'}}></div>
@@ -142,7 +142,7 @@ function StudentNotice() {
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
               />
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }} style={styles.searchBtn} onClick={handleSearch}><Search size={16} /></motion.button>
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }} style={styles.searchBtn} onClick={handleSearch}><MdSearch size={18} /></motion.button>
           </div>
         </div>
 

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, X, Trash2 } from 'lucide-react';
+import { MdChevronLeft, MdChevronRight, MdAdd, MdClose, MdDelete } from 'react-icons/md';
 import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
@@ -205,11 +205,11 @@ function TACalendarManage() {
       <div style={styles.pageTitle}>캘린더 관리</div>
       <div style={calStyles.controls}>
         <div style={calStyles.monthNav}>
-          <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={prevMonth} style={calStyles.navBtn}><ChevronLeft size={16} /></motion.button>
+          <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={prevMonth} style={calStyles.navBtn}><MdChevronLeft size={16} /></motion.button>
           <h3 style={{margin:0, fontSize:'20px', fontWeight:'800', color:'#333'}}>{currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}</h3>
-          <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={nextMonth} style={calStyles.navBtn}><ChevronRight size={16} /></motion.button>
+          <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={nextMonth} style={calStyles.navBtn}><MdChevronRight size={16} /></motion.button>
         </div>
-        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={openCreateModal} style={{...calStyles.addBtn, display: 'flex', alignItems: 'center', gap: '4px'}}><Plus size={15} /> 일정 등록</motion.button>
+        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={openCreateModal} style={{...calStyles.addBtn, display: 'flex', alignItems: 'center', gap: '4px'}}><MdAdd size={15} /> 일정 등록</motion.button>
       </div>
       
       {/* 캘린더 영역 */}
@@ -229,7 +229,7 @@ function TACalendarManage() {
       </div>
 
       <AnimatedModal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
-                <div style={modalStyles.header}><h3 style={{margin:0, color:'#003675'}}>{selectedDate} 일정</h3><button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}><X size={18} /></button></div>
+                <div style={modalStyles.header}><h3 style={{margin:0, color:'#003675'}}>{selectedDate} 일정</h3><button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}><MdClose size={18} /></button></div>
                 <div style={modalStyles.list}>
                     <div style={{display:'flex', gap:'5px', marginBottom:'15px'}}>
                         <input value={memoInput} onChange={(e) => setMemoInput(e.target.value)} placeholder="메모 입력..." style={{flex:1, padding:'10px', borderRadius:'8px', border:'1px solid #ddd'}}/>
@@ -239,7 +239,7 @@ function TACalendarManage() {
                         <div key={idx} style={{...modalStyles.item, borderLeft: ev.type==='memo' ? '4px solid #2e7d32' : ev.source==='manual' ? '4px solid #ff9800' : '4px solid #1565c0', backgroundColor: ev.type==='memo' ? '#f1f8e9' : 'white'}}>
                             <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
                                 <div><div style={{fontWeight:'bold', fontSize:'15px', color:'#333'}}>{ev.title}</div>{ev.type!=='memo' && <div style={{fontSize:'12px', color:'#666', marginTop:'4px'}}>{ev.start_date} ~ {ev.end_date}</div>}</div>
-                                {ev.type==='memo' && <button onClick={() => handleDeleteMemo(ev.id.replace('memo-',''))} style={{background:'none', border:'none', cursor:'pointer', color:'#999', display: 'flex'}}><Trash2 size={16} /></button>}
+                                {ev.type==='memo' && <button onClick={() => handleDeleteMemo(ev.id.replace('memo-',''))} style={{background:'none', border:'none', cursor:'pointer', color:'#999', display: 'flex'}}><MdDelete size={16} /></button>}
                                 {ev.type!=='memo' && ev.source==='manual' && (
                                     <div style={{display:'flex', gap:'6px', flexShrink:0}}>
                                         <button onClick={() => openEditModal(ev)} style={{padding:'4px 10px', backgroundColor:'#e3f2fd', color:'#003675', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontWeight:'bold'}}>수정</button>
@@ -252,7 +252,7 @@ function TACalendarManage() {
                 </div>
       </AnimatedModal>
       <AnimatedModal isOpen={isRegisterModalOpen} onClose={closeRegisterModal} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
-          <div style={modalStyles.header}><h3 style={{margin:0}}>{editingEventId ? '일정 수정' : '일정 등록'}</h3><button onClick={closeRegisterModal} style={modalStyles.closeBtn}><X size={18} /></button></div>
+          <div style={modalStyles.header}><h3 style={{margin:0}}>{editingEventId ? '일정 수정' : '일정 등록'}</h3><button onClick={closeRegisterModal} style={modalStyles.closeBtn}><MdClose size={18} /></button></div>
           <div style={{padding:'20px'}}>
             <div style={modalStyles.inputGroup}><label style={modalStyles.label}>제목</label><input placeholder="예: 수강신청" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} style={modalStyles.input}/></div>
             <div style={modalStyles.inputGroup}><label style={modalStyles.label}>시작</label><input type="date" value={newEvent.start_date} onChange={e => setNewEvent({...newEvent, start_date: e.target.value})} style={modalStyles.input}/></div>

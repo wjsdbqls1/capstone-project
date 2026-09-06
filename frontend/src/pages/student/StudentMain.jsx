@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { PenLine, ClipboardList, HelpCircle, Megaphone, Calendar, FileText, LogOut, Home, User } from 'lucide-react';
+import { MdEdit, MdAssignment, MdHelp, MdCampaign, MdCalendarToday, MdDescription, MdLogout, MdHome, MdPerson } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -65,25 +65,25 @@ function StudentMain() {
       <div style={styles.menuGridContainer}>
         
         {/* 각 메뉴 버튼들 */}
-        <MenuButton onClick={() => navigate('/student/inquiry')} icon={<PenLine size="100%" strokeWidth={1.6} />} text="문의하기" />
-        <MenuButton onClick={() => navigate('/student/history')} icon={<ClipboardList size="100%" strokeWidth={1.6} />} text="문의 내역" />
-        <MenuButton onClick={() => navigate('/student/faq')} icon={<HelpCircle size="100%" strokeWidth={1.6} />} text="FAQ" />
-        <MenuButton onClick={() => navigate('/student/notice')} icon={<Megaphone size="100%" strokeWidth={1.6} />} text="공지사항" />
-        <MenuButton onClick={() => navigate('/student/calendar')} icon={<Calendar size="100%" strokeWidth={1.6} />} text="캘린더" />
-        <MenuButton onClick={() => alert('추후에 추가될 기능입니다.')} icon={<FileText size="100%" strokeWidth={1.6} />} text="공결 서류 제출" />
+        <MenuButton onClick={() => navigate('/student/inquiry')} icon={<MdEdit size="100%" />} text="문의하기" />
+        <MenuButton onClick={() => navigate('/student/history')} icon={<MdAssignment size="100%" />} text="문의 내역" />
+        <MenuButton onClick={() => navigate('/student/faq')} icon={<MdHelp size="100%" />} text="FAQ" />
+        <MenuButton onClick={() => navigate('/student/notice')} icon={<MdCampaign size="100%" />} text="공지사항" />
+        <MenuButton onClick={() => navigate('/student/calendar')} icon={<MdCalendarToday size="100%" />} text="캘린더" />
+        <MenuButton onClick={() => alert('추후에 추가될 기능입니다.')} icon={<MdDescription size="100%" />} text="공결 서류 제출" />
 
       </div>
 
       {/* 4. 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <LogOut size={18} strokeWidth={1.8} /> 로그아웃
+          <MdLogout size={18} /> 로그아웃
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <Home size={18} strokeWidth={1.8} /> 홈
+          <MdHome size={18} /> 홈
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <User size={18} strokeWidth={1.8} /> 마이페이지
+          <MdPerson size={18} /> 마이페이지
         </motion.button>
       </nav>
     </div>

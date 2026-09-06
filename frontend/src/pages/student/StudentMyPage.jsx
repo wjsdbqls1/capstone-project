@@ -7,12 +7,14 @@ import '../../App.css';
 import NotificationToggle from '../../components/NotificationToggle';
 import AnimatedModal from '../../components/AnimatedModal';
 import { unsubscribeFromPush } from '../../pushNotifications';
-import { ChevronLeft, User, X } from 'lucide-react';
+import { MdChevronLeft, MdPerson, MdClose } from 'react-icons/md';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
 
 const API = 'https://capstone-project-of74.onrender.com';
+const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+const PASSWORD_RULE_MESSAGE = '새 비밀번호는 8자 이상이며 영문, 숫자, 특수문자를 모두 포함해야 합니다.';
 
 function StudentMyPage() {
   const navigate = useNavigate();
@@ -27,8 +29,8 @@ function StudentMyPage() {
       alert('현재 비밀번호와 새 비밀번호를 입력해주세요.');
       return;
     }
-    if (pwForm.new_password.length < 8) {
-      alert('새 비밀번호는 8자 이상이어야 합니다.');
+    if (!PASSWORD_RULE.test(pwForm.new_password)) {
+      alert(PASSWORD_RULE_MESSAGE);
       return;
     }
     if (pwForm.new_password !== pwForm.confirm_password) {
@@ -102,7 +104,7 @@ function StudentMyPage() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
+           <MdChevronLeft size={20} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>마이페이지</h2>
@@ -116,7 +118,7 @@ function StudentMyPage() {
         <div style={styles.contentWrapper}>
             <div style={styles.profileHeader}>
                 <div style={styles.avatar}>
-                    {userInfo ? userInfo.name[0] : <User size={32} />}
+                    {userInfo ? userInfo.name[0] : <MdPerson size={32} />}
                 </div>
                 <h2 style={styles.userName}>
                     {userInfo ? userInfo.name : '로딩중...'}
@@ -186,7 +188,7 @@ function StudentMyPage() {
       >
         <div style={pwStyles.header}>
           <h3 style={{ margin: 0, color: '#003675' }}>비밀번호 변경</h3>
-          <button onClick={() => setShowPwModal(false)} style={pwStyles.closeBtn}><X size={20} /></button>
+          <button onClick={() => setShowPwModal(false)} style={pwStyles.closeBtn}><MdClose size={20} /></button>
         </div>
         <div style={pwStyles.content}>
           <input
@@ -199,7 +201,7 @@ function StudentMyPage() {
           <input
             type="password"
             style={pwStyles.input}
-            placeholder="새 비밀번호 (8자 이상)"
+            placeholder="새 비밀번호 (8자+, 영문/숫자/특수문자)"
             value={pwForm.new_password}
             onChange={(e) => setPwForm({ ...pwForm, new_password: e.target.value })}
           />

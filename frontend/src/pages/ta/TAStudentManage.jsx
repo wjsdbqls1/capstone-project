@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Search, X, Plus, Lightbulb } from 'lucide-react';
+import { MdSearch, MdClose, MdAdd, MdLightbulb } from 'react-icons/md';
 import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
@@ -164,7 +164,7 @@ function TAStudentManage() {
             <option value="4">4학년</option>
           </select>
           <div style={styles.searchWrapper}>
-            <Search size={16} color="#666" />
+            <MdSearch size={16} color="#666" />
             <input
               type="text"
               placeholder="이름 또는 학번 검색..."
@@ -174,7 +174,7 @@ function TAStudentManage() {
             />
           </div>
         </div>
-        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{...styles.createBtn, display: 'flex', alignItems: 'center', gap: '4px'}} onClick={() => setShowModal(true)}><Plus size={16} /> 학생 등록</motion.button>
+        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{...styles.createBtn, display: 'flex', alignItems: 'center', gap: '4px'}} onClick={() => setShowModal(true)}><MdAdd size={16} /> 학생 등록</motion.button>
       </div>
 
       <div style={styles.listArea}>
@@ -233,7 +233,7 @@ function TAStudentManage() {
       <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
             <div style={modalStyles.header}>
               <h3 style={{ margin: 0, color: '#003675' }}>새 학생 등록</h3>
-              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><X size={20} /></button>
+              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.inputGroup}>
@@ -279,7 +279,7 @@ function TAStudentManage() {
                 </select>
               </div>
               <div style={{...styles.pwNotice, display: 'flex', alignItems: 'flex-start', gap: '6px'}}>
-                <Lightbulb size={15} style={{flexShrink: 0, marginTop: '1px'}} />
+                <MdLightbulb size={15} style={{flexShrink: 0, marginTop: '1px'}} />
                 <span>초기 비밀번호는 <b>학번 + !</b> 로 자동 설정됩니다. (학생이 로그인 후 변경 가능)</span>
               </div>
               <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.saveBtn} onClick={handleCreate}>등록하기</motion.button>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
-import { ChevronLeft, FileDown } from 'lucide-react';
+import { MdChevronLeft, MdFileDownload } from 'react-icons/md';
 import '../../App.css';
 
 import bgImage from '../../assets/로그인 이미지.jpg'; 
@@ -55,7 +55,7 @@ function StudentNoticeDetail() {
           style={styles.backBtn} 
           onClick={() => navigate(-1)}
         >
-           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
+           <MdChevronLeft size={20} /> 뒤로가기
         </button>
         <h2 style={{margin: 0, fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: '600', color: 'white'}}>공지 상세</h2>
         <div style={{width: '60px'}}></div> 
@@ -78,7 +78,7 @@ function StudentNoticeDetail() {
         {notice.file_path && (
           <div style={styles.fileCard}>
             <div style={styles.fileInfo}>
-                <FileDown size={24} color="#003675" />
+                <MdFileDownload size={24} color="#003675" />
                 <div style={{minWidth: 0}}>
                     <div style={{fontSize:'12px', color:'#666', marginBottom:'2px'}}>첨부파일</div>
                     <a 
@@ -182,16 +182,18 @@ const styles = {
   },
   glassContainer: {
     flexShrink: 0,
-    margin: '15px',
-    padding: 'clamp(20px, 4vw, 30px)', 
+    width: 'calc(100% - 30px)',
+    maxWidth: '820px',
+    boxSizing: 'border-box',
+    margin: '15px auto 40px',
+    padding: 'clamp(20px, 4vw, 30px)',
     backgroundColor: 'rgba(255, 255, 255, 0.75)', // 가독성을 위해 배경 불투명도 약간 상승
     backdropFilter: 'blur(15px)',
     borderRadius: '20px',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
     border: '1px solid rgba(255, 255, 255, 0.4)',
     display: 'flex',
-    flexDirection: 'column',
-    marginBottom: '40px' 
+    flexDirection: 'column'
   },
   titleSection: {
     borderBottom: '1.5px solid rgba(0, 54, 117, 0.1)',

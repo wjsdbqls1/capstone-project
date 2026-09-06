@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Search, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import { MdChevronLeft, MdSearch, MdExpandMore, MdExpandLess, MdDownload } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -56,7 +56,7 @@ function StudentFaq() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
+           <MdChevronLeft size={20} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>자주 묻는 질문</h2>
@@ -70,7 +70,7 @@ function StudentFaq() {
         {/* 검색창 영역 */}
         <div style={styles.searchWrapper}>
           <div style={styles.searchBox}>
-            <Search size={18} style={{ marginRight: '10px', color: '#666', flexShrink: 0 }} />
+            <MdSearch size={18} style={{ marginRight: '10px', color: '#666', flexShrink: 0 }} />
             <input 
               style={styles.searchInput}
               placeholder="검색어 입력 (예: 휴학)"
@@ -98,7 +98,7 @@ function StudentFaq() {
                   <span style={styles.qMark}>Q.</span>
                   <span style={styles.qText}>{item.question}</span>
                   <span style={styles.arrow}>
-                    {expandedId === item.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    {expandedId === item.id ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
                   </span>
                 </div>
 
@@ -125,7 +125,7 @@ function StudentFaq() {
                                 download={item.original_filename}
                                 style={{ ...styles.downloadLink, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                               >
-                                <Download size={14} /> {item.original_filename}
+                                <MdDownload size={14} /> {item.original_filename}
                               </a>
                             </div>
                           )}

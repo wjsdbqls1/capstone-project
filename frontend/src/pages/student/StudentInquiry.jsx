@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ChevronLeft, MessageCircle, Calendar, Paperclip, CheckCircle2 } from 'lucide-react';
+import { MdChevronLeft, MdChat, MdCalendarToday, MdAttachFile, MdCheckCircle } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -111,7 +111,7 @@ function StudentInquiry() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
+           <MdChevronLeft size={20} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(18px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>문의하기</h2>
@@ -143,7 +143,7 @@ function StudentInquiry() {
               style={{ ...(!isRelatedToEvent ? styles.typeBtnActive : styles.typeBtn), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               onClick={() => setIsRelatedToEvent(false)}
             >
-              <MessageCircle size={16} /> 일반 문의
+              <MdChat size={16} /> 일반 문의
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -151,7 +151,7 @@ function StudentInquiry() {
               style={{ ...(isRelatedToEvent ? styles.typeBtnActive : styles.typeBtn), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               onClick={() => setIsRelatedToEvent(true)}
             >
-              <Calendar size={16} /> 학사일정 관련
+              <MdCalendarToday size={16} /> 학사일정 관련
             </motion.button>
           </div>
         </div>
@@ -200,7 +200,7 @@ function StudentInquiry() {
           />
 
           <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={{ ...styles.attachBtn, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={handleAttachClick}>
-             {file ? <><CheckCircle2 size={16} /> 파일 선택됨: {file.name}</> : <><Paperclip size={16} /> 파일 첨부하기</>}
+             {file ? <><MdCheckCircle size={16} /> 파일 선택됨: {file.name}</> : <><MdAttachFile size={16} /> 파일 첨부하기</>}
           </motion.button>
 
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={styles.submitBtn} onClick={handleSubmit}>

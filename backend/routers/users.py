@@ -1,4 +1,6 @@
 # backend/routers/users.py
+import re
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -8,6 +10,10 @@ from models import User
 
 r = APIRouter(prefix="/users", tags=["users"])
 pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# 8자 이상 + 영문/숫자/특수문자 각각 1개 이상
+PASSWORD_RULE = re.compile(r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$")
+PASSWORD_RULE_MESSAGE = "비밀번호는 8자 이상이며 영문, 숫자, 특수문자를 모두 포함해야 합니다."
 
 
 @r.get("/me")
@@ -40,8 +46,8 @@ def change_my_password(
     if not pwd.verify(data.current_password, current_user.password_hash):
         raise HTTPException(status_code=400, detail="현재 비밀번호가 일치하지 않습니다.")
 
-    if len(data.new_password) < 8:
-        raise HTTPException(status_code=400, detail="새 비밀번호는 8자 이상이어야 합니다.")
+    if not PASSWORD_RULE.match(data.new_password):
+        raise HTTPException(status_code=400, detail=PASSWORD_RULE_MESSAGE)
 
     current_user.password_hash = pwd.hash(data.new_password)
     current_user.must_change_password = False

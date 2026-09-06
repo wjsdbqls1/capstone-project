@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Calendar, GraduationCap, Search, X, User, Paperclip, Pencil } from 'lucide-react';
+import { MdCalendarToday, MdSearch, MdClose, MdPerson, MdAttachFile, MdEdit } from 'react-icons/md';
 import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
@@ -100,7 +100,7 @@ function TACompleted() {
                 </select>
             </div>
             <div style={styles.searchWrapper}>
-                <Search size={16} color="#666" />
+                <MdSearch size={16} color="#666" />
                 <input type="text" placeholder="이름 또는 제목 검색..." style={styles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
             </div>
         </div>
@@ -133,12 +133,12 @@ function TACompleted() {
           const inq = selectedInquiry || {};
           return (
           <>
-            <div style={modalStyles.header}><h3 style={{margin:0, color:'#2e7d32'}}>문의 상세</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><X size={20} /></button></div>
+            <div style={modalStyles.header}><h3 style={{margin:0, color:'#2e7d32'}}>문의 상세</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={20} /></button></div>
             <div style={modalStyles.content}>
                <div style={modalStyles.questionBox}>
                   {/* 모달 내 학생 정보 복구 */}
                   <div style={{...modalStyles.infoRow, display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
-                      <User size={14} /><span style={{fontWeight:'bold'}}>학생 정보: </span>
+                      <MdPerson size={14} /><span style={{fontWeight:'bold'}}>학생 정보: </span>
                       {inq.author_info ? (
                           <span>
                               {inq.author_info.department} / {inq.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{inq.author_info.name}</span> ({inq.author_info.student_no})
@@ -149,8 +149,8 @@ function TACompleted() {
                   </div>
                   <div style={modalStyles.qTitle}>Q. {inq.title}</div>
                   <div style={modalStyles.qText}>{inq.content}</div>
-                  {inq.attachment && (<div style={modalStyles.attachBox}><a href={`https://capstone-project-of74.onrender.com${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><Paperclip size={13} /> 학생 첨부파일 보기</a></div>)}
-                  {inq.academic_event_id && academicEvents[inq.academic_event_id] && (<div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><Calendar size={13} /><span>관련 일정: {academicEvents[inq.academic_event_id].title} (~{academicEvents[inq.academic_event_id].end_date})</span></div>)}
+                  {inq.attachment && (<div style={modalStyles.attachBox}><a href={`https://capstone-project-of74.onrender.com${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={13} /> 학생 첨부파일 보기</a></div>)}
+                  {inq.academic_event_id && academicEvents[inq.academic_event_id] && (<div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><MdCalendarToday size={13} /><span>관련 일정: {academicEvents[inq.academic_event_id].title} (~{academicEvents[inq.academic_event_id].end_date})</span></div>)}
                </div>
                <hr style={{margin:'25px 0', border:'0', borderTop:'1px dashed #ddd'}}/>
                <div style={modalStyles.section}>
@@ -160,7 +160,7 @@ function TACompleted() {
                         {editingReplyId === r.id ? (
                             <div><textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/><div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}><button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button><button onClick={()=>handleUpdateReply(inq.id, r.id)} style={modalStyles.saveBtn}>저장</button></div></div>
                         ) : (
-                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`https://capstone-project-of74.onrender.com${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><Paperclip size={12} /> 답변 첨부파일</a></div>)}<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><Pencil size={11} /> 수정하기</button></div></div>
+                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`https://capstone-project-of74.onrender.com${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdAttachFile size={12} /> 답변 첨부파일</a></div>)}<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdEdit size={11} /> 수정하기</button></div></div>
                         )}
                     </div>
                   ))}

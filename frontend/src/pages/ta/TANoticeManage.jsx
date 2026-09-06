@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Search, X, Paperclip, Plus } from 'lucide-react';
+import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
 import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
@@ -150,7 +150,7 @@ function TANoticeManage() {
                     <option value="year">올해</option>
                 </select>
                 <div style={styles.searchWrapper}>
-                    <Search size={16} color="#666" />
+                    <MdSearch size={16} color="#666" />
                     <input
                         type="text"
                         placeholder="제목 검색..."
@@ -160,7 +160,7 @@ function TANoticeManage() {
                     />
                 </div>
             </div>
-            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{...styles.createBtn, display: 'flex', alignItems: 'center', gap: '4px'}} onClick={handleOpenCreate}><Plus size={16} /> 등록</motion.button>
+            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{...styles.createBtn, display: 'flex', alignItems: 'center', gap: '4px'}} onClick={handleOpenCreate}><MdAdd size={16} /> 등록</motion.button>
         </div>
 
         <div style={styles.listArea}>
@@ -181,7 +181,7 @@ function TANoticeManage() {
                                     {getGradeText(item.target_grade)}
                                 </span>
                                 <span style={styles.date}>{item.posted_date}</span>
-                                {item.original_filename && <Paperclip size={12} color="#888" />}
+                                {item.original_filename && <MdAttachFile size={12} color="#888" />}
                             </div>
                             <div style={styles.title}>{item.title}</div>
                         </div>
@@ -197,7 +197,7 @@ function TANoticeManage() {
       <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
             <div style={modalStyles.header}>
               <h3 style={{margin:0, color:'#003675'}}>{isEditMode ? "공지사항 수정" : "새 공지사항 등록"}</h3>
-              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><X size={20} /></button>
+              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.inputGroup}>

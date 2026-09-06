@@ -1,7 +1,7 @@
 // src/components/NotificationToggle.jsx
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Bell, BellOff } from 'lucide-react'
+import { MdNotifications, MdNotificationsOff } from 'react-icons/md'
 import {
   isPushSupported,
   getPushSubscription,
@@ -49,7 +49,7 @@ function NotificationToggle({ style, activeStyle }) {
       onClick={handleClick}
       disabled={loading}
     >
-      {subscribed ? <Bell size={15} /> : <BellOff size={15} />}
+      {subscribed ? <MdNotifications size={16} /> : <MdNotificationsOff size={16} />}
       {subscribed ? '알림 받는 중' : '알림 받기'}
     </motion.button>
   )

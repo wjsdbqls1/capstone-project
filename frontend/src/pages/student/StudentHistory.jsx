@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ChevronLeft, X, Calendar, Paperclip, Download, GraduationCap } from 'lucide-react';
+import { MdChevronLeft, MdClose, MdCalendarToday, MdAttachFile, MdDownload, MdSchool } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -90,7 +90,7 @@ function StudentHistory() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
+           <MdChevronLeft size={20} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>문의 내역</h2>
@@ -139,7 +139,7 @@ function StudentHistory() {
             {/* 모달 헤더 */}
             <div style={modalStyles.header}>
               <h3 style={{margin:0, color:'#003675', fontSize:'18px'}}>문의 상세</h3>
-              <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><X size={20} /></button>
+              <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
             </div>
 
             {/* 모달 내용 */}
@@ -153,7 +153,7 @@ function StudentHistory() {
 
                   {detailData.academic_event && (
                       <div style={modalStyles.section}>
-                        <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><Calendar size={14} /> 관련 학사일정</div>
+                        <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdCalendarToday size={14} /> 관련 학사일정</div>
                         <div style={{...modalStyles.text, color:'#e65100'}}>
                             {detailData.academic_event.title} <br/>
                             <span style={{fontSize:'14px', fontWeight:'normal'}}>
@@ -170,9 +170,9 @@ function StudentHistory() {
 
                   {detailData.attachment && (
                     <div style={modalStyles.section}>
-                        <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><Paperclip size={14} /> 내 첨부파일</div>
+                        <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={14} /> 내 첨부파일</div>
                         <a href={`https://capstone-project-of74.onrender.com${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={{...modalStyles.link, display: 'inline-flex', alignItems: 'center', gap: '5px'}}>
-                            <Download size={14} /> 다운로드 / 보기
+                            <MdDownload size={14} /> 다운로드 / 보기
                         </a>
                     </div>
                   )}
@@ -180,7 +180,7 @@ function StudentHistory() {
                   <div style={modalStyles.divider}></div>
 
                   <div style={modalStyles.section}>
-                    <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><GraduationCap size={14} /> 조교 답변</div>
+                    <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdSchool size={14} /> 조교 답변</div>
                     {detailData.replies && detailData.replies.length > 0 ? (
                       detailData.replies.map(reply => (
                         <div key={reply.id} style={modalStyles.answerBox}>
@@ -192,7 +192,7 @@ function StudentHistory() {
 
                           {reply.attachment && (
                             <div style={{marginTop:'10px', fontSize:'14px', borderTop:'1px dashed #a6cbf3', paddingTop:'5px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
-                                <Paperclip size={13} /> <b>첨부파일:</b>
+                                <MdAttachFile size={13} /> <b>첨부파일:</b>
                                 <a href={`https://capstone-project-of74.onrender.com${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
                                     확인하기
                                 </a>

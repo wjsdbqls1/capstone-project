@@ -5,6 +5,8 @@ import axios from 'axios';
 import bgImage from '../assets/로그인 이미지.jpg';
 
 const API = 'https://capstone-project-of74.onrender.com';
+const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+const PASSWORD_RULE_MESSAGE = '새 비밀번호는 8자 이상이며 영문, 숫자, 특수문자를 모두 포함해야 합니다.';
 
 function ForcePasswordChange() {
   const navigate = useNavigate();
@@ -23,8 +25,8 @@ function ForcePasswordChange() {
       alert('현재 비밀번호와 새 비밀번호를 입력해주세요.');
       return;
     }
-    if (newPassword.length < 8) {
-      alert('새 비밀번호는 8자 이상이어야 합니다.');
+    if (!PASSWORD_RULE.test(newPassword)) {
+      alert(PASSWORD_RULE_MESSAGE);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -68,7 +70,7 @@ function ForcePasswordChange() {
         />
         <input
           type="password"
-          placeholder="새 비밀번호 (8자 이상)"
+          placeholder="새 비밀번호 (8자+, 영문/숫자/특수문자)"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           style={styles.input}

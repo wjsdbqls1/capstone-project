@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Menu, Inbox, CheckCircle2, Megaphone, HelpCircle, FileText, Calendar, Users, BarChart3, LogOut } from 'lucide-react';
+import { MdMenu, MdInbox, MdCheckCircle, MdCampaign, MdHelp, MdDescription, MdCalendarToday, MdPeople, MdBarChart, MdLogout } from 'react-icons/md';
 import '../../App.css';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import NotificationToggle from '../../components/NotificationToggle';
@@ -69,7 +69,7 @@ function TALayout({ children }) {
             {/* 모바일용 햄버거 메뉴 버튼 */}
             {isMobile && (
                 <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={layoutStyles.menuBtn}>
-                    <Menu size={26} />
+                    <MdMenu size={26} />
                 </button>
             )}
             <div style={layoutStyles.logoArea} onClick={() => navigate('/ta/pending')}>
@@ -79,7 +79,7 @@ function TALayout({ children }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <NotificationToggle style={layoutStyles.notifyBtn} activeStyle={layoutStyles.notifyBtnActive} />
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }} style={layoutStyles.logoutBtn} onClick={handleLogout}>
-            <LogOut size={15} strokeWidth={2.2} /> 로그아웃
+            <MdLogout size={15} /> 로그아웃
           </motion.button>
         </div>
       </header>
@@ -102,17 +102,17 @@ function TALayout({ children }) {
           
           <div style={layoutStyles.menuGroup}>
             <div style={layoutStyles.groupTitle}>문의</div>
-            <div style={isActive('/ta/pending') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/pending')}><Inbox size={18} /> 대기중인 문의</div>
-            <div style={isActive('/ta/completed') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/completed')}><CheckCircle2 size={18} /> 처리 완료 문의</div>
+            <div style={isActive('/ta/pending') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/pending')}><MdInbox size={18} /> 대기중인 문의</div>
+            <div style={isActive('/ta/completed') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/completed')}><MdCheckCircle size={18} /> 처리 완료 문의</div>
           </div>
 
           <div style={layoutStyles.divider}></div>
 
-          <div style={isActive('/ta/notice') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/notice')}><Megaphone size={18} /> 공지사항</div>
-          <div style={isActive('/ta/faq') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/faq')}><HelpCircle size={18} /> FAQ</div>
-          <div style={isActive('/ta/absence') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/absence')}><FileText size={18} /> 공결 신청</div>
-          <div style={isActive('/ta/calendar') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/calendar')}><Calendar size={18} /> 캘린더</div>
-          <div style={isActive('/ta/students') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/students')}><Users size={18} /> 학생 관리</div>
+          <div style={isActive('/ta/notice') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/notice')}><MdCampaign size={18} /> 공지사항</div>
+          <div style={isActive('/ta/faq') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/faq')}><MdHelp size={18} /> FAQ</div>
+          <div style={isActive('/ta/absence') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/absence')}><MdDescription size={18} /> 공결 신청</div>
+          <div style={isActive('/ta/calendar') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/calendar')}><MdCalendarToday size={18} /> 캘린더</div>
+          <div style={isActive('/ta/students') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/students')}><MdPeople size={18} /> 학생 관리</div>
 
           <div style={layoutStyles.divider}></div>
 
@@ -122,7 +122,7 @@ function TALayout({ children }) {
             style={layoutStyles.aiMenuItem}
             onClick={() => handleMenuClick('/ta/ai')}
           >
-            <BarChart3 size={20} />
+            <MdBarChart size={20} />
             <span style={{position:'relative', top:'1px'}}>문의 리포트</span>
           </motion.div>
         </nav>

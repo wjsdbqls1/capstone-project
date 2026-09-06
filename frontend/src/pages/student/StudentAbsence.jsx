@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ChevronLeft, Plus, Ban, X } from 'lucide-react';
+import { MdChevronLeft, MdAdd, MdBlock, MdClose } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -146,7 +146,7 @@ function StudentAbsence() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
+           <MdChevronLeft size={20} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>공결 신청</h2>
@@ -161,7 +161,7 @@ function StudentAbsence() {
           /* 목록 화면 */
           <>
             <button style={{...styles.createButton, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'}} onClick={() => setShowForm(true)}>
-              <Plus size={17} /> 공결 신청서 작성하기
+              <MdAdd size={19} /> 공결 신청서 작성하기
             </button>
 
             <h3 style={styles.sectionTitle}>나의 신청 내역</h3>
@@ -194,7 +194,7 @@ function StudentAbsence() {
                     
                     {item.status === 'REJECTED' && item.reject_reason && (
                       <div style={{...styles.rejectBox, display: 'flex', alignItems: 'center', gap: '6px'}}>
-                        <Ban size={14} /> 반려 사유: {item.reject_reason}
+                        <MdBlock size={15} /> 반려 사유: {item.reject_reason}
                       </div>
                     )}
                   </div>
@@ -231,7 +231,7 @@ function StudentAbsence() {
                     onChange={(e) => updateCourse(idx, e.target.value)}
                   />
                   {courseList.length > 1 && (
-                    <button type="button" style={styles.removeCourseBtn} onClick={() => removeCourse(idx)}><X size={16} /></button>
+                    <button type="button" style={styles.removeCourseBtn} onClick={() => removeCourse(idx)}><MdClose size={16} /></button>
                   )}
                 </div>
               ))}
