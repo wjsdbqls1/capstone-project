@@ -285,12 +285,11 @@ const styles = {
     overflowY: 'auto'
   },
 
-  // 큰 유리 박스 안에서도 리스트형 콘텐츠가 과하게 넓어지지 않도록 폭을 제한하고,
+  // 다른 페이지의 리스트처럼 유리 박스 폭을 그대로 채움.
   // margin:auto 로 세로 중앙 정렬(내용이 넘치면 자동으로 상단 정렬+스크롤로 안전하게 전환됨)
   innerContent: {
     width: '100%',
-    maxWidth: '520px',
-    margin: 'auto',
+    margin: 'auto 0',
     display: 'flex',
     flexDirection: 'column',
     gap: '18px'
