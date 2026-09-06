@@ -1,6 +1,8 @@
 // src/pages/ta/TAAbsenceManage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { ChevronLeft, User, FileText, Paperclip, CheckCircle2, Ban } from 'lucide-react';
 import TALayout from './TALayout';
 
 function TAAbsenceManage() {
@@ -98,7 +100,7 @@ function TAAbsenceManage() {
           <div style={styles.filterBar}>
               <span style={{fontWeight:'bold', color:'#555', marginRight:'10px'}}></span>
               <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-                  <option value="all">📅 전체 기간</option>
+                  <option value="all">전체 기간</option>
                   <option value="today">오늘</option>
                   <option value="week">이번 주</option>
                   <option value="month">이번 달</option>
@@ -125,9 +127,9 @@ function TAAbsenceManage() {
                   const statusStyle = getStatusStyle(req.status);
                   const courses = (req.course_name || '').split(',').map((c) => c.trim()).filter(Boolean);
                   return (
-                      <div key={req.id} style={{...styles.card, borderLeft: `6px solid ${statusStyle.border}`, backgroundColor: statusStyle.cardBg}} onClick={() => { setSelectedReq(req); setView('detail'); setShowRejectInput(false); }}
-                        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 14px rgba(0,0,0,0.1)'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)'; }}
+                      <motion.div key={req.id} style={{...styles.card, borderLeft: `6px solid ${statusStyle.border}`, backgroundColor: statusStyle.cardBg}} onClick={() => { setSelectedReq(req); setView('detail'); setShowRejectInput(false); }}
+                        whileHover={{ y: -2, boxShadow: '0 6px 14px rgba(0,0,0,0.1)' }}
+                        whileTap={{ scale: 0.99 }}
                       >
                           <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px'}}>
                               <span style={{fontSize:'13px', color:'#666', fontWeight:'500'}}>신청일 {req.created_at.split('T')[0]}</span>
@@ -142,7 +144,7 @@ function TAAbsenceManage() {
                               ))}
                               <span style={{color:'#c62828', fontSize:'14px', fontWeight:'600', marginLeft:'4px'}}>{req.absent_date}</span>
                           </div>
-                      </div>
+                      </motion.div>
                   );
               })
             )}
@@ -150,8 +152,8 @@ function TAAbsenceManage() {
       ) : (
           <div style={styles.detailContainer}>
               <div style={{...styles.sectionBox, position: 'relative'}}>
-                  <button onClick={() => setView('list')} style={styles.cardBackBtn}>‹ 목록으로</button>
-                  <h3 style={styles.sectionTitle}>👤 신청자 정보</h3>
+                  <button onClick={() => setView('list')} style={styles.cardBackBtn}><ChevronLeft size={14} style={{verticalAlign: 'middle'}} /> 목록으로</button>
+                  <h3 style={{...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '8px'}}><User size={18} /> 신청자 정보</h3>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>학과</span> 
                       <span style={{fontWeight:'bold'}}>{selectedReq.department}</span>
@@ -171,7 +173,7 @@ function TAAbsenceManage() {
               </div>
 
               <div style={styles.sectionBox}>
-                  <h3 style={styles.sectionTitle}>📄 신청 내용</h3>
+                  <h3 style={{...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '8px'}}><FileText size={18} /> 신청 내용</h3>
                   <div style={{...styles.infoRow, justifyContent: isMobile ? 'space-between' : 'flex-start'}}>
                       <span style={{...styles.label, width: isMobile ? 'auto' : '100px'}}>과목명</span>
                       <span style={{display:'flex', flexWrap:'wrap', gap:'6px'}}>
@@ -185,7 +187,7 @@ function TAAbsenceManage() {
                       <span style={{color:'#c62828', fontWeight:'bold'}}>{selectedReq.absent_date}</span>
                   </div>
                   <div style={{marginTop:'15px'}}><div style={styles.label}>결석 사유</div><div style={styles.reasonBox}>{selectedReq.reason}</div></div>
-                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`https://capstone-project-of74.onrender.com/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={styles.fileLink}>📎 증빙서류 다운로드 / 보기</a></div>)}
+                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`https://capstone-project-of74.onrender.com/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={{...styles.fileLink, display: 'inline-flex', alignItems: 'center', gap: '6px'}}><Paperclip size={14} /> 증빙서류 다운로드 / 보기</a></div>)}
               </div>
 
               {selectedReq.status === 'SUBMITTED' ? (
@@ -201,14 +203,14 @@ function TAAbsenceManage() {
                           </div>
                       ) : (
                           <div style={{display:'flex', gap:'15px'}}>
-                              <button onClick={()=>handleStatusUpdate('APPROVED')} style={styles.approveBtn}>승인</button>
-                              <button onClick={()=>setShowRejectInput(true)} style={styles.rejectBtn}>반려</button>
+                              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={()=>handleStatusUpdate('APPROVED')} style={styles.approveBtn}>승인</motion.button>
+                              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={()=>setShowRejectInput(true)} style={styles.rejectBtn}>반려</motion.button>
                           </div>
                       )}
                   </div>
               ) : (
-                <div style={{marginTop:'30px', padding:'15px', borderRadius:'10px', textAlign:'center', fontWeight:'bold', backgroundColor: selectedReq.status === 'APPROVED' ? '#e8f5e9' : '#ffebee', color: selectedReq.status === 'APPROVED' ? '#2e7d32' : '#c62828', border: selectedReq.status === 'APPROVED' ? '1px solid #c8e6c9' : '1px solid #ffcdd2'}}>
-                    {selectedReq.status === 'APPROVED' ? "✅ 승인 처리되었습니다." : `🛑 반려되었습니다. (사유: ${selectedReq.reject_reason || '-'})`}
+                <div style={{marginTop:'30px', padding:'15px', borderRadius:'10px', textAlign:'center', fontWeight:'bold', backgroundColor: selectedReq.status === 'APPROVED' ? '#e8f5e9' : '#ffebee', color: selectedReq.status === 'APPROVED' ? '#2e7d32' : '#c62828', border: selectedReq.status === 'APPROVED' ? '1px solid #c8e6c9' : '1px solid #ffcdd2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+                    {selectedReq.status === 'APPROVED' ? <><CheckCircle2 size={18} /> 승인 처리되었습니다.</> : <><Ban size={18} /> 반려되었습니다. (사유: {selectedReq.reject_reason || '-'})</>}
                 </div>
               )}
           </div>

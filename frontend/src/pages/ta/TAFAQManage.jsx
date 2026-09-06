@@ -1,7 +1,10 @@
 // src/pages/ta/TAFaqManage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { Search, X, Paperclip, Plus } from 'lucide-react';
 import TALayout from './TALayout';
+import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
 function TAFaqManage() {
@@ -114,24 +117,24 @@ function TAFaqManage() {
         <div style={styles.filterBar}>
             <div style={styles.filterGroup}>
                 <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-                    <option value="all">📅 전체 기간</option>
+                    <option value="all">전체 기간</option>
                     <option value="today">오늘</option>
                     <option value="week">이번 주</option>
                     <option value="month">이번 달</option>
                     <option value="year">올해</option>
                 </select>
                 <div style={styles.searchWrapper}>
-                    <span style={{fontSize:'16px', color:'#666'}}>🔍</span>
-                    <input 
-                        type="text" 
-                        placeholder="질문 또는 답변 검색..." 
+                    <Search size={16} color="#666" />
+                    <input
+                        type="text"
+                        placeholder="질문 또는 답변 검색..."
                         style={styles.searchInput}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
             </div>
-            <button style={styles.createBtn} onClick={handleOpenCreate}>+ 등록</button>
+            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{...styles.createBtn, display: 'flex', alignItems: 'center', gap: '4px'}} onClick={handleOpenCreate}><Plus size={16} /> 등록</motion.button>
         </div>
 
         <div style={styles.listArea}>
@@ -141,40 +144,31 @@ function TAFaqManage() {
                 </div>
             ) : (
                 filteredFaqs.map((item) => (
-                    <div 
-                      key={item.id} 
+                    <motion.div
+                      key={item.id}
                       style={styles.card}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
-                      }}
+                      whileHover={{ y: -2, boxShadow: '0 6px 12px rgba(0,0,0,0.1)' }}
                     >
                         <div style={styles.cardContent}>
                             {item.created_at && (
                                 <div style={{fontSize:'12px', color:'#999', marginBottom:'5px'}}>{item.created_at.split('T')[0]}</div>
                             )}
-                            <div style={styles.question}><span style={{color:'#003675', marginRight:'5px'}}>Q.</span>{item.question}{item.original_filename && <span style={styles.fileIcon}> 📎</span>}</div>
+                            <div style={styles.question}><span style={{color:'#003675', marginRight:'5px'}}>Q.</span>{item.question}{item.original_filename && <Paperclip size={13} style={{marginLeft: '5px', verticalAlign: 'middle'}} />}</div>
                             <div style={styles.answer}><span style={{color:'#666', marginRight:'5px', fontWeight:'bold'}}>A.</span>{item.answer_html}</div>
                         </div>
                         <div style={styles.actionButtons}>
-                            <button style={styles.editBtn} onClick={() => handleOpenEdit(item)}>수정</button>
-                            <button style={styles.deleteBtn} onClick={() => handleDelete(item.id)}>삭제</button>
+                            <motion.button whileTap={{ scale: 0.95 }} style={styles.editBtn} onClick={() => handleOpenEdit(item)}>수정</motion.button>
+                            <motion.button whileTap={{ scale: 0.95 }} style={styles.deleteBtn} onClick={() => handleDelete(item.id)}>삭제</motion.button>
                         </div>
-                    </div>
+                    </motion.div>
                 ))
             )}
         </div>
 
-      {showModal && (
-        <div style={modalStyles.overlay}>
-          <div style={modalStyles.modal}>
+      <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
             <div style={modalStyles.header}>
               <h3 style={{margin:0, color:'#003675'}}>{isEditMode ? "질문 수정" : "새 질문 등록"}</h3>
-              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}>✕</button>
+              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><X size={20} /></button>
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.inputGroup}>
@@ -189,11 +183,9 @@ function TAFaqManage() {
                 <label style={modalStyles.label}>답변 (A)</label>
                 <textarea style={modalStyles.textarea} placeholder="답변 내용을 입력하세요." value={formData.answer_html} onChange={(e) => setFormData({...formData, answer_html: e.target.value})}/>
               </div>
-              <button style={modalStyles.saveBtn} onClick={handleSave}>{isEditMode ? "수정 완료" : "등록하기"}</button>
+              <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.saveBtn} onClick={handleSave}>{isEditMode ? "수정 완료" : "등록하기"}</motion.button>
             </div>
-          </div>
-        </div>
-      )}
+      </AnimatedModal>
     </TALayout>
   );
 }
