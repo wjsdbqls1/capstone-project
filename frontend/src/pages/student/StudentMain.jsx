@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdEdit, MdAssignment, MdHelp, MdCampaign, MdCalendarToday, MdDescription, MdLogout, MdHome, MdPerson } from 'react-icons/md';
+import { MdEdit, MdAssignment, MdHelp, MdCampaign, MdCalendarToday, MdDescription, MdLogout, MdHome, MdPerson, MdChevronRight } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -11,13 +11,13 @@ import bgImage from '../../assets/로그인 이미지.jpg';
 
 const API = 'https://capstone-project-of74.onrender.com';
 
-const MENU_ITEMS = [
-  { icon: MdEdit, text: '문의하기', accent: '#1565c0', path: '/student/inquiry' },
-  { icon: MdAssignment, text: '문의 내역', accent: '#2e7d32', path: '/student/history' },
-  { icon: MdHelp, text: 'FAQ', accent: '#6a1b9a', path: '/student/faq' },
-  { icon: MdCampaign, text: '공지사항', accent: '#ef6c00', path: '/student/notice' },
-  { icon: MdCalendarToday, text: '캘린더', accent: '#00838f', path: '/student/calendar' },
-  { icon: MdDescription, text: '공결 서류 제출', accent: '#c62828', alert: '추후에 추가될 기능입니다.' },
+// 목록형 보조 메뉴 (문의하기는 상단 CTA로 별도 처리)
+const LIST_ITEMS = [
+  { icon: MdAssignment, text: '문의 내역', path: '/student/history' },
+  { icon: MdHelp, text: 'FAQ', path: '/student/faq' },
+  { icon: MdCampaign, text: '공지사항', path: '/student/notice' },
+  { icon: MdCalendarToday, text: '캘린더', path: '/student/calendar' },
+  { icon: MdDescription, text: '공결 서류 제출', alert: '추후에 추가될 기능입니다.' },
 ];
 
 const todayStr = () => {
@@ -105,38 +105,34 @@ function StudentMain() {
 
       {/* 2. 상단 헤더 */}
       <div style={styles.header}>
-        <div style={styles.headerDecor1} />
-        <div style={styles.headerDecor2} />
-        <div style={{ position: 'relative' }}>
+        <div>
           <h1 style={styles.headerTitle}>행정조교 시스템</h1>
           <h3 style={styles.headerSubTitle}>
              {userName ? `${userName}님, 환영합니다!` : '학생용 대시보드'}
           </h3>
         </div>
-        <div style={{ ...styles.avatar, position: 'relative' }}>
+        <div style={styles.avatar}>
           {userName ? userName.charAt(0) : <MdPerson size={20} />}
         </div>
       </div>
 
-      {/* 3. 스크롤 가능한 본문 (인사이트 카드 + 메뉴) */}
+      {/* 3. 스크롤 가능한 본문 — 카드 패널을 화면 중앙에 배치 (margin:auto 는 내용이 넘칠 때도
+          잘리지 않고 자연스럽게 위쪽 정렬 + 스크롤로 전환되어 PC의 큰 화면에서도 빈 공간 없이 안정적) */}
       <div style={styles.contentArea}>
-        <div style={styles.dashboardInner}>
+        <div style={styles.panel}>
 
-          {/* 3-1. 인사이트 카드 (최근 공지 / 다가오는 일정) */}
-          <div style={styles.insightRow}>
-            <InsightCard
-              index={0}
-              icon={<MdCampaign size={19} />}
-              accent="#1565c0"
+          {/* 3-1. 정보 스트립 (최근 공지 / 다가오는 일정) — 단색 톤으로 통일 */}
+          <div style={styles.infoStrip}>
+            <InfoHalf
+              icon={<MdCampaign size={18} />}
               label="최근 공지"
               title={latestNotice ? latestNotice.title : '등록된 공지가 없습니다'}
               subtitle={latestNotice ? latestNotice.posted_date : ''}
               onClick={() => latestNotice && navigate(`/student/notice/${latestNotice.id}?source=${latestNotice.source}`)}
             />
-            <InsightCard
-              index={1}
-              icon={<MdCalendarToday size={19} />}
-              accent="#ef6c00"
+            <div style={styles.infoDivider} />
+            <InfoHalf
+              icon={<MdCalendarToday size={18} />}
               label="다가오는 일정"
               title={upcomingEvent ? upcomingEvent.title : '예정된 일정이 없습니다'}
               subtitle={upcomingEvent ? `${dDayLabel} · ${upcomingEvent.start_date} ~ ${upcomingEvent.end_date}` : ''}
@@ -144,15 +140,27 @@ function StudentMain() {
             />
           </div>
 
-          {/* 3-2. 메뉴 그리드 */}
-          <div style={styles.menuGridContainer}>
-            {MENU_ITEMS.map((item, idx) => (
-              <MenuButton
+          {/* 3-2. 주요 액션 (문의하기) — 하나만 강조해 시각적 위계를 줌 */}
+          <motion.button
+            style={styles.primaryCta}
+            onClick={() => navigate('/student/inquiry')}
+            whileHover={{ scale: 1.01, boxShadow: '0 10px 22px rgba(0, 54, 117, 0.35)' }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span style={styles.primaryCtaIcon}><MdEdit size={20} /></span>
+            <span style={{ flex: 1, textAlign: 'left' }}>문의하기</span>
+            <MdChevronRight size={22} />
+          </motion.button>
+
+          {/* 3-3. 보조 메뉴 리스트 */}
+          <div style={styles.menuList}>
+            {LIST_ITEMS.map((item, idx) => (
+              <MenuRow
                 key={item.text}
                 index={idx}
-                accent={item.accent}
-                icon={<item.icon size="100%" />}
+                icon={<item.icon size={20} />}
                 text={item.text}
+                isLast={idx === LIST_ITEMS.length - 1}
                 onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
               />
             ))}
@@ -176,53 +184,36 @@ function StudentMain() {
   );
 }
 
-// 인사이트 카드 (최근 공지 / 다가오는 일정 미리보기)
-function InsightCard({ icon, accent, label, title, subtitle, onClick, index }) {
+// 정보 스트립의 절반 (최근 공지 / 다가오는 일정)
+function InfoHalf({ icon, label, title, subtitle, onClick }) {
   return (
-    <motion.div
-      style={{
-        ...styles.insightCard,
-        borderLeft: `4px solid ${accent}`,
-        background: `linear-gradient(135deg, ${accent}1c, rgba(255,255,255,0.6))`
-      }}
-      onClick={onClick}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06, type: 'spring', stiffness: 300, damping: 24 }}
-      whileHover={{ y: -2, boxShadow: '0 8px 18px rgba(0,0,0,0.12)' }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <div style={{ ...styles.insightIconWrap, backgroundColor: accent }}>{icon}</div>
+    <div style={styles.infoHalf} onClick={onClick}>
+      <div style={styles.infoIconWrap}>{icon}</div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={styles.insightLabel}>{label}</div>
         <div style={styles.insightTitle}>{title}</div>
         {subtitle && <div style={styles.insightSubtitle}>{subtitle}</div>}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-// 메뉴 버튼 (반응형 + 항목별 강조 색상)
-function MenuButton({ onClick, icon, text, accent, index }) {
+// 보조 메뉴 리스트의 한 행
+function MenuRow({ onClick, icon, text, index, isLast }) {
   return (
-    <motion.button
-      style={{
-        ...styles.menuBtn,
-        background: `linear-gradient(160deg, ${accent}26, rgba(255,255,255,0.35))`,
-        borderColor: `${accent}4d`
-      }}
+    <motion.div
+      style={{ ...styles.menuRow, borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,0.06)' }}
       onClick={onClick}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
-      whileHover={{ scale: 1.03, boxShadow: `0 10px 20px ${accent}33` }}
-      whileTap={{ scale: 0.97 }}
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.15 + index * 0.05 }}
+      whileHover={{ backgroundColor: 'rgba(0, 54, 117, 0.05)' }}
+      whileTap={{ scale: 0.99 }}
     >
-      <span style={{ ...styles.menuIconWrap, backgroundColor: accent, color: 'white' }}>
-        <span style={styles.menuIcon}>{icon}</span>
-      </span>
-      <span style={styles.menuText}>{text}</span>
-    </motion.button>
+      <span style={styles.menuRowIconWrap}>{icon}</span>
+      <span style={styles.menuRowText}>{text}</span>
+      <MdChevronRight size={20} color="#aaa" />
+    </motion.div>
   );
 }
 
@@ -240,7 +231,7 @@ const styles = {
   },
 
   header: {
-    background: 'linear-gradient(120deg, #003675 0%, #0d4d99 55%, #1976d2 100%)',
+    backgroundColor: 'rgba(0, 54, 117, 0.92)',
     padding: '15px 20px',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     color: 'white',
@@ -249,31 +240,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '12px',
-    position: 'relative',
-    overflow: 'hidden'
-  },
-
-  // 헤더에 은은한 입체감을 주는 장식용 원형 블러
-  headerDecor1: {
-    position: 'absolute',
-    width: '160px',
-    height: '160px',
-    borderRadius: '50%',
-    background: 'rgba(255,255,255,0.08)',
-    top: '-90px',
-    right: '10%',
-    pointerEvents: 'none'
-  },
-  headerDecor2: {
-    position: 'absolute',
-    width: '90px',
-    height: '90px',
-    borderRadius: '50%',
-    background: 'rgba(255,255,255,0.06)',
-    bottom: '-50px',
-    left: '20%',
-    pointerEvents: 'none'
+    gap: '12px'
   },
 
   // clamp(최소, 권장, 최대) -> 화면 크기에 따라 폰트 조절
@@ -305,7 +272,6 @@ const styles = {
 
   contentArea: {
     flex: 1,
-    minHeight: 0, // nested flex:1 자식이 부모 높이를 제대로 채우도록 보장 (중첩 flex 높이 버그 방지)
     display: 'flex',
     flexDirection: 'column',
     padding: 'clamp(15px, 4vw, 30px)',
@@ -313,117 +279,135 @@ const styles = {
     boxSizing: 'border-box'
   },
 
-  // PC에서 카드가 지나치게 넓게 늘어지지 않도록 폭을 제한하고 가운데 정렬
-  dashboardInner: {
-    flex: 1,
-    minHeight: 0,
+  // margin: 'auto' 로 카드 패널을 화면 정중앙에 배치.
+  // 내용이 넘치면 자동으로 위쪽 정렬 + 스크롤로 전환되어(overflow-safe) 잘리지 않음.
+  panel: {
+    width: '100%',
+    maxWidth: '440px',
+    margin: 'auto',
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    backdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255, 255, 255, 0.7)',
+    borderRadius: '24px',
+    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.16)',
+    padding: 'clamp(18px, 4vw, 26px)',
+    boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(12px, 3vw, 18px)',
-    width: '100%',
-    maxWidth: '760px',
-    margin: '0 auto'
+    gap: '18px'
   },
 
-  // auto-fit 그리드: 카드 폭이 200px 미만이 되면 자동으로 세로 배치되어 잘림 방지
-  insightRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: 'clamp(10px, 3vw, 16px)'
+  infoStrip: {
+    display: 'flex',
+    alignItems: 'stretch',
+    gap: '14px'
   },
 
-  insightCard: {
+  infoHalf: {
     display: 'flex',
     alignItems: 'flex-start',
-    gap: '12px',
+    gap: '10px',
     minWidth: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.55)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.6)',
-    borderRadius: '16px',
-    padding: '14px 16px',
-    cursor: 'pointer',
-    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
-    boxSizing: 'border-box',
-    overflow: 'hidden'
+    flex: 1,
+    cursor: 'pointer'
   },
 
-  insightIconWrap: {
-    width: '38px',
-    height: '38px',
-    borderRadius: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'white',
+  infoDivider: {
+    width: '1px',
+    backgroundColor: 'rgba(0,0,0,0.08)',
     flexShrink: 0
   },
 
-  insightLabel: { fontSize: '12px', fontWeight: '700', color: '#555', marginBottom: '2px' },
+  infoIconWrap: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 54, 117, 0.08)',
+    color: '#003675',
+    flexShrink: 0
+  },
+
+  insightLabel: { fontSize: '11px', fontWeight: '700', color: '#777', marginBottom: '2px' },
   insightTitle: {
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '700',
     color: '#1a1a1a',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis'
   },
-  insightSubtitle: { fontSize: '12px', color: '#777', marginTop: '3px' },
-
-  // flex: 1 로 contentArea의 남는 세로 공간을 항상 채워 하단에 빈 공간이 생기지 않도록 함
-  menuGridContainer: {
-    flex: 1,
-    minHeight: 0,
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gridTemplateRows: 'repeat(3, minmax(90px, 1fr))',
-    gap: 'clamp(10px, 3vw, 20px)'
+  insightSubtitle: {
+    fontSize: '11px',
+    color: '#888',
+    marginTop: '3px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
 
-  menuBtn: {
+  primaryCta: {
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
-
-    // 유리 질감
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.6)',
-    borderRadius: '20px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-
-    cursor: 'pointer',
+    gap: '10px',
     width: '100%',
-    height: '100%',
-    boxSizing: 'border-box',
-    padding: '12px'
+    backgroundColor: '#003675',
+    color: 'white',
+    border: 'none',
+    borderRadius: '16px',
+    padding: '16px 18px',
+    fontSize: 'clamp(15px, 4vw, 17px)',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    boxShadow: '0 6px 16px rgba(0, 54, 117, 0.28)',
+    boxSizing: 'border-box'
   },
 
-  menuIconWrap: {
-    width: 'clamp(40px, 11vw, 54px)',
-    height: 'clamp(40px, 11vw, 54px)',
-    borderRadius: '16px',
+  primaryCtaIcon: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '10px',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 'clamp(6px, 2vw, 10px)'
+    flexShrink: 0
   },
 
-  menuIcon: {
-    width: 'clamp(20px, 6vw, 28px)',
-    height: 'clamp(20px, 6vw, 28px)',
+  menuList: {
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+    borderRadius: '16px',
+    border: '1px solid rgba(0,0,0,0.05)',
+    overflow: 'hidden'
+  },
+
+  menuRow: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    gap: '12px',
+    padding: '14px 16px',
+    cursor: 'pointer'
   },
 
-  menuText: {
-    fontSize: 'clamp(14px, 4vw, 19px)',
-    fontWeight: 'bold',
-    color: '#000000',
-    textAlign: 'center',
-    wordBreak: 'keep-all' // 단어 중간에 줄바꿈 방지
+  menuRowIconWrap: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '10px',
+    backgroundColor: 'rgba(0, 54, 117, 0.08)',
+    color: '#003675',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  },
+
+  menuRowText: {
+    flex: 1,
+    fontSize: 'clamp(14px, 3.6vw, 16px)',
+    fontWeight: '600',
+    color: '#222'
   },
 
   bottomNav: {
