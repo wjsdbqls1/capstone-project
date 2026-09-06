@@ -145,9 +145,9 @@ function StudentMain() {
             whileHover={{ scale: 1.01, boxShadow: '0 10px 22px rgba(0, 54, 117, 0.35)' }}
             whileTap={{ scale: 0.98 }}
           >
-            <span style={styles.primaryCtaIcon}><MdEdit size={17} /></span>
+            <span style={styles.primaryCtaIcon}><MdEdit size={22} /></span>
             <span style={{ flex: 1, textAlign: 'left' }}>문의하기</span>
-            <MdChevronRight size={20} />
+            <MdChevronRight size={24} />
           </motion.button>
 
           {/* 3-3. 보조 메뉴 리스트 */}
@@ -156,7 +156,7 @@ function StudentMain() {
               <MenuRow
                 key={item.text}
                 index={idx}
-                icon={<item.icon size={24} />}
+                icon={<item.icon size={21} />}
                 text={item.text}
                 isLast={idx === LIST_ITEMS.length - 1}
                 onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
@@ -345,17 +345,18 @@ const styles = {
     fontWeight: '700'
   },
 
+  // 가장 자주 쓰는 액션이니 리스트보다 눈에 띄게 확대
   primaryCta: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '14px',
     width: '100%',
     backgroundColor: '#003675',
     color: 'white',
     border: 'none',
-    borderRadius: '14px',
-    padding: '13px 16px',
-    fontSize: 'clamp(14px, 3.8vw, 16px)',
+    borderRadius: '16px',
+    padding: '20px 18px',
+    fontSize: 'clamp(17px, 4.6vw, 19px)',
     fontWeight: 'bold',
     cursor: 'pointer',
     boxShadow: '0 6px 16px rgba(0, 54, 117, 0.28)',
@@ -363,9 +364,9 @@ const styles = {
   },
 
   primaryCtaIcon: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '9px',
+    width: '38px',
+    height: '38px',
+    borderRadius: '11px',
     backgroundColor: 'rgba(255,255,255,0.18)',
     display: 'flex',
     alignItems: 'center',
@@ -383,15 +384,15 @@ const styles = {
   menuRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
-    padding: '24px 16px',
+    gap: '14px',
+    padding: '19px 16px',
     cursor: 'pointer'
   },
 
   menuRowIconWrap: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '12px',
+    width: '40px',
+    height: '40px',
+    borderRadius: '11px',
     backgroundColor: 'rgba(0, 54, 117, 0.08)',
     color: '#003675',
     display: 'flex',
@@ -402,7 +403,7 @@ const styles = {
 
   menuRowText: {
     flex: 1,
-    fontSize: 'clamp(17px, 4.6vw, 19px)',
+    fontSize: 'clamp(16px, 4.2vw, 17px)',
     fontWeight: '600',
     color: '#222'
   },
