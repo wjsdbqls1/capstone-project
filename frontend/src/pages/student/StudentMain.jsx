@@ -105,13 +105,15 @@ function StudentMain() {
 
       {/* 2. 상단 헤더 */}
       <div style={styles.header}>
-        <div>
+        <div style={styles.headerDecor1} />
+        <div style={styles.headerDecor2} />
+        <div style={{ position: 'relative' }}>
           <h1 style={styles.headerTitle}>행정조교 시스템</h1>
           <h3 style={styles.headerSubTitle}>
              {userName ? `${userName}님, 환영합니다!` : '학생용 대시보드'}
           </h3>
         </div>
-        <div style={styles.avatar}>
+        <div style={{ ...styles.avatar, position: 'relative' }}>
           {userName ? userName.charAt(0) : <MdPerson size={20} />}
         </div>
       </div>
@@ -123,6 +125,7 @@ function StudentMain() {
           {/* 3-1. 인사이트 카드 (최근 공지 / 다가오는 일정) */}
           <div style={styles.insightRow}>
             <InsightCard
+              index={0}
               icon={<MdCampaign size={19} />}
               accent="#1565c0"
               label="최근 공지"
@@ -131,6 +134,7 @@ function StudentMain() {
               onClick={() => latestNotice && navigate(`/student/notice/${latestNotice.id}?source=${latestNotice.source}`)}
             />
             <InsightCard
+              index={1}
               icon={<MdCalendarToday size={19} />}
               accent="#ef6c00"
               label="다가오는 일정"
@@ -173,11 +177,18 @@ function StudentMain() {
 }
 
 // 인사이트 카드 (최근 공지 / 다가오는 일정 미리보기)
-function InsightCard({ icon, accent, label, title, subtitle, onClick }) {
+function InsightCard({ icon, accent, label, title, subtitle, onClick, index }) {
   return (
     <motion.div
-      style={styles.insightCard}
+      style={{
+        ...styles.insightCard,
+        borderLeft: `4px solid ${accent}`,
+        background: `linear-gradient(135deg, ${accent}1c, rgba(255,255,255,0.6))`
+      }}
       onClick={onClick}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.06, type: 'spring', stiffness: 300, damping: 24 }}
       whileHover={{ y: -2, boxShadow: '0 8px 18px rgba(0,0,0,0.12)' }}
       whileTap={{ scale: 0.98 }}
     >
@@ -195,15 +206,19 @@ function InsightCard({ icon, accent, label, title, subtitle, onClick }) {
 function MenuButton({ onClick, icon, text, accent, index }) {
   return (
     <motion.button
-      style={styles.menuBtn}
+      style={{
+        ...styles.menuBtn,
+        background: `linear-gradient(160deg, ${accent}26, rgba(255,255,255,0.35))`,
+        borderColor: `${accent}4d`
+      }}
       onClick={onClick}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
-      whileHover={{ scale: 1.03, boxShadow: '0 8px 16px rgba(0,0,0,0.15)' }}
+      whileHover={{ scale: 1.03, boxShadow: `0 10px 20px ${accent}33` }}
       whileTap={{ scale: 0.97 }}
     >
-      <span style={{ ...styles.menuIconWrap, backgroundColor: `${accent}1f`, color: accent }}>
+      <span style={{ ...styles.menuIconWrap, backgroundColor: accent, color: 'white' }}>
         <span style={styles.menuIcon}>{icon}</span>
       </span>
       <span style={styles.menuText}>{text}</span>
@@ -225,7 +240,7 @@ const styles = {
   },
 
   header: {
-    backgroundColor: 'rgba(0, 54, 117, 0.9)',
+    background: 'linear-gradient(120deg, #003675 0%, #0d4d99 55%, #1976d2 100%)',
     padding: '15px 20px',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     color: 'white',
@@ -234,7 +249,31 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '12px'
+    gap: '12px',
+    position: 'relative',
+    overflow: 'hidden'
+  },
+
+  // 헤더에 은은한 입체감을 주는 장식용 원형 블러
+  headerDecor1: {
+    position: 'absolute',
+    width: '160px',
+    height: '160px',
+    borderRadius: '50%',
+    background: 'rgba(255,255,255,0.08)',
+    top: '-90px',
+    right: '10%',
+    pointerEvents: 'none'
+  },
+  headerDecor2: {
+    position: 'absolute',
+    width: '90px',
+    height: '90px',
+    borderRadius: '50%',
+    background: 'rgba(255,255,255,0.06)',
+    bottom: '-50px',
+    left: '20%',
+    pointerEvents: 'none'
   },
 
   // clamp(최소, 권장, 최대) -> 화면 크기에 따라 폰트 조절
@@ -266,6 +305,7 @@ const styles = {
 
   contentArea: {
     flex: 1,
+    minHeight: 0, // nested flex:1 자식이 부모 높이를 제대로 채우도록 보장 (중첩 flex 높이 버그 방지)
     display: 'flex',
     flexDirection: 'column',
     padding: 'clamp(15px, 4vw, 30px)',
@@ -276,6 +316,7 @@ const styles = {
   // PC에서 카드가 지나치게 넓게 늘어지지 않도록 폭을 제한하고 가운데 정렬
   dashboardInner: {
     flex: 1,
+    minHeight: 0,
     display: 'flex',
     flexDirection: 'column',
     gap: 'clamp(12px, 3vw, 18px)',
@@ -332,6 +373,7 @@ const styles = {
   // flex: 1 로 contentArea의 남는 세로 공간을 항상 채워 하단에 빈 공간이 생기지 않도록 함
   menuGridContainer: {
     flex: 1,
+    minHeight: 0,
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gridTemplateRows: 'repeat(3, minmax(90px, 1fr))',
