@@ -216,14 +216,14 @@ function StudentInquiry() {
 
       {/* 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <MdLogout size={18} /> 로그아웃
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
+          <MdPerson size={18} /> 마이페이지
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
           <MdHome size={18} /> 홈
         </motion.button>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <MdPerson size={18} /> 마이페이지
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
+          <MdLogout size={18} /> 로그아웃
         </motion.button>
       </nav>
     </div>
