@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
-import { MdChevronLeft, MdFileDownload } from 'react-icons/md';
+import { MdChevronLeft, MdFileDownload, MdLogout, MdHome, MdPerson } from 'react-icons/md';
+import { motion } from 'framer-motion';
 import '../../App.css';
 
 import bgImage from '../../assets/로그인 이미지.jpg'; 
@@ -30,6 +31,11 @@ function StudentNoticeDetail() {
     fetchDetail();
   }, [id, navigate]);
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
   if (!notice) {
     return (
         <div style={{...styles.pageContainer, justifyContent:'center', color: 'white', fontSize:'20px'}}>
@@ -51,16 +57,16 @@ function StudentNoticeDetail() {
       
       {/* 헤더 */}
       <div style={styles.header}>
-        <button 
-          style={styles.backBtn} 
+        <button
+          style={styles.backBtn}
           onClick={() => navigate(-1)}
         >
            <MdChevronLeft size={20} /> 뒤로가기
         </button>
-        <h2 style={{margin: 0, fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: '600', color: 'white'}}>공지 상세</h2>
-        <div style={{width: '60px'}}></div> 
+        <h2 style={styles.headerTitle}>공지 상세</h2>
       </div>
 
+      <div style={styles.scrollArea}>
       <div style={styles.glassContainer}>
         {/* 제목 영역 */}
         <div style={styles.titleSection}>
@@ -135,6 +141,20 @@ function StudentNoticeDetail() {
         </div>
 
       </div>
+      </div>
+
+      {/* 하단 네비게이션 */}
+      <nav style={styles.bottomNav}>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
+          <MdLogout size={18} /> 로그아웃
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
+          <MdHome size={18} /> 홈
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
+          <MdPerson size={18} /> 마이페이지
+        </motion.button>
+      </nav>
     </div>
   );
 }
@@ -144,21 +164,20 @@ const styles = {
     backgroundImage: `url(${bgImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    height: '100vh',
+    height: '100dvh',
     width: '100vw',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch'
+    overflow: 'hidden'
   },
   header: {
-    backgroundColor: 'rgba(0, 54, 117, 0.9)', 
+    backgroundColor: 'rgba(0, 54, 117, 0.9)',
     padding: '10px 15px',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     zIndex: 10,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    position: 'relative',
     height: '55px',
     flexShrink: 0
   },
@@ -168,9 +187,9 @@ const styles = {
     justifyContent: 'center',
     gap: '3px',
     padding: '6px 12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '20px', 
+    borderRadius: '20px',
     color: 'white',
     fontSize: '14px',
     fontWeight: '600',
@@ -178,14 +197,36 @@ const styles = {
     backdropFilter: 'blur(5px)',
     transition: 'all 0.2s ease',
     outline: 'none',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    position: 'relative',
+    zIndex: 1
+  },
+  // 뒤로가기 버튼 폭과 무관하게 항상 정중앙에 오도록 절대 위치로 배치
+  headerTitle: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    margin: 0,
+    textAlign: 'center',
+    fontSize: 'clamp(18px, 4vw, 24px)',
+    fontWeight: '600',
+    color: 'white',
+    pointerEvents: 'none'
+  },
+  // 헤더와 하단 네비게이션 사이 공간을 채우고, 내용이 길면 이 영역만 스크롤
+  scrollArea: {
+    flex: 1,
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    display: 'flex',
+    flexDirection: 'column'
   },
   glassContainer: {
-    flexShrink: 0,
+    flex: 1,
     width: 'calc(100% - 30px)',
     maxWidth: '820px',
     boxSizing: 'border-box',
-    margin: '15px auto 40px',
+    margin: '15px auto',
     padding: 'clamp(20px, 4vw, 30px)',
     backgroundColor: 'rgba(255, 255, 255, 0.75)', // 가독성을 위해 배경 불투명도 약간 상승
     backdropFilter: 'blur(15px)',
@@ -253,13 +294,35 @@ const styles = {
     border: '1px solid #003675',
     whiteSpace: 'nowrap'
   },
-  bodySection: { 
+  bodySection: {
     fontSize: '15.5px', // 폰트 크기 미세 조정
     lineHeight: '1.25', // 기존 1.6에서 1.45로 줄여 가독성 강화
     color: '#222', // 글자색을 약간 더 진하게 변경
     padding: '0 2px',
     maxWidth: '100%',
-    overflowX: 'auto' 
+    overflowX: 'auto'
+  },
+  bottomNav: {
+    height: '70px',
+    display: 'flex',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderTop: '1px solid rgba(0,0,0,0.1)',
+    flexShrink: 0
+  },
+  navBtn: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '3px',
+    background: 'none',
+    border: 'none',
+    fontSize: 'clamp(12px, 3.2vw, 15px)',
+    fontWeight: 'bold',
+    color: '#003675',
+    cursor: 'pointer',
+    padding: '10px'
   }
 };
 

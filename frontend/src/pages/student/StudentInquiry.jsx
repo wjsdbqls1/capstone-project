@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdChevronLeft, MdChat, MdCalendarToday, MdAttachFile, MdCheckCircle } from 'react-icons/md';
+import { MdChevronLeft, MdChat, MdCalendarToday, MdAttachFile, MdCheckCircle, MdLogout, MdHome, MdPerson } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -52,6 +52,11 @@ function StudentInquiry() {
 
   const handleAttachClick = () => {
     fileInputRef.current.click();
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
   };
 
   const handleSubmit = async () => {
@@ -114,12 +119,11 @@ function StudentInquiry() {
            <MdChevronLeft size={20} /> 뒤로가기
         </button>
 
-        <h2 style={{margin: 0, fontSize: 'clamp(18px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>문의하기</h2>
-        
-        <div style={{width: '60px'}}></div>
+        <h2 style={styles.headerTitle}>문의하기</h2>
       </div>
 
-      {/* 스크롤 가능한 영역 (유리 박스 컨테이너) */}
+      {/* 헤더/하단 네비 사이 스크롤 영역 */}
+      <div style={styles.scrollArea}>
       <div style={styles.glassContainer}>
         
         {/* 제목 */}
@@ -208,6 +212,20 @@ function StudentInquiry() {
           </motion.button>
         </div>
       </div>
+      </div>
+
+      {/* 하단 네비게이션 */}
+      <nav style={styles.bottomNav}>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
+          <MdLogout size={18} /> 로그아웃
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
+          <MdHome size={18} /> 홈
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
+          <MdPerson size={18} /> 마이페이지
+        </motion.button>
+      </nav>
     </div>
   );
 }
@@ -217,24 +235,36 @@ const styles = {
     backgroundImage: `url(${bgImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    height: '100vh',
+    height: '100dvh',
     width: '100vw',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'auto', // 페이지 전체 스크롤 허용 (모바일 대응 핵심)
-    WebkitOverflowScrolling: 'touch'
+    overflow: 'hidden'
   },
-  
+
   header: {
-    backgroundColor: 'rgba(0, 54, 117, 0.9)', 
+    backgroundColor: 'rgba(0, 54, 117, 0.9)',
     padding: '10px 15px',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     zIndex: 10,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    position: 'relative',
     height: '55px',
     flexShrink: 0
+  },
+
+  // 뒤로가기 버튼 폭과 무관하게 항상 정중앙에 오도록 절대 위치로 배치
+  headerTitle: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    margin: 0,
+    textAlign: 'center',
+    fontSize: 'clamp(18px, 5vw, 24px)',
+    color: 'white',
+    fontWeight: '500',
+    pointerEvents: 'none'
   },
 
   backBtn: {
@@ -243,17 +273,29 @@ const styles = {
     justifyContent: 'center',
     gap: '3px',
     padding: '6px 12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '20px', 
+    borderRadius: '20px',
     color: 'white',
     fontSize: '14px',
     fontWeight: '600',
+    position: 'relative',
+    zIndex: 1,
     cursor: 'pointer',
     backdropFilter: 'blur(5px)',
     transition: 'all 0.2s ease',
     outline: 'none',
     whiteSpace: 'nowrap'
+  },
+
+  // 헤더와 하단 네비게이션 사이 공간을 채우고, 내용이 길면 이 영역만 스크롤
+  scrollArea: {
+    flex: 1,
+    minHeight: 0,
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    display: 'flex',
+    flexDirection: 'column'
   },
 
   glassContainer: {
@@ -383,6 +425,28 @@ const styles = {
     cursor: 'pointer',
     boxShadow: '0 4px 10px rgba(0, 54, 117, 0.3)',
     marginTop: '5px'
+  },
+  bottomNav: {
+    height: '70px',
+    display: 'flex',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderTop: '1px solid rgba(0,0,0,0.1)',
+    flexShrink: 0
+  },
+  navBtn: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '3px',
+    background: 'none',
+    border: 'none',
+    fontSize: 'clamp(12px, 3.2vw, 15px)',
+    fontWeight: 'bold',
+    color: '#003675',
+    cursor: 'pointer',
+    padding: '10px'
   }
 };
 

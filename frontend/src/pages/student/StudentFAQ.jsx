@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdChevronLeft, MdSearch, MdExpandMore, MdExpandLess, MdDownload } from 'react-icons/md';
+import { MdChevronLeft, MdSearch, MdExpandMore, MdExpandLess, MdDownload, MdLogout, MdHome, MdPerson } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -33,6 +33,11 @@ function StudentFaq() {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
   // 검색 필터링 로직
   const filteredFaqs = faqs.filter((item) => {
     const searchLower = keyword.toLowerCase();
@@ -59,9 +64,7 @@ function StudentFaq() {
            <MdChevronLeft size={20} /> 뒤로가기
         </button>
 
-        <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>자주 묻는 질문</h2>
-        
-        <div style={{width: '60px'}}></div>
+        <h2 style={styles.headerTitle}>자주 묻는 질문</h2>
       </div>
 
       {/* 유리 박스 컨테이너 */}
@@ -139,6 +142,19 @@ function StudentFaq() {
           )}
         </div>
       </div>
+
+      {/* 하단 네비게이션 */}
+      <nav style={styles.bottomNav}>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
+          <MdLogout size={18} /> 로그아웃
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
+          <MdHome size={18} /> 홈
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
+          <MdPerson size={18} /> 마이페이지
+        </motion.button>
+      </nav>
     </div>
   );
 }
@@ -148,23 +164,36 @@ const styles = {
     backgroundImage: `url(${bgImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    height: '100vh',
+    height: '100dvh',
     width: '100vw',
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden'
   },
-  
+
   header: {
-    backgroundColor: 'rgba(0, 54, 117, 0.9)', 
+    backgroundColor: 'rgba(0, 54, 117, 0.9)',
     padding: '10px 15px',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     zIndex: 10,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    position: 'relative',
     height: '55px',
     flexShrink: 0
+  },
+
+  // 뒤로가기 버튼 폭과 무관하게 항상 정중앙에 오도록 절대 위치로 배치
+  headerTitle: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    margin: 0,
+    textAlign: 'center',
+    fontSize: 'clamp(20px, 5vw, 24px)',
+    color: 'white',
+    fontWeight: '500',
+    pointerEvents: 'none'
   },
 
   backBtn: {
@@ -173,12 +202,14 @@ const styles = {
     justifyContent: 'center',
     gap: '3px',
     padding: '6px 12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '20px', 
+    borderRadius: '20px',
     color: 'white',
     fontSize: '14px',
     fontWeight: '600',
+    position: 'relative',
+    zIndex: 1,
     cursor: 'pointer',
     backdropFilter: 'blur(5px)',
     transition: 'all 0.2s ease',
@@ -322,6 +353,28 @@ const styles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     maxWidth: '100%'
+  },
+  bottomNav: {
+    height: '70px',
+    display: 'flex',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderTop: '1px solid rgba(0,0,0,0.1)',
+    flexShrink: 0
+  },
+  navBtn: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '3px',
+    background: 'none',
+    border: 'none',
+    fontSize: 'clamp(12px, 3.2vw, 15px)',
+    fontWeight: 'bold',
+    color: '#003675',
+    cursor: 'pointer',
+    padding: '10px'
   }
 };
 
