@@ -89,7 +89,16 @@ def fetch_notice_detail(session, detail_url):
         soup = BeautifulSoup(resp.text, "html.parser")
 
         content_div = soup.select_one(".board_contents")
-        content_html = str(content_div) if content_div else "<p>내용 없음</p>"
+        if content_div:
+            # <script> 등 실행 가능한 태그는 제거하고, 감싸는 div 자체는
+            # 빼고 내부 내용만 저장 (예전엔 str()로 통째로 저장해서
+            # <div class="board_contents">...</div><script>...</script> 가
+            # 그대로 본문에 섞여 들어갔음)
+            for tag in content_div.select("script, style"):
+                tag.decompose()
+            content_html = content_div.decode_contents()
+        else:
+            content_html = "<p>내용 없음</p>"
 
         posted_date = datetime.today().date()
         meta_list = soup.select(".board_title ul li")

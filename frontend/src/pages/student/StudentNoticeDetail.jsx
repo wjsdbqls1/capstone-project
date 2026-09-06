@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../../App.css'; 
+import DOMPurify from 'dompurify';
+import '../../App.css';
 
 import bgImage from '../../assets/로그인 이미지.jpg'; 
 
@@ -100,19 +101,36 @@ function StudentNoticeDetail() {
 
         {/* 본문 내용 - 가독성 개선 스타일 적용 */}
         <div style={styles.bodySection}>
-          <div 
-             className="notice-content"
-             style={{
-                 whiteSpace: 'pre-wrap', 
-                 minHeight: '200px', 
-                 wordBreak: 'break-word',
-                 overflowX: 'auto',
-                 textAlign: 'justify', // 양쪽 정렬로 깔끔하게
-                 letterSpacing: '-0.3px' // 자간을 살짝 좁혀 응집력 강화
-             }}
-          >
-            {notice.content_html}
-          </div>
+          {source === 'external' ? (
+            // 학과 홈페이지 크롤링 공지는 실제 HTML 서식(줄바꿈 등)이 있어서
+            // 안전하게 정화(sanitize)한 뒤 HTML로 렌더링
+            <div
+               className="notice-content"
+               style={{
+                   minHeight: '200px',
+                   wordBreak: 'break-word',
+                   overflowX: 'auto',
+                   textAlign: 'justify',
+                   letterSpacing: '-0.3px'
+               }}
+               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(notice.content_html) }}
+            />
+          ) : (
+            // 조교가 직접 입력하는 내부 공지는 일반 텍스트라 그대로 표시 (XSS 방지)
+            <div
+               className="notice-content"
+               style={{
+                   whiteSpace: 'pre-wrap',
+                   minHeight: '200px',
+                   wordBreak: 'break-word',
+                   overflowX: 'auto',
+                   textAlign: 'justify',
+                   letterSpacing: '-0.3px'
+               }}
+            >
+              {notice.content_html}
+            </div>
+          )}
         </div>
 
       </div>
