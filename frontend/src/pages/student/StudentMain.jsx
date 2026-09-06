@@ -120,7 +120,7 @@ function StudentMain() {
       <div style={styles.glassContainer}>
         <div style={styles.innerContent}>
 
-          {/* 3-1. 정보 스트립 (최근 공지 / 다가오는 일정) — 단색 톤으로 통일 */}
+          {/* 3-1. 정보 카드 (최근 공지 / 다가오는 일정) — 세로 배열, 단색 톤으로 통일 */}
           <div style={styles.infoStrip}>
             <InfoHalf
               icon={<MdCampaign size={18} />}
@@ -129,7 +129,6 @@ function StudentMain() {
               subtitle={latestNotice ? latestNotice.posted_date : ''}
               onClick={() => latestNotice && navigate(`/student/notice/${latestNotice.id}?source=${latestNotice.source}`)}
             />
-            <div style={styles.infoDivider} />
             <InfoHalf
               icon={<MdCalendarToday size={18} />}
               label="다가오는 일정"
@@ -183,17 +182,18 @@ function StudentMain() {
   );
 }
 
-// 정보 스트립의 절반 (최근 공지 / 다가오는 일정)
+// 정보 카드 (최근 공지 / 다가오는 일정)
 function InfoHalf({ icon, label, title, subtitle, onClick }) {
   return (
-    <div style={styles.infoHalf} onClick={onClick}>
+    <motion.div style={styles.infoHalf} onClick={onClick} whileHover={{ backgroundColor: 'rgba(0, 54, 117, 0.06)' }} whileTap={{ scale: 0.99 }}>
       <div style={styles.infoIconWrap}>{icon}</div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={styles.insightLabel}>{label}</div>
         <div style={styles.insightTitle}>{title}</div>
         {subtitle && <div style={styles.insightSubtitle}>{subtitle}</div>}
       </div>
-    </div>
+      <MdChevronRight size={20} color="#aaa" style={{ flexShrink: 0 }} />
+    </motion.div>
   );
 }
 
@@ -295,23 +295,20 @@ const styles = {
 
   infoStrip: {
     display: 'flex',
-    alignItems: 'stretch',
-    gap: '14px'
+    flexDirection: 'column',
+    gap: '10px'
   },
 
   infoHalf: {
     display: 'flex',
     alignItems: 'flex-start',
-    gap: '10px',
+    gap: '12px',
     minWidth: 0,
-    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+    border: '1px solid rgba(0,0,0,0.05)',
+    borderRadius: '14px',
+    padding: '12px 14px',
     cursor: 'pointer'
-  },
-
-  infoDivider: {
-    width: '1px',
-    backgroundColor: 'rgba(0,0,0,0.08)',
-    flexShrink: 0
   },
 
   infoIconWrap: {
@@ -327,21 +324,21 @@ const styles = {
   },
 
   insightLabel: { fontSize: '11px', fontWeight: '700', color: '#777', marginBottom: '2px' },
+  // 폭이 넓어졌으니 한 줄로 자르지 않고 최대 2줄까지 자연스럽게 보여줌
   insightTitle: {
-    fontSize: '13px',
+    fontSize: '14px',
     fontWeight: '700',
     color: '#1a1a1a',
-    whiteSpace: 'nowrap',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
-    textOverflow: 'ellipsis'
+    lineHeight: '1.35'
   },
   insightSubtitle: {
     fontSize: '11px',
     color: '#888',
-    marginTop: '3px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis'
+    marginTop: '4px'
   },
 
   primaryCta: {
