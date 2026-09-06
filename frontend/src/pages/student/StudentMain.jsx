@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { PenLine, ClipboardList, HelpCircle, Megaphone, Calendar, FileText, LogOut, Home, User } from 'lucide-react';
 import '../../App.css';
 
 // 배경 이미지
-import bgImage from '../../assets/로그인 이미지.jpg'; 
+import bgImage from '../../assets/로그인 이미지.jpg';
 
 function StudentMain() {
   const navigate = useNavigate();
@@ -63,20 +65,26 @@ function StudentMain() {
       <div style={styles.menuGridContainer}>
         
         {/* 각 메뉴 버튼들 */}
-        <MenuButton onClick={() => navigate('/student/inquiry')} icon="📝" text="문의하기" />
-        <MenuButton onClick={() => navigate('/student/history')} icon="📋" text="문의 내역" />
-        <MenuButton onClick={() => navigate('/student/faq')} icon="❓" text="FAQ" />
-        <MenuButton onClick={() => navigate('/student/notice')} icon="📢" text="공지사항" />
-        <MenuButton onClick={() => navigate('/student/calendar')} icon="📅" text="캘린더" />
-        <MenuButton onClick={() => alert('추후에 추가될 기능입니다.')} icon="📄" text="공결 서류 제출" />
-      
+        <MenuButton onClick={() => navigate('/student/inquiry')} icon={<PenLine size="100%" strokeWidth={1.6} />} text="문의하기" />
+        <MenuButton onClick={() => navigate('/student/history')} icon={<ClipboardList size="100%" strokeWidth={1.6} />} text="문의 내역" />
+        <MenuButton onClick={() => navigate('/student/faq')} icon={<HelpCircle size="100%" strokeWidth={1.6} />} text="FAQ" />
+        <MenuButton onClick={() => navigate('/student/notice')} icon={<Megaphone size="100%" strokeWidth={1.6} />} text="공지사항" />
+        <MenuButton onClick={() => navigate('/student/calendar')} icon={<Calendar size="100%" strokeWidth={1.6} />} text="캘린더" />
+        <MenuButton onClick={() => alert('추후에 추가될 기능입니다.')} icon={<FileText size="100%" strokeWidth={1.6} />} text="공결 서류 제출" />
+
       </div>
 
       {/* 4. 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
-        <button style={styles.navBtn} onClick={handleLogout}>🚪 로그아웃</button>
-        <button style={styles.navBtn} onClick={() => navigate('/student/main')}>🏠 홈</button>
-        <button style={styles.navBtn} onClick={() => navigate('/student/mypage')}>👤 마이페이지</button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
+          <LogOut size={18} strokeWidth={1.8} /> 로그아웃
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
+          <Home size={18} strokeWidth={1.8} /> 홈
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
+          <User size={18} strokeWidth={1.8} /> 마이페이지
+        </motion.button>
       </nav>
     </div>
   );
@@ -85,10 +93,16 @@ function StudentMain() {
 // 버튼 컴포넌트 (반응형 적용)
 function MenuButton({ onClick, icon, text }) {
   return (
-    <button style={styles.menuBtn} onClick={onClick}>
+    <motion.button
+      style={styles.menuBtn}
+      onClick={onClick}
+      whileHover={{ scale: 1.03, boxShadow: '0 8px 16px rgba(0,0,0,0.15)' }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+    >
       <span style={styles.menuIcon}>{icon}</span>
       <span style={styles.menuText}>{text}</span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -158,8 +172,13 @@ const styles = {
   },
 
   menuIcon: {
-    fontSize: 'clamp(24px, 8vw, 36px)', // 아이콘 크기 반응형
-    marginBottom: 'clamp(5px, 2vw, 10px)'
+    width: 'clamp(24px, 8vw, 36px)', // 아이콘 크기 반응형
+    height: 'clamp(24px, 8vw, 36px)',
+    marginBottom: 'clamp(5px, 2vw, 10px)',
+    color: '#003675',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   
   menuText: {
@@ -181,9 +200,13 @@ const styles = {
   },
   
   navBtn: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '3px',
     background: 'none',
     border: 'none',
-    fontSize: 'clamp(14px, 4vw, 18px)', // 하단 버튼 폰트 반응형
+    fontSize: 'clamp(12px, 3.2vw, 15px)', // 하단 버튼 폰트 반응형
     fontWeight: 'bold',
     color: '#003675',
     cursor: 'pointer',

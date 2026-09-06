@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../../App.css'; 
+import { ChevronLeft } from 'lucide-react';
+import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -145,7 +146,7 @@ function StudentAbsence() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
+           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>공결 신청</h2>

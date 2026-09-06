@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../../App.css'; 
+import { motion } from 'framer-motion';
+import { ChevronLeft, Search } from 'lucide-react';
+import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg'; 
@@ -113,7 +115,7 @@ function StudentNotice() {
           style={styles.backBtn} 
           onClick={() => navigate('/student/main')} 
         >
-           <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
+           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
         </button>
         <h2 style={{margin: 0, fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: '600'}}>공지사항</h2>
         <div style={{width: '60px'}}></div>
@@ -126,21 +128,21 @@ function StudentNotice() {
               value={filterType} 
               onChange={(e) => { setFilterType(e.target.value); setCurrentPage(1); }}
           >
-              <option value="all">📑 전체</option>
-              <option value="external">🏫 학과홈페이지</option>
-              <option value="internal_common">📢 전체공지</option>
-              <option value="internal_my">🎓 내 학년</option>
+              <option value="all">전체</option>
+              <option value="external">학과홈페이지</option>
+              <option value="internal_common">전체공지</option>
+              <option value="internal_my">내 학년</option>
           </select>
 
           <div style={styles.searchGroup}>
-              <input 
-                  style={styles.searchInput} 
-                  placeholder="제목 검색" 
+              <input
+                  style={styles.searchInput}
+                  placeholder="제목 검색"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
               />
-              <button style={styles.searchBtn} onClick={handleSearch}>🔍</button>
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }} style={styles.searchBtn} onClick={handleSearch}><Search size={16} /></motion.button>
           </div>
         </div>
 

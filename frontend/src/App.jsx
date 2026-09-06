@@ -1,8 +1,10 @@
 // src/App.jsx
 import React from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import Login from './pages/Login';
 import ForcePasswordChange from './pages/ForcePasswordChange';
+import PageTransition from './components/PageTransition';
 
 // 학생 페이지
 import StudentMain from './pages/student/StudentMain';
@@ -26,35 +28,47 @@ import TACalendarManage from './pages/ta/TACalendarManage';
 import TAStudentManage from './pages/ta/TAStudentManage';
 import TAAIReport from './pages/ta/TAAIReport';
 
+const withTransition = (el) => <PageTransition>{el}</PageTransition>;
+
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={withTransition(<Login />)} />
+        <Route path="/change-password" element={withTransition(<ForcePasswordChange />)} />
+
+        {/* 1. 학생 화면 라우팅 */}
+        <Route path="/student/main" element={withTransition(<StudentMain />)} />
+        <Route path="/student/inquiry" element={withTransition(<StudentInquiry />)} />
+        <Route path="/student/history" element={withTransition(<StudentHistory />)} />
+        <Route path="/student/notice" element={withTransition(<StudentNotice />)} />
+        <Route path="/student/faq" element={withTransition(<StudentFAQ />)} />
+        <Route path="/student/calendar" element={withTransition(<StudentCalendar />)} />
+        <Route path="/student/absence" element={withTransition(<StudentAbsence />)} />
+        <Route path="/student/mypage" element={withTransition(<StudentMyPage />)} />
+        <Route path="/student/notice/:id" element={withTransition(<StudentNoticeDetail />)} />
+
+        {/* 2. 조교 화면 라우팅 */}
+        <Route path="/ta/main" element={withTransition(<TAMain />)} />
+        <Route path="/ta/pending" element={withTransition(<TAPending />)} />
+        <Route path="/ta/completed" element={withTransition(<TACompleted />)} />
+        <Route path="/ta/notice" element={withTransition(<TANoticeManage />)} />
+        <Route path="/ta/faq" element={withTransition(<TAFAQManage />)} />
+        <Route path="/ta/absence" element={withTransition(<TAAbsenceManage />)} />
+        <Route path="/ta/calendar" element={withTransition(<TACalendarManage />)} />
+        <Route path="/ta/students" element={withTransition(<TAStudentManage />)} />
+        <Route path="/ta/ai" element={withTransition(<TAAIReport />)} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   return (
     <HashRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/change-password" element={<ForcePasswordChange />} />
-
-        {/* 1. 학생 화면 라우팅 */}
-        <Route path="/student/main" element={<StudentMain />} />
-        <Route path="/student/inquiry" element={<StudentInquiry />} />
-        <Route path="/student/history" element={<StudentHistory />} />
-        <Route path="/student/notice" element={<StudentNotice />} />
-        <Route path="/student/faq" element={<StudentFAQ />} />
-        <Route path="/student/calendar" element={<StudentCalendar />} />
-        <Route path="/student/absence" element={<StudentAbsence />} />
-        <Route path="/student/mypage" element={<StudentMyPage />} />
-        <Route path="/student/notice/:id" element={<StudentNoticeDetail />} />
-
-        {/* 2. 조교 화면 라우팅 */}
-        <Route path="/ta/main" element={<TAMain />} />
-        <Route path="/ta/pending" element={<TAPending />} />
-        <Route path="/ta/completed" element={<TACompleted />} />
-        <Route path="/ta/notice" element={<TANoticeManage />} />
-        <Route path="/ta/faq" element={<TAFAQManage />} />
-        <Route path="/ta/absence" element={<TAAbsenceManage />} />
-        <Route path="/ta/calendar" element={<TACalendarManage />} />
-        <Route path="/ta/students" element={<TAStudentManage />} />
-        <Route path="/ta/ai" element={<TAAIReport />} />
-      </Routes>
+      <AnimatedRoutes />
     </HashRouter>
   );
 }

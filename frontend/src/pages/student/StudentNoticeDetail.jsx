@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
+import { ChevronLeft, FileDown } from 'lucide-react';
 import '../../App.css';
 
 import bgImage from '../../assets/로그인 이미지.jpg'; 
@@ -54,7 +55,7 @@ function StudentNoticeDetail() {
           style={styles.backBtn} 
           onClick={() => navigate(-1)}
         >
-           <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
+           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
         </button>
         <h2 style={{margin: 0, fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: '600', color: 'white'}}>공지 상세</h2>
         <div style={{width: '60px'}}></div> 
@@ -77,7 +78,7 @@ function StudentNoticeDetail() {
         {notice.file_path && (
           <div style={styles.fileCard}>
             <div style={styles.fileInfo}>
-                <span style={{fontSize:'24px'}}>💾</span>
+                <FileDown size={24} color="#003675" />
                 <div style={{minWidth: 0}}>
                     <div style={{fontSize:'12px', color:'#666', marginBottom:'2px'}}>첨부파일</div>
                     <a 

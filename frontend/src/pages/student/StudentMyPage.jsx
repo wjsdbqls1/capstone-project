@@ -2,9 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import '../../App.css';
 import NotificationToggle from '../../components/NotificationToggle';
+import AnimatedModal from '../../components/AnimatedModal';
 import { unsubscribeFromPush } from '../../pushNotifications';
+import { ChevronLeft, User, X } from 'lucide-react';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -99,7 +102,7 @@ function StudentMyPage() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
+           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>마이페이지</h2>
@@ -113,7 +116,7 @@ function StudentMyPage() {
         <div style={styles.contentWrapper}>
             <div style={styles.profileHeader}>
                 <div style={styles.avatar}>
-                    {userInfo ? userInfo.name[0] : '👤'}
+                    {userInfo ? userInfo.name[0] : <User size={32} />}
                 </div>
                 <h2 style={styles.userName}>
                     {userInfo ? userInfo.name : '로딩중...'}
@@ -163,52 +166,53 @@ function StudentMyPage() {
 
             <NotificationToggle style={styles.changePwButton} activeStyle={styles.notifyActive} />
 
-            <button style={styles.changePwButton} onClick={() => setShowPwModal(true)}>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={styles.changePwButton} onClick={() => setShowPwModal(true)}>
                 비밀번호 변경
-            </button>
+            </motion.button>
 
-            <button style={styles.logoutButton} onClick={handleLogout}>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={styles.logoutButton} onClick={handleLogout}>
                 로그아웃
-            </button>
+            </motion.button>
         </div>
 
       </div>
 
       {/* 비밀번호 변경 모달 */}
-      {showPwModal && (
-        <div style={pwStyles.overlay}>
-          <div style={pwStyles.modal}>
-            <div style={pwStyles.header}>
-              <h3 style={{ margin: 0, color: '#003675' }}>비밀번호 변경</h3>
-              <button onClick={() => setShowPwModal(false)} style={pwStyles.closeBtn}>✕</button>
-            </div>
-            <div style={pwStyles.content}>
-              <input
-                type="password"
-                style={pwStyles.input}
-                placeholder="현재 비밀번호"
-                value={pwForm.current_password}
-                onChange={(e) => setPwForm({ ...pwForm, current_password: e.target.value })}
-              />
-              <input
-                type="password"
-                style={pwStyles.input}
-                placeholder="새 비밀번호 (8자 이상)"
-                value={pwForm.new_password}
-                onChange={(e) => setPwForm({ ...pwForm, new_password: e.target.value })}
-              />
-              <input
-                type="password"
-                style={pwStyles.input}
-                placeholder="새 비밀번호 확인"
-                value={pwForm.confirm_password}
-                onChange={(e) => setPwForm({ ...pwForm, confirm_password: e.target.value })}
-              />
-              <button style={pwStyles.saveBtn} onClick={handleChangePassword}>변경하기</button>
-            </div>
-          </div>
+      <AnimatedModal
+        isOpen={showPwModal}
+        onClose={() => setShowPwModal(false)}
+        overlayStyle={pwStyles.overlay}
+        modalStyle={pwStyles.modal}
+      >
+        <div style={pwStyles.header}>
+          <h3 style={{ margin: 0, color: '#003675' }}>비밀번호 변경</h3>
+          <button onClick={() => setShowPwModal(false)} style={pwStyles.closeBtn}><X size={20} /></button>
         </div>
-      )}
+        <div style={pwStyles.content}>
+          <input
+            type="password"
+            style={pwStyles.input}
+            placeholder="현재 비밀번호"
+            value={pwForm.current_password}
+            onChange={(e) => setPwForm({ ...pwForm, current_password: e.target.value })}
+          />
+          <input
+            type="password"
+            style={pwStyles.input}
+            placeholder="새 비밀번호 (8자 이상)"
+            value={pwForm.new_password}
+            onChange={(e) => setPwForm({ ...pwForm, new_password: e.target.value })}
+          />
+          <input
+            type="password"
+            style={pwStyles.input}
+            placeholder="새 비밀번호 확인"
+            value={pwForm.confirm_password}
+            onChange={(e) => setPwForm({ ...pwForm, confirm_password: e.target.value })}
+          />
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={pwStyles.saveBtn} onClick={handleChangePassword}>변경하기</motion.button>
+        </div>
+      </AnimatedModal>
     </div>
   );
 }

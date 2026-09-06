@@ -2,7 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../../App.css'; 
+import { motion } from 'framer-motion';
+import { ChevronLeft, X, Calendar, Paperclip, Download, GraduationCap } from 'lucide-react';
+import AnimatedModal from '../../components/AnimatedModal';
+import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -87,7 +90,7 @@ function StudentHistory() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
+           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>문의 내역</h2>
@@ -104,10 +107,12 @@ function StudentHistory() {
           </div>
         ) : (
           inquiries.map((item) => (
-            <div 
-              key={item.id} 
-              style={styles.card} 
+            <motion.div
+              key={item.id}
+              style={styles.card}
               onClick={() => handleClickItem(item)}
+              whileHover={{ y: -3, boxShadow: '0 6px 16px rgba(0,0,0,0.12)' }}
+              whileTap={{ scale: 0.99 }}
             >
               <div style={styles.cardHeader}>
                 <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
@@ -119,22 +124,24 @@ function StudentHistory() {
                 <span style={styles.date}>{item.created_at.split('T')[0]}</span>
               </div>
               <h3 style={styles.title}>{item.title}</h3>
-            </div>
+            </motion.div>
           ))
         )}
       </div>
 
       {/* 상세 보기 팝업 (모달) */}
-      {selectedInquiry && (
-        <div style={modalStyles.overlay} onClick={() => setSelectedInquiry(null)}>
-          <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
-            
+      <AnimatedModal
+        isOpen={!!selectedInquiry}
+        onClose={() => setSelectedInquiry(null)}
+        overlayStyle={modalStyles.overlay}
+        modalStyle={modalStyles.modal}
+      >
             {/* 모달 헤더 */}
             <div style={modalStyles.header}>
               <h3 style={{margin:0, color:'#003675', fontSize:'18px'}}>문의 상세</h3>
-              <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}>✕</button>
+              <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><X size={20} /></button>
             </div>
-            
+
             {/* 모달 내용 */}
             <div style={modalStyles.content}>
               {detailData ? (
@@ -143,10 +150,10 @@ function StudentHistory() {
                     <div style={modalStyles.label}>제목</div>
                     <div style={modalStyles.text}>{detailData.title}</div>
                   </div>
-                  
+
                   {detailData.academic_event && (
                       <div style={modalStyles.section}>
-                        <div style={modalStyles.label}>📅 관련 학사일정</div>
+                        <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><Calendar size={14} /> 관련 학사일정</div>
                         <div style={{...modalStyles.text, color:'#e65100'}}>
                             {detailData.academic_event.title} <br/>
                             <span style={{fontSize:'14px', fontWeight:'normal'}}>
@@ -160,20 +167,20 @@ function StudentHistory() {
                     <div style={modalStyles.label}>내용</div>
                     <div style={modalStyles.textBox}>{detailData.content}</div>
                   </div>
-                  
+
                   {detailData.attachment && (
                     <div style={modalStyles.section}>
-                        <div style={modalStyles.label}>📎 내 첨부파일</div>
-                        <a href={`https://capstone-project-of74.onrender.com${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.link}>
-                            💾 다운로드 / 보기
+                        <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><Paperclip size={14} /> 내 첨부파일</div>
+                        <a href={`https://capstone-project-of74.onrender.com${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={{...modalStyles.link, display: 'inline-flex', alignItems: 'center', gap: '5px'}}>
+                            <Download size={14} /> 다운로드 / 보기
                         </a>
                     </div>
                   )}
-                  
+
                   <div style={modalStyles.divider}></div>
-                  
+
                   <div style={modalStyles.section}>
-                    <div style={modalStyles.label}>🎓 조교 답변</div>
+                    <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><GraduationCap size={14} /> 조교 답변</div>
                     {detailData.replies && detailData.replies.length > 0 ? (
                       detailData.replies.map(reply => (
                         <div key={reply.id} style={modalStyles.answerBox}>
@@ -182,16 +189,16 @@ function StudentHistory() {
                               {/* 수정된 답변인 경우 표시 */}
                               {reply.updated_at && <span style={{fontSize:'11px', color:'#999', marginLeft:'5px'}}>(수정됨)</span>}
                           </div>
-                          
+
                           {reply.attachment && (
-                            <div style={{marginTop:'10px', fontSize:'14px', borderTop:'1px dashed #a6cbf3', paddingTop:'5px'}}>
-                                📎 <b>첨부파일:</b>
-                                <a href={`https://capstone-project-of74.onrender.com${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{marginLeft:'5px', color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
+                            <div style={{marginTop:'10px', fontSize:'14px', borderTop:'1px dashed #a6cbf3', paddingTop:'5px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
+                                <Paperclip size={13} /> <b>첨부파일:</b>
+                                <a href={`https://capstone-project-of74.onrender.com${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
                                     확인하기
                                 </a>
                             </div>
                           )}
-                          
+
                           <div style={modalStyles.answerDate}>{reply.created_at.split('T')[0]}</div>
                         </div>
                       ))
@@ -206,9 +213,7 @@ function StudentHistory() {
                 <div style={{textAlign:'center', padding:'30px'}}>로딩중...</div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+      </AnimatedModal>
     </div>
   );
 }

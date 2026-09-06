@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
 // 배경 이미지
@@ -211,7 +214,7 @@ function StudentCalendar() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
+           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>학사 일정</h2>
@@ -225,11 +228,11 @@ function StudentCalendar() {
         {/* 컨트롤러 */}
         <div style={calStyles.controls}>
           <div style={calStyles.monthNav}>
-            <button onClick={prevMonth} style={calStyles.navBtn}>◀</button>
+            <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={prevMonth} style={calStyles.navBtn}><ChevronLeft size={16} /></motion.button>
             <h3 style={{margin:0, fontSize: 'clamp(18px, 4vw, 22px)'}}>
                 {currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}
             </h3>
-            <button onClick={nextMonth} style={calStyles.navBtn}>▶</button>
+            <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={nextMonth} style={calStyles.navBtn}><ChevronRight size={16} /></motion.button>
           </div>
           
           <div style={calStyles.legend}>
@@ -269,37 +272,38 @@ function StudentCalendar() {
       </div>
 
       {/* 상세 모달 */}
-      {isModalOpen && (
-        <div style={modalStyles.overlay} onClick={() => setIsModalOpen(false)}>
-            <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
-                <div style={modalStyles.header}>
-                    <h3 style={{margin:0, color:'#003675'}}>{formatHeaderDate(selectedDate)}</h3>
-                    <button onClick={() => setIsModalOpen(false)} style={modalStyles.closeBtn}>✕</button>
-                </div>
-                <div style={modalStyles.list}>
-                    {selectedEvents.length === 0 ? (
-                        <p style={{textAlign:'center', color:'#999', padding:'20px'}}>등록된 일정이 없습니다.</p>
-                    ) : (
-                        selectedEvents.map((ev) => {
-                            const isManual = ev.source === 'manual';
-                            const borderColor = isManual ? '#ff9800' : isHoliday(ev.title) ? '#2e7d32' : '#1565c0';
-                            return (
-                                <div key={ev.id} style={{
-                                    ...modalStyles.item,
-                                    borderLeft: `4px solid ${borderColor}`
-                                }}>
-                                    <div style={{fontWeight:'bold', fontSize:'16px', color:'#333'}}>{ev.title}</div>
-                                    <div style={{fontSize:'13px', color:'#666', marginTop:'4px'}}>
-                                        📅 {ev.start_date} ~ {ev.end_date}
-                                    </div>
-                                </div>
-                            );
-                        })
-                    )}
-                </div>
-            </div>
-        </div>
-      )}
+      <AnimatedModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        overlayStyle={modalStyles.overlay}
+        modalStyle={modalStyles.modal}
+      >
+          <div style={modalStyles.header}>
+              <h3 style={{margin:0, color:'#003675'}}>{formatHeaderDate(selectedDate)}</h3>
+              <button onClick={() => setIsModalOpen(false)} style={modalStyles.closeBtn}><X size={20} /></button>
+          </div>
+          <div style={modalStyles.list}>
+              {selectedEvents.length === 0 ? (
+                  <p style={{textAlign:'center', color:'#999', padding:'20px'}}>등록된 일정이 없습니다.</p>
+              ) : (
+                  selectedEvents.map((ev) => {
+                      const isManual = ev.source === 'manual';
+                      const borderColor = isManual ? '#ff9800' : isHoliday(ev.title) ? '#2e7d32' : '#1565c0';
+                      return (
+                          <div key={ev.id} style={{
+                              ...modalStyles.item,
+                              borderLeft: `4px solid ${borderColor}`
+                          }}>
+                              <div style={{fontWeight:'bold', fontSize:'16px', color:'#333'}}>{ev.title}</div>
+                              <div style={{fontSize:'13px', color:'#666', marginTop:'4px'}}>
+                                  {ev.start_date} ~ {ev.end_date}
+                              </div>
+                          </div>
+                      );
+                  })
+              )}
+          </div>
+      </AnimatedModal>
     </div>
   );
 }
@@ -374,13 +378,16 @@ const calStyles = {
     alignItems: 'center',
     gap: '10px'
   },
-  navBtn: { 
-    background:'white', 
-    border:'1px solid #ddd', 
-    borderRadius:'8px', 
-    cursor:'pointer', 
-    padding:'4px 8px', 
-    fontSize:'12px',
+  navBtn: {
+    background:'white',
+    border:'1px solid #ddd',
+    borderRadius:'8px',
+    cursor:'pointer',
+    padding:'6px 8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#003675',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
   },
   legend: {

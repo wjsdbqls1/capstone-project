@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../../App.css'; 
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, Search, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -54,7 +56,7 @@ function StudentFaq() {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
           }}
         >
-           <span style={{fontSize: '18px', marginBottom: '2px'}}>‹</span> 뒤로가기
+           <ChevronLeft size={18} strokeWidth={2.2} /> 뒤로가기
         </button>
 
         <h2 style={{margin: 0, fontSize: 'clamp(20px, 5vw, 24px)', color: 'white', fontWeight: '500'}}>자주 묻는 질문</h2>
@@ -68,7 +70,7 @@ function StudentFaq() {
         {/* 검색창 영역 */}
         <div style={styles.searchWrapper}>
           <div style={styles.searchBox}>
-            <span style={{fontSize:'18px', marginRight:'10px'}}>🔍</span>
+            <Search size={18} style={{ marginRight: '10px', color: '#666', flexShrink: 0 }} />
             <input 
               style={styles.searchInput}
               placeholder="검색어 입력 (예: 휴학)"
@@ -86,42 +88,53 @@ function StudentFaq() {
             </div>
           ) : (
             filteredFaqs.map((item) => (
-              <div 
-                key={item.id} 
+              <motion.div
+                key={item.id}
+                layout
                 style={expandedId === item.id ? styles.cardExpanded : styles.card}
               >
                 {/* 질문 */}
                 <div style={styles.questionRow} onClick={() => toggleFaq(item.id)}>
                   <span style={styles.qMark}>Q.</span>
                   <span style={styles.qText}>{item.question}</span>
-                  <span style={styles.arrow}>{expandedId === item.id ? '▲' : '▼'}</span>
+                  <span style={styles.arrow}>
+                    {expandedId === item.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  </span>
                 </div>
-                
+
                 {/* 답변 */}
-                {expandedId === item.id && (
-                  <div style={styles.answerRow}>
+                <AnimatePresence>
+                  {expandedId === item.id && (
+                    <motion.div
+                      style={styles.answerRow}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    >
                     <div style={styles.answerContent}>
                       <span style={styles.aMark}>A.</span>
                       <div style={{flex: 1, minWidth: 0}}> {/* minWidth:0 은 텍스트 넘침 방지용 */}
                           <div style={styles.aText}>{item.answer_html}</div>
-                          
+
                           {/* 파일 다운로드 */}
                           {item.file_path && (
                             <div style={styles.fileBox}>
-                              <a 
-                                href={`https://capstone-project-of74.onrender.com/uploads/faqs/${item.file_path}`} 
+                              <a
+                                href={`https://capstone-project-of74.onrender.com/uploads/faqs/${item.file_path}`}
                                 download={item.original_filename}
-                                style={styles.downloadLink}
+                                style={{ ...styles.downloadLink, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                               >
-                                💾 {item.original_filename}
+                                <Download size={14} /> {item.original_filename}
                               </a>
                             </div>
                           )}
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             ))
           )}
         </div>
@@ -262,10 +275,11 @@ const styles = {
   },
   arrow: { color: '#999', fontSize: '12px', marginLeft: '8px' },
   
-  answerRow: { 
-    padding: '15px', 
-    backgroundColor: '#f8f9fa', 
-    borderTop: '1px solid #eee' 
+  answerRow: {
+    padding: '15px',
+    backgroundColor: '#f8f9fa',
+    borderTop: '1px solid #eee',
+    overflow: 'hidden'
   },
   answerContent: { display: 'flex', gap: '10px' },
   aMark: { 
