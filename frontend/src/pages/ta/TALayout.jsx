@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { Menu, Inbox, CheckCircle2, Megaphone, HelpCircle, FileText, Calendar, Users, BarChart3, LogOut } from 'lucide-react';
 import '../../App.css';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import NotificationToggle from '../../components/NotificationToggle';
@@ -67,7 +69,7 @@ function TALayout({ children }) {
             {/* 모바일용 햄버거 메뉴 버튼 */}
             {isMobile && (
                 <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={layoutStyles.menuBtn}>
-                    ☰
+                    <Menu size={26} />
                 </button>
             )}
             <div style={layoutStyles.logoArea} onClick={() => navigate('/ta/pending')}>
@@ -76,9 +78,9 @@ function TALayout({ children }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <NotificationToggle style={layoutStyles.notifyBtn} activeStyle={layoutStyles.notifyBtnActive} />
-          <button style={layoutStyles.logoutBtn} onClick={handleLogout}>
-            로그아웃
-          </button>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }} style={layoutStyles.logoutBtn} onClick={handleLogout}>
+            <LogOut size={15} strokeWidth={2.2} /> 로그아웃
+          </motion.button>
         </div>
       </header>
 
@@ -100,27 +102,29 @@ function TALayout({ children }) {
           
           <div style={layoutStyles.menuGroup}>
             <div style={layoutStyles.groupTitle}>문의</div>
-            <div style={isActive('/ta/pending') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/pending')}>대기중인 문의</div>
-            <div style={isActive('/ta/completed') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/completed')}>처리 완료 문의</div>
+            <div style={isActive('/ta/pending') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/pending')}><Inbox size={18} /> 대기중인 문의</div>
+            <div style={isActive('/ta/completed') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/completed')}><CheckCircle2 size={18} /> 처리 완료 문의</div>
           </div>
 
           <div style={layoutStyles.divider}></div>
 
-          <div style={isActive('/ta/notice') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/notice')}>공지사항</div>
-          <div style={isActive('/ta/faq') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/faq')}>FAQ</div>
-          <div style={isActive('/ta/absence') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/absence')}>공결 신청</div>
-          <div style={isActive('/ta/calendar') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/calendar')}>캘린더</div>
-          <div style={isActive('/ta/students') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/students')}>학생 관리</div>
+          <div style={isActive('/ta/notice') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/notice')}><Megaphone size={18} /> 공지사항</div>
+          <div style={isActive('/ta/faq') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/faq')}><HelpCircle size={18} /> FAQ</div>
+          <div style={isActive('/ta/absence') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/absence')}><FileText size={18} /> 공결 신청</div>
+          <div style={isActive('/ta/calendar') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/calendar')}><Calendar size={18} /> 캘린더</div>
+          <div style={isActive('/ta/students') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/students')}><Users size={18} /> 학생 관리</div>
 
           <div style={layoutStyles.divider}></div>
 
-          <div
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             style={layoutStyles.aiMenuItem}
             onClick={() => handleMenuClick('/ta/ai')}
           >
-            <span style={{fontSize:'22px'}}>📊</span>
+            <BarChart3 size={20} />
             <span style={{position:'relative', top:'1px'}}>문의 리포트</span>
-          </div>
+          </motion.div>
         </nav>
 
         {/* 3. 메인 컨텐츠 영역 */}
@@ -157,6 +161,9 @@ const layoutStyles = {
   logoArea: { cursor: 'pointer' },
   logo: { fontSize: '24px', fontWeight: 'bold', color: 'white', margin: 0, letterSpacing: '-0.5px' }, // 폰트 사이즈 증가
   logoutBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
     padding: '8px 20px',
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     border: '1px solid rgba(255, 255, 255, 0.5)',
@@ -200,8 +207,8 @@ const layoutStyles = {
   
   menuGroup: { marginBottom: '15px' },
   groupTitle: { fontSize: '20px', fontWeight: '800', color: '#003675', padding: '10px 30px', marginBottom: '5px' }, // 폰트 사이즈 증가
-  menuItem: { padding: '14px 30px 14px 45px', fontSize: '17px', color: '#555', cursor: 'pointer', transition: 'all 0.2s', fontWeight: '500' }, // 폰트 사이즈 및 패딩 증가
-  menuItemActive: { padding: '14px 30px 14px 40px', fontSize: '17px', color: '#003675', fontWeight: 'bold', backgroundColor: '#e3f2fd', borderLeft: '5px solid #003675', cursor: 'pointer' }, // 폰트 사이즈 및 패딩 증가
+  menuItem: { display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 30px 14px 40px', fontSize: '17px', color: '#555', cursor: 'pointer', transition: 'all 0.2s', fontWeight: '500' }, // 폰트 사이즈 및 패딩 증가
+  menuItemActive: { display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 30px 14px 35px', fontSize: '17px', color: '#003675', fontWeight: 'bold', backgroundColor: '#e3f2fd', borderLeft: '5px solid #003675', cursor: 'pointer' }, // 폰트 사이즈 및 패딩 증가
   divider: { height: '1px', backgroundColor: '#eee', margin: '15px 30px' },
   aiMenuItem: { margin: '10px 20px', padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #003675 0%, #1976d2 100%)', color: 'white', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0, 54, 117, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }, // 폰트 사이즈 증가
 

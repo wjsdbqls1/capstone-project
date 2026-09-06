@@ -2,8 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { Calendar, GraduationCap, Search, X, User, Paperclip, Pencil } from 'lucide-react';
 import TALayout from './TALayout';
-import '../../App.css'; 
+import AnimatedModal from '../../components/AnimatedModal';
+import '../../App.css';
 
 function TACompleted() {
   const navigate = useNavigate();
@@ -90,14 +93,14 @@ function TACompleted() {
         <div style={styles.filterBar}>
             <div style={styles.filterGroup}>
                 <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-                    <option value="all">📅 전체 기간</option><option value="today">오늘</option><option value="week">이번 주</option><option value="month">이번 달</option><option value="year">올해</option>
+                    <option value="all">전체 기간</option><option value="today">오늘</option><option value="week">이번 주</option><option value="month">이번 달</option><option value="year">올해</option>
                 </select>
                 <select style={styles.select} value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)}>
-                    <option value="all">🎓 전체 학년</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option>
+                    <option value="all">전체 학년</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option>
                 </select>
             </div>
             <div style={styles.searchWrapper}>
-                <span style={{fontSize:'16px', color:'#666'}}>🔍</span>
+                <Search size={16} color="#666" />
                 <input type="text" placeholder="이름 또는 제목 검색..." style={styles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
             </div>
         </div>
@@ -106,7 +109,7 @@ function TACompleted() {
             <div style={styles.emptyMessage}>{searchTerm || gradeFilter !== 'all' || dateFilter !== 'all' ? "검색 조건에 맞는 문의가 없습니다." : "완료된 문의가 없습니다."}</div>
           ) : (
             filteredInquiries.map((item) => (
-              <div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)}>
+              <motion.div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)} whileHover={{ y: -2, boxShadow: '0 6px 16px rgba(0,0,0,0.1)' }} whileTap={{ scale: 0.99 }}>
                 <div style={styles.cardHeader}>
                   <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
                     <span style={styles.statusDone}>답변 완료</span>
@@ -120,50 +123,53 @@ function TACompleted() {
                 <div style={styles.writerInfo}>
                     {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name} (${item.author_info.student_no})` : `ID: ${item.user_id}`}
                 </div>
-              </div>
+              </motion.div>
             ))
           )}
         </div>
       </div>
-      {selectedInquiry && (
-        <div style={modalStyles.overlay} onClick={() => setSelectedInquiry(null)}>
-          <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={modalStyles.header}><h3 style={{margin:0, color:'#2e7d32'}}>문의 상세</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}>✕</button></div>
+      <AnimatedModal isOpen={!!selectedInquiry} onClose={() => setSelectedInquiry(null)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
+        {(() => {
+          const inq = selectedInquiry || {};
+          return (
+          <>
+            <div style={modalStyles.header}><h3 style={{margin:0, color:'#2e7d32'}}>문의 상세</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><X size={20} /></button></div>
             <div style={modalStyles.content}>
                <div style={modalStyles.questionBox}>
                   {/* 모달 내 학생 정보 복구 */}
-                  <div style={modalStyles.infoRow}>
-                      <span style={{marginRight:'5px'}}>👤</span><span style={{fontWeight:'bold'}}>학생 정보: </span>
-                      {selectedInquiry.author_info ? (
+                  <div style={{...modalStyles.infoRow, display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
+                      <User size={14} /><span style={{fontWeight:'bold'}}>학생 정보: </span>
+                      {inq.author_info ? (
                           <span>
-                              {selectedInquiry.author_info.department} / {selectedInquiry.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{selectedInquiry.author_info.name}</span> ({selectedInquiry.author_info.student_no})
+                              {inq.author_info.department} / {inq.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{inq.author_info.name}</span> ({inq.author_info.student_no})
                           </span>
                       ) : (
-                          <span>ID: {selectedInquiry.user_id}</span>
+                          <span>ID: {inq.user_id}</span>
                       )}
                   </div>
-                  <div style={modalStyles.qTitle}>Q. {selectedInquiry.title}</div>
-                  <div style={modalStyles.qText}>{selectedInquiry.content}</div>
-                  {selectedInquiry.attachment && (<div style={modalStyles.attachBox}><a href={`https://capstone-project-of74.onrender.com${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 학생 첨부파일 보기</a></div>)}
-                  {selectedInquiry.academic_event_id && academicEvents[selectedInquiry.academic_event_id] && (<div style={modalStyles.eventBox}><span>📅</span><span>관련 일정: {academicEvents[selectedInquiry.academic_event_id].title} (~{academicEvents[selectedInquiry.academic_event_id].end_date})</span></div>)}
+                  <div style={modalStyles.qTitle}>Q. {inq.title}</div>
+                  <div style={modalStyles.qText}>{inq.content}</div>
+                  {inq.attachment && (<div style={modalStyles.attachBox}><a href={`https://capstone-project-of74.onrender.com${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><Paperclip size={13} /> 학생 첨부파일 보기</a></div>)}
+                  {inq.academic_event_id && academicEvents[inq.academic_event_id] && (<div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><Calendar size={13} /><span>관련 일정: {academicEvents[inq.academic_event_id].title} (~{academicEvents[inq.academic_event_id].end_date})</span></div>)}
                </div>
                <hr style={{margin:'25px 0', border:'0', borderTop:'1px dashed #ddd'}}/>
                <div style={modalStyles.section}>
                   <div style={{fontSize:'16px', fontWeight:'bold', color:'#2e7d32', marginBottom:'10px'}}>A. 답변 내역</div>
-                  {selectedInquiry.replies?.map(r => (
+                  {inq.replies?.map(r => (
                     <div key={r.id} style={modalStyles.answerBox}>
                         {editingReplyId === r.id ? (
-                            <div><textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/><div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}><button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button><button onClick={()=>handleUpdateReply(selectedInquiry.id, r.id)} style={modalStyles.saveBtn}>저장</button></div></div>
+                            <div><textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/><div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}><button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button><button onClick={()=>handleUpdateReply(inq.id, r.id)} style={modalStyles.saveBtn}>저장</button></div></div>
                         ) : (
-                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`https://capstone-project-of74.onrender.com${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none'}}>📎 답변 첨부파일</a></div>)}<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline'}}>✏️ 수정하기</button></div></div>
+                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`https://capstone-project-of74.onrender.com${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><Paperclip size={12} /> 답변 첨부파일</a></div>)}<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><Pencil size={11} /> 수정하기</button></div></div>
                         )}
                     </div>
                   ))}
                </div>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+          );
+        })()}
+      </AnimatedModal>
     </TALayout>
   );
 }

@@ -1,7 +1,10 @@
 // src/pages/ta/TAPending.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { Calendar, ArrowDown, ArrowUp, PartyPopper, Pin, X, User, Paperclip, Bot } from 'lucide-react';
 import TALayout from './TALayout';
+import AnimatedModal from '../../components/AnimatedModal';
 
 const API_BASE = 'https://capstone-project-of74.onrender.com';
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
@@ -101,16 +104,16 @@ function TAPending() {
     <TALayout>
       <div style={styles.pageTitle}>대기중인 문의</div>
       <div style={styles.sortBar}>
-          <button onClick={() => { setSortType('deadline'); setInquiries(sortList(inquiries, 'deadline', academicEvents)); }} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}>📅 마감순</button>
-          <button onClick={() => { setSortType('latest'); setInquiries(sortList(inquiries, 'latest', academicEvents)); }} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}>⬇ 최신순</button>
-          <button onClick={() => { setSortType('old'); setInquiries(sortList(inquiries, 'old', academicEvents)); }} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}>⬆ 오래된순</button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('deadline'); setInquiries(sortList(inquiries, 'deadline', academicEvents)); }} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}><Calendar size={13} /> 마감순</motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('latest'); setInquiries(sortList(inquiries, 'latest', academicEvents)); }} style={sortType === 'latest' ? styles.activeSortBtn : styles.sortBtn}><ArrowDown size={13} /> 최신순</motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('old'); setInquiries(sortList(inquiries, 'old', academicEvents)); }} style={sortType === 'old' ? styles.activeSortBtn : styles.sortBtn}><ArrowUp size={13} /> 오래된순</motion.button>
       </div>
       <div style={styles.listArea}>
-          {inquiries.length === 0 ? <div style={styles.emptyMessage}>대기 중인 문의가 없습니다. 🎉</div> :
+          {inquiries.length === 0 ? <div style={styles.emptyMessage}><PartyPopper size={18} style={{ verticalAlign: 'middle', marginRight: '6px' }} />대기 중인 문의가 없습니다.</div> :
               inquiries.map((item) => {
                   const eventInfo = item.academic_event_id ? academicEvents[item.academic_event_id] : null;
                   return (
-                      <div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)}>
+                      <motion.div key={item.id} style={styles.card} onClick={() => handleSelect(item.id)} whileHover={{ y: -2, boxShadow: '0 6px 16px rgba(0,0,0,0.1)' }} whileTap={{ scale: 0.99 }}>
                           <div style={styles.cardHeader}>
                               <div style={{display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap'}}>
                                   <span style={styles.statusBadge}>답변 대기</span>
@@ -119,49 +122,53 @@ function TAPending() {
                               <span style={styles.date}>{item.created_at.split('T')[0]}</span>
                           </div>
                           <div style={styles.title}>{item.title}</div>
-                          {eventInfo && <div style={styles.relatedEvent}>📌 {eventInfo.title}</div>}
+                          {eventInfo && <div style={styles.relatedEvent}><Pin size={12} style={{ verticalAlign: 'middle', marginRight: '3px' }} />{eventInfo.title}</div>}
                           {/* 목록 카드에 학생 정보 복구 */}
                           <div style={styles.writerInfo}>
                               {item.author_info ? `${item.author_info.department} ${item.author_info.grade}학년 ${item.author_info.name} (${item.author_info.student_no})` : `ID: ${item.user_id}`}
                           </div>
-                      </div>
+                      </motion.div>
                   );
               })
           }
       </div>
-      {selectedInquiry && (
-        <div style={modalStyles.overlay}>
-          <div style={modalStyles.modal}>
+      <AnimatedModal isOpen={!!selectedInquiry} onClose={() => setSelectedInquiry(null)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
+            {(() => {
+              // AnimatedModal의 닫힘 애니메이션 도중에도 selectedInquiry가 null이 될 수 있어
+              // 크래시 방지용 안전한 참조 객체를 사용
+              const inq = selectedInquiry || {};
+              return (
+            <>
             <div style={modalStyles.header}>
-              <h3 style={{margin:0, color:'#003675'}}>답변 작성</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}>✕</button>
+              <h3 style={{margin:0, color:'#003675'}}>답변 작성</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><X size={20} /></button>
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.questionBox}>
                 {/* 모달 내 학생 정보 복구 */}
                 <div style={modalStyles.infoRow}>
-                    <span style={{fontWeight:'bold', marginRight:'5px'}}>👤 학생 정보: </span>
-                    {selectedInquiry.author_info ? (
-                        <span>{selectedInquiry.author_info.department} / {selectedInquiry.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{selectedInquiry.author_info.name}</span> ({selectedInquiry.author_info.student_no})</span>
+                    <span style={{fontWeight:'bold', marginRight:'5px', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><User size={13} /> 학생 정보: </span>
+                    {inq.author_info ? (
+                        <span>{inq.author_info.department} / {inq.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{inq.author_info.name}</span> ({inq.author_info.student_no})</span>
                     ) : (
-                        <span>ID: {selectedInquiry.user_id}</span>
+                        <span>ID: {inq.user_id}</span>
                     )}
                 </div>
-                <div style={modalStyles.qTitle}>{selectedInquiry.title}</div>
+                <div style={modalStyles.qTitle}>{inq.title}</div>
                 <div style={modalStyles.qText}>
-                  {renderHighlighted(selectedInquiry.content, aiKeywords)}
+                  {renderHighlighted(inq.content, aiKeywords)}
                 </div>
-                {selectedInquiry.attachment && <div style={modalStyles.attachBox}><a href={`${API_BASE}${selectedInquiry.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>📎 첨부파일 보기</a></div>}
-                {selectedInquiry.academic_event_id && academicEvents[selectedInquiry.academic_event_id] && <div style={modalStyles.eventBox}>📅 관련 일정: {academicEvents[selectedInquiry.academic_event_id].title}</div>}
+                {inq.attachment && <div style={modalStyles.attachBox}><a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><Paperclip size={13} /> 첨부파일 보기</a></div>}
+                {inq.academic_event_id && academicEvents[inq.academic_event_id] && <div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><Calendar size={13} /> 관련 일정: {academicEvents[inq.academic_event_id].title}</div>}
               </div>
               {/* AI 답변 후보 */}
               {aiLoading && (
                 <div style={modalStyles.aiBox}>
-                  <div style={modalStyles.aiTitle}>🤖 AI 답변 후보 분석 중...</div>
+                  <div style={{...modalStyles.aiTitle, display: 'flex', alignItems: 'center', gap: '5px'}}><Bot size={15} /> AI 답변 후보 분석 중...</div>
                 </div>
               )}
               {!aiLoading && aiCandidates.length > 0 && (
                 <div style={modalStyles.aiBox}>
-                  <div style={modalStyles.aiTitle}>🤖 AI 추천 답변 후보</div>
+                  <div style={{...modalStyles.aiTitle, display: 'flex', alignItems: 'center', gap: '5px'}}><Bot size={15} /> AI 추천 답변 후보</div>
                   {aiCandidates.map((c, i) => {
                     const plainText = c.answer_html
                       ? c.answer_html.replace(/<[^>]+>/g, '').trim()
@@ -171,10 +178,12 @@ function TAPending() {
                         <div style={modalStyles.candidateText}>
                           {plainText}
                         </div>
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           style={modalStyles.useBtn}
                           onClick={() => setReplyContent(plainText)}
-                        >사용</button>
+                        >사용</motion.button>
                       </div>
                     );
                   })}
@@ -186,11 +195,12 @@ function TAPending() {
                 <textarea style={modalStyles.textarea} placeholder="내용 입력..." value={replyContent} onChange={(e) => setReplyContent(e.target.value)}/>
                 <input type="file" onChange={(e) => setReplyFile(e.target.files[0])} style={modalStyles.fileInput}/>
               </div>
-              <button style={modalStyles.submitBtn} onClick={handleSubmitReply}>등록</button>
+              <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.submitBtn} onClick={handleSubmitReply}>등록</motion.button>
             </div>
-          </div>
-        </div>
-      )}
+            </>
+              );
+            })()}
+      </AnimatedModal>
     </TALayout>
   );
 }
