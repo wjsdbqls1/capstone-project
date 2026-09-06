@@ -156,7 +156,7 @@ function StudentMain() {
               <MenuRow
                 key={item.text}
                 index={idx}
-                icon={<item.icon size={24} />}
+                icon={<item.icon size={22} />}
                 text={item.text}
                 isLast={idx === LIST_ITEMS.length - 1}
                 onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
@@ -383,14 +383,14 @@ const styles = {
   menuRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
-    padding: 'clamp(20px, 5.5vw, 26px) 18px',
+    gap: '15px',
+    padding: 'clamp(17px, 4.6vw, 22px) 18px',
     cursor: 'pointer'
   },
 
   menuRowIconWrap: {
-    width: 'clamp(42px, 11vw, 48px)',
-    height: 'clamp(42px, 11vw, 48px)',
+    width: 'clamp(38px, 10vw, 44px)',
+    height: 'clamp(38px, 10vw, 44px)',
     borderRadius: '12px',
     backgroundColor: 'rgba(0, 54, 117, 0.08)',
     color: '#003675',
@@ -402,7 +402,7 @@ const styles = {
 
   menuRowText: {
     flex: 1,
-    fontSize: 'clamp(16px, 4.4vw, 18px)',
+    fontSize: 'clamp(15px, 4vw, 17px)',
     fontWeight: '600',
     color: '#222'
   },
