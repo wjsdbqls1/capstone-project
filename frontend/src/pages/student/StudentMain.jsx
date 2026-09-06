@@ -285,11 +285,9 @@ const styles = {
     overflowY: 'auto'
   },
 
-  // 다른 페이지의 리스트처럼 유리 박스 폭을 그대로 채움.
-  // margin:auto 로 세로 중앙 정렬(내용이 넘치면 자동으로 상단 정렬+스크롤로 안전하게 전환됨)
+  // 다른 페이지의 리스트처럼 유리 박스 상단부터 콘텐츠를 채움 (세로 중앙 정렬 X)
   innerContent: {
     width: '100%',
-    margin: 'auto 0',
     display: 'flex',
     flexDirection: 'column',
     gap: '18px'
