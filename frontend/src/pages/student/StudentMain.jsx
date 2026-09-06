@@ -156,7 +156,7 @@ function StudentMain() {
               <MenuRow
                 key={item.text}
                 index={idx}
-                icon={<item.icon size={20} />}
+                icon={<item.icon size={22} />}
                 text={item.text}
                 isLast={idx === LIST_ITEMS.length - 1}
                 onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
@@ -182,17 +182,17 @@ function StudentMain() {
   );
 }
 
-// 정보 카드 (최근 공지 / 다가오는 일정)
+// 정보 카드 (최근 공지 / 다가오는 일정) — 리스트보다 눈에 띄도록 강조
 function InfoHalf({ icon, label, title, subtitle, onClick }) {
   return (
-    <motion.div style={styles.infoHalf} onClick={onClick} whileHover={{ backgroundColor: 'rgba(0, 54, 117, 0.06)' }} whileTap={{ scale: 0.99 }}>
+    <motion.div style={styles.infoHalf} onClick={onClick} whileHover={{ y: -1, boxShadow: '0 6px 16px rgba(0, 54, 117, 0.18)' }} whileTap={{ scale: 0.99 }}>
       <div style={styles.infoIconWrap}>{icon}</div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={styles.insightLabel}>{label}</div>
         <div style={styles.insightTitle}>{title}</div>
         {subtitle && <div style={styles.insightSubtitle}>{subtitle}</div>}
       </div>
-      <MdChevronRight size={20} color="#aaa" style={{ flexShrink: 0 }} />
+      <MdChevronRight size={20} color="#003675" style={{ flexShrink: 0, opacity: 0.6 }} />
     </motion.div>
   );
 }
@@ -299,34 +299,35 @@ const styles = {
     gap: '10px'
   },
 
+  // 리스트(menuRow)보다 톤을 진하게/크게 줘서 먼저 눈에 띄도록 강조
   infoHalf: {
     display: 'flex',
     alignItems: 'flex-start',
-    gap: '12px',
+    gap: '14px',
     minWidth: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.55)',
-    border: '1px solid rgba(0,0,0,0.05)',
+    backgroundColor: 'rgba(0, 54, 117, 0.09)',
+    borderLeft: '4px solid #003675',
     borderRadius: '14px',
-    padding: '12px 14px',
+    padding: '16px 16px',
     cursor: 'pointer'
   },
 
   infoIconWrap: {
-    width: '34px',
-    height: '34px',
-    borderRadius: '10px',
+    width: '42px',
+    height: '42px',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 54, 117, 0.08)',
-    color: '#003675',
+    backgroundColor: '#003675',
+    color: 'white',
     flexShrink: 0
   },
 
-  insightLabel: { fontSize: '11px', fontWeight: '700', color: '#777', marginBottom: '2px' },
+  insightLabel: { fontSize: '12px', fontWeight: '800', color: '#003675', marginBottom: '3px', letterSpacing: '0.2px' },
   // 폭이 넓어졌으니 한 줄로 자르지 않고 최대 2줄까지 자연스럽게 보여줌
   insightTitle: {
-    fontSize: '14px',
+    fontSize: '15px',
     fontWeight: '700',
     color: '#1a1a1a',
     display: '-webkit-box',
@@ -336,9 +337,10 @@ const styles = {
     lineHeight: '1.35'
   },
   insightSubtitle: {
-    fontSize: '11px',
-    color: '#888',
-    marginTop: '4px'
+    fontSize: '12px',
+    color: '#666',
+    marginTop: '4px',
+    fontWeight: '600'
   },
 
   primaryCta: {
@@ -350,7 +352,7 @@ const styles = {
     color: 'white',
     border: 'none',
     borderRadius: '16px',
-    padding: '16px 18px',
+    padding: 'clamp(16px, 4vw, 20px) 18px',
     fontSize: 'clamp(15px, 4vw, 17px)',
     fontWeight: 'bold',
     cursor: 'pointer',
@@ -379,15 +381,15 @@ const styles = {
   menuRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '14px 16px',
+    gap: '14px',
+    padding: 'clamp(16px, 4vw, 20px) 18px',
     cursor: 'pointer'
   },
 
   menuRowIconWrap: {
-    width: '34px',
-    height: '34px',
-    borderRadius: '10px',
+    width: 'clamp(36px, 9vw, 42px)',
+    height: 'clamp(36px, 9vw, 42px)',
+    borderRadius: '11px',
     backgroundColor: 'rgba(0, 54, 117, 0.08)',
     color: '#003675',
     display: 'flex',
@@ -398,7 +400,7 @@ const styles = {
 
   menuRowText: {
     flex: 1,
-    fontSize: 'clamp(14px, 3.6vw, 16px)',
+    fontSize: 'clamp(15px, 4vw, 17px)',
     fontWeight: '600',
     color: '#222'
   },
