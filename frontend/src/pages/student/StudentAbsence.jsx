@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Plus, Ban, X } from 'lucide-react';
 import '../../App.css';
 
 // 배경 이미지
@@ -160,8 +160,8 @@ function StudentAbsence() {
         {!showForm ? (
           /* 목록 화면 */
           <>
-            <button style={styles.createButton} onClick={() => setShowForm(true)}>
-              ➕ 공결 신청서 작성하기
+            <button style={{...styles.createButton, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'}} onClick={() => setShowForm(true)}>
+              <Plus size={17} /> 공결 신청서 작성하기
             </button>
 
             <h3 style={styles.sectionTitle}>나의 신청 내역</h3>
@@ -193,8 +193,8 @@ function StudentAbsence() {
                     <div style={styles.cardReason}>사유: {item.reason}</div>
                     
                     {item.status === 'REJECTED' && item.reject_reason && (
-                      <div style={styles.rejectBox}>
-                        🛑 반려 사유: {item.reject_reason}
+                      <div style={{...styles.rejectBox, display: 'flex', alignItems: 'center', gap: '6px'}}>
+                        <Ban size={14} /> 반려 사유: {item.reject_reason}
                       </div>
                     )}
                   </div>
@@ -231,7 +231,7 @@ function StudentAbsence() {
                     onChange={(e) => updateCourse(idx, e.target.value)}
                   />
                   {courseList.length > 1 && (
-                    <button type="button" style={styles.removeCourseBtn} onClick={() => removeCourse(idx)}>✕</button>
+                    <button type="button" style={styles.removeCourseBtn} onClick={() => removeCourse(idx)}><X size={16} /></button>
                   )}
                 </div>
               ))}

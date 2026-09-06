@@ -1,5 +1,7 @@
 // src/components/NotificationToggle.jsx
 import React, { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Bell, BellOff } from 'lucide-react'
 import {
   isPushSupported,
   getPushSubscription,
@@ -40,13 +42,16 @@ function NotificationToggle({ style, activeStyle }) {
   if (!supported) return null
 
   return (
-    <button
-      style={{ ...style, ...(subscribed ? activeStyle : {}) }}
+    <motion.button
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.95 }}
+      style={{ ...style, display: 'flex', alignItems: 'center', gap: '6px', ...(subscribed ? activeStyle : {}) }}
       onClick={handleClick}
       disabled={loading}
     >
-      {subscribed ? '🔔 알림 받는 중' : '🔕 알림 받기'}
-    </button>
+      {subscribed ? <Bell size={15} /> : <BellOff size={15} />}
+      {subscribed ? '알림 받는 중' : '알림 받기'}
+    </motion.button>
   )
 }
 

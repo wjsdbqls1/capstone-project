@@ -2,7 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Plus, X, Trash2 } from 'lucide-react';
 import TALayout from './TALayout';
+import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
 function TACalendarManage() {
@@ -202,11 +205,11 @@ function TACalendarManage() {
       <div style={styles.pageTitle}>캘린더 관리</div>
       <div style={calStyles.controls}>
         <div style={calStyles.monthNav}>
-          <button onClick={prevMonth} style={calStyles.navBtn}>◀</button>
+          <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={prevMonth} style={calStyles.navBtn}><ChevronLeft size={16} /></motion.button>
           <h3 style={{margin:0, fontSize:'20px', fontWeight:'800', color:'#333'}}>{currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}</h3>
-          <button onClick={nextMonth} style={calStyles.navBtn}>▶</button>
+          <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={nextMonth} style={calStyles.navBtn}><ChevronRight size={16} /></motion.button>
         </div>
-        <button onClick={openCreateModal} style={calStyles.addBtn}>+ 일정 등록</button>
+        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={openCreateModal} style={{...calStyles.addBtn, display: 'flex', alignItems: 'center', gap: '4px'}}><Plus size={15} /> 일정 등록</motion.button>
       </div>
       
       {/* 캘린더 영역 */}
@@ -225,20 +228,18 @@ function TACalendarManage() {
           </div>
       </div>
 
-      {isDetailModalOpen && (
-        <div style={modalStyles.overlay} onClick={() => setIsDetailModalOpen(false)}>
-            <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
-                <div style={modalStyles.header}><h3 style={{margin:0, color:'#003675'}}>{selectedDate} 일정</h3><button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}>✕</button></div>
+      <AnimatedModal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
+                <div style={modalStyles.header}><h3 style={{margin:0, color:'#003675'}}>{selectedDate} 일정</h3><button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}><X size={18} /></button></div>
                 <div style={modalStyles.list}>
                     <div style={{display:'flex', gap:'5px', marginBottom:'15px'}}>
                         <input value={memoInput} onChange={(e) => setMemoInput(e.target.value)} placeholder="메모 입력..." style={{flex:1, padding:'10px', borderRadius:'8px', border:'1px solid #ddd'}}/>
-                        <button onClick={handleAddMemo} style={{padding:'0 15px', backgroundColor:'#2e7d32', color:'white', border:'none', borderRadius:'8px', fontWeight:'bold', cursor:'pointer'}}>추가</button>
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddMemo} style={{padding:'0 15px', backgroundColor:'#2e7d32', color:'white', border:'none', borderRadius:'8px', fontWeight:'bold', cursor:'pointer'}}>추가</motion.button>
                     </div>
                     {selectedItems.length === 0 ? <p style={{textAlign:'center', color:'#999'}}>일정이 없습니다.</p> : selectedItems.map((ev, idx) => (
                         <div key={idx} style={{...modalStyles.item, borderLeft: ev.type==='memo' ? '4px solid #2e7d32' : ev.source==='manual' ? '4px solid #ff9800' : '4px solid #1565c0', backgroundColor: ev.type==='memo' ? '#f1f8e9' : 'white'}}>
                             <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
                                 <div><div style={{fontWeight:'bold', fontSize:'15px', color:'#333'}}>{ev.title}</div>{ev.type!=='memo' && <div style={{fontSize:'12px', color:'#666', marginTop:'4px'}}>{ev.start_date} ~ {ev.end_date}</div>}</div>
-                                {ev.type==='memo' && <button onClick={() => handleDeleteMemo(ev.id.replace('memo-',''))} style={{background:'none', border:'none', cursor:'pointer', color:'#999'}}>🗑️</button>}
+                                {ev.type==='memo' && <button onClick={() => handleDeleteMemo(ev.id.replace('memo-',''))} style={{background:'none', border:'none', cursor:'pointer', color:'#999', display: 'flex'}}><Trash2 size={16} /></button>}
                                 {ev.type!=='memo' && ev.source==='manual' && (
                                     <div style={{display:'flex', gap:'6px', flexShrink:0}}>
                                         <button onClick={() => openEditModal(ev)} style={{padding:'4px 10px', backgroundColor:'#e3f2fd', color:'#003675', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontWeight:'bold'}}>수정</button>
@@ -249,12 +250,19 @@ function TACalendarManage() {
                         </div>
                     ))}
                 </div>
+      </AnimatedModal>
+      <AnimatedModal isOpen={isRegisterModalOpen} onClose={closeRegisterModal} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
+          <div style={modalStyles.header}><h3 style={{margin:0}}>{editingEventId ? '일정 수정' : '일정 등록'}</h3><button onClick={closeRegisterModal} style={modalStyles.closeBtn}><X size={18} /></button></div>
+          <div style={{padding:'20px'}}>
+            <div style={modalStyles.inputGroup}><label style={modalStyles.label}>제목</label><input placeholder="예: 수강신청" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} style={modalStyles.input}/></div>
+            <div style={modalStyles.inputGroup}><label style={modalStyles.label}>시작</label><input type="date" value={newEvent.start_date} onChange={e => setNewEvent({...newEvent, start_date: e.target.value})} style={modalStyles.input}/></div>
+            <div style={modalStyles.inputGroup}><label style={modalStyles.label}>종료</label><input type="date" value={newEvent.end_date} onChange={e => setNewEvent({...newEvent, end_date: e.target.value})} style={modalStyles.input}/></div>
+            <div style={modalStyles.btnGroup}>
+              <motion.button whileTap={{ scale: 0.96 }} onClick={closeRegisterModal} style={modalStyles.cancelBtn}>취소</motion.button>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={handleRegister} style={modalStyles.submitBtn}>{editingEventId ? '수정' : '등록'}</motion.button>
             </div>
-        </div>
-      )}
-      {isRegisterModalOpen && (
-        <div style={modalStyles.overlay}><div style={modalStyles.modal}><div style={modalStyles.header}><h3 style={{margin:0}}>{editingEventId ? '일정 수정' : '일정 등록'}</h3><button onClick={closeRegisterModal} style={modalStyles.closeBtn}>✕</button></div><div style={{padding:'20px'}}><div style={modalStyles.inputGroup}><label style={modalStyles.label}>제목</label><input placeholder="예: 수강신청" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.inputGroup}><label style={modalStyles.label}>시작</label><input type="date" value={newEvent.start_date} onChange={e => setNewEvent({...newEvent, start_date: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.inputGroup}><label style={modalStyles.label}>종료</label><input type="date" value={newEvent.end_date} onChange={e => setNewEvent({...newEvent, end_date: e.target.value})} style={modalStyles.input}/></div><div style={modalStyles.btnGroup}><button onClick={closeRegisterModal} style={modalStyles.cancelBtn}>취소</button><button onClick={handleRegister} style={modalStyles.submitBtn}>{editingEventId ? '수정' : '등록'}</button></div></div></div></div>
-      )}
+          </div>
+      </AnimatedModal>
     </TALayout>
   );
 }
@@ -264,7 +272,7 @@ const styles = { pageTitle: { fontSize: '24px', fontWeight: '800', color: '#0036
 const calStyles = { 
     controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }, 
     monthNav: { display: 'flex', alignItems: 'center', gap: '10px' }, 
-    navBtn: { background:'white', border:'1px solid #ddd', borderRadius:'8px', cursor:'pointer', padding:'6px 12px', fontSize:'14px', fontWeight:'bold' }, 
+    navBtn: { background:'white', border:'1px solid #ddd', borderRadius:'8px', cursor:'pointer', padding:'8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#003675' },
     addBtn: { backgroundColor: '#ff9800', color: 'black', border: 'none', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }, 
     
     // 기본 래퍼 스타일

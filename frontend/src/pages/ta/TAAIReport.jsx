@@ -1,6 +1,8 @@
 // src/pages/ta/TAAIReport.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, ClipboardList } from 'lucide-react';
 import TALayout from './TALayout';
 
 const API_BASE = 'https://capstone-project-of74.onrender.com';
@@ -51,7 +53,7 @@ function TAAIReport() {
 
       {/* 문의량 예측 섹션 */}
       <div style={styles.card}>
-        <div style={styles.sectionTitle}>📈 이번 주 문의량 예측</div>
+        <div style={{...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '7px'}}><TrendingUp size={17} /> 이번 주 문의량 예측</div>
         {forecastLoading ? (
           <div style={styles.loadingText}>분석 중...</div>
         ) : alerts.length > 0 ? (
@@ -80,20 +82,26 @@ function TAAIReport() {
 
       {/* 기간별 요약 섹션 */}
       <div style={styles.card}>
-        <div style={styles.sectionTitle}>📋 기간별 문의 요약</div>
+        <div style={{...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '7px'}}><ClipboardList size={17} /> 기간별 문의 요약</div>
         <div style={styles.dateRow}>
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={styles.dateInput} />
           <span style={styles.dateSep}>~</span>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={styles.dateInput} />
-          <button style={styles.summarizeBtn} onClick={handleSummarize} disabled={summaryLoading}>
+          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={styles.summarizeBtn} onClick={handleSummarize} disabled={summaryLoading}>
             {summaryLoading ? '분석 중...' : '요약 생성'}
-          </button>
+          </motion.button>
         </div>
 
         {summaryLoading && <div style={styles.loadingText}>문의 내용을 요약하고 있습니다...</div>}
 
+        <AnimatePresence>
         {summary && (
-          <div style={styles.summaryResult}>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            style={styles.summaryResult}>
             <div style={styles.summaryMeta}>
               총 <strong>{summary.total_count}건</strong>의 문의 ({summary.period})
             </div>
@@ -127,8 +135,9 @@ function TAAIReport() {
                 ))}
               </div>
             )}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </TALayout>
   );

@@ -1,7 +1,10 @@
 // src/pages/ta/TAStudentManage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { Search, X, Plus, Lightbulb } from 'lucide-react';
 import TALayout from './TALayout';
+import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
 const API = 'https://capstone-project-of74.onrender.com';
@@ -148,20 +151,20 @@ function TAStudentManage() {
       <div style={styles.filterBar}>
         <div style={styles.filterGroup}>
           <select style={styles.select} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="all">👥 전체 상태</option>
+            <option value="all">전체 상태</option>
             <option value="재학">재학</option>
             <option value="휴학">휴학</option>
             <option value="졸업">졸업</option>
           </select>
           <select style={styles.select} value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)}>
-            <option value="all">🎓 전체 학년</option>
+            <option value="all">전체 학년</option>
             <option value="1">1학년</option>
             <option value="2">2학년</option>
             <option value="3">3학년</option>
             <option value="4">4학년</option>
           </select>
           <div style={styles.searchWrapper}>
-            <span style={{ fontSize: '16px', color: '#666' }}>🔍</span>
+            <Search size={16} color="#666" />
             <input
               type="text"
               placeholder="이름 또는 학번 검색..."
@@ -171,7 +174,7 @@ function TAStudentManage() {
             />
           </div>
         </div>
-        <button style={styles.createBtn} onClick={() => setShowModal(true)}>+ 학생 등록</button>
+        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{...styles.createBtn, display: 'flex', alignItems: 'center', gap: '4px'}} onClick={() => setShowModal(true)}><Plus size={16} /> 학생 등록</motion.button>
       </div>
 
       <div style={styles.listArea}>
@@ -216,8 +219,8 @@ function TAStudentManage() {
                       </select>
                     </td>
                     <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
-                      <button style={styles.resetBtn} onClick={() => handleResetPassword(s)}>PW 초기화</button>
-                      <button style={styles.deleteBtn} onClick={() => handleDelete(s)}>삭제</button>
+                      <motion.button whileTap={{ scale: 0.95 }} style={styles.resetBtn} onClick={() => handleResetPassword(s)}>PW 초기화</motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} style={styles.deleteBtn} onClick={() => handleDelete(s)}>삭제</motion.button>
                     </td>
                   </tr>
                 );
@@ -227,12 +230,10 @@ function TAStudentManage() {
         )}
       </div>
 
-      {showModal && (
-        <div style={modalStyles.overlay}>
-          <div style={modalStyles.modal}>
+      <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
             <div style={modalStyles.header}>
               <h3 style={{ margin: 0, color: '#003675' }}>새 학생 등록</h3>
-              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}>✕</button>
+              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><X size={20} /></button>
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.inputGroup}>
@@ -277,14 +278,13 @@ function TAStudentManage() {
                   <option value={4}>4학년</option>
                 </select>
               </div>
-              <div style={styles.pwNotice}>
-                💡 초기 비밀번호는 <b>학번 + !</b> 로 자동 설정됩니다. (학생이 로그인 후 변경 가능)
+              <div style={{...styles.pwNotice, display: 'flex', alignItems: 'flex-start', gap: '6px'}}>
+                <Lightbulb size={15} style={{flexShrink: 0, marginTop: '1px'}} />
+                <span>초기 비밀번호는 <b>학번 + !</b> 로 자동 설정됩니다. (학생이 로그인 후 변경 가능)</span>
               </div>
-              <button style={modalStyles.saveBtn} onClick={handleCreate}>등록하기</button>
+              <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.saveBtn} onClick={handleCreate}>등록하기</motion.button>
             </div>
-          </div>
-        </div>
-      )}
+      </AnimatedModal>
     </TALayout>
   );
 }
