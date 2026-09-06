@@ -118,39 +118,41 @@ function StudentMain() {
 
       {/* 3. 스크롤 가능한 본문 (인사이트 카드 + 메뉴) */}
       <div style={styles.contentArea}>
+        <div style={styles.dashboardInner}>
 
-        {/* 3-1. 인사이트 카드 (최근 공지 / 다가오는 일정) */}
-        <div style={styles.insightRow}>
-          <InsightCard
-            icon={<MdCampaign size={19} />}
-            accent="#1565c0"
-            label="최근 공지"
-            title={latestNotice ? latestNotice.title : '등록된 공지가 없습니다'}
-            subtitle={latestNotice ? latestNotice.posted_date : ''}
-            onClick={() => latestNotice && navigate(`/student/notice/${latestNotice.id}?source=${latestNotice.source}`)}
-          />
-          <InsightCard
-            icon={<MdCalendarToday size={19} />}
-            accent="#ef6c00"
-            label="다가오는 일정"
-            title={upcomingEvent ? upcomingEvent.title : '예정된 일정이 없습니다'}
-            subtitle={upcomingEvent ? `${dDayLabel} · ${upcomingEvent.start_date} ~ ${upcomingEvent.end_date}` : ''}
-            onClick={() => navigate('/student/calendar')}
-          />
-        </div>
-
-        {/* 3-2. 메뉴 그리드 */}
-        <div style={styles.menuGridContainer}>
-          {MENU_ITEMS.map((item, idx) => (
-            <MenuButton
-              key={item.text}
-              index={idx}
-              accent={item.accent}
-              icon={<item.icon size="100%" />}
-              text={item.text}
-              onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
+          {/* 3-1. 인사이트 카드 (최근 공지 / 다가오는 일정) */}
+          <div style={styles.insightRow}>
+            <InsightCard
+              icon={<MdCampaign size={19} />}
+              accent="#1565c0"
+              label="최근 공지"
+              title={latestNotice ? latestNotice.title : '등록된 공지가 없습니다'}
+              subtitle={latestNotice ? latestNotice.posted_date : ''}
+              onClick={() => latestNotice && navigate(`/student/notice/${latestNotice.id}?source=${latestNotice.source}`)}
             />
-          ))}
+            <InsightCard
+              icon={<MdCalendarToday size={19} />}
+              accent="#ef6c00"
+              label="다가오는 일정"
+              title={upcomingEvent ? upcomingEvent.title : '예정된 일정이 없습니다'}
+              subtitle={upcomingEvent ? `${dDayLabel} · ${upcomingEvent.start_date} ~ ${upcomingEvent.end_date}` : ''}
+              onClick={() => navigate('/student/calendar')}
+            />
+          </div>
+
+          {/* 3-2. 메뉴 그리드 */}
+          <div style={styles.menuGridContainer}>
+            {MENU_ITEMS.map((item, idx) => (
+              <MenuButton
+                key={item.text}
+                index={idx}
+                accent={item.accent}
+                icon={<item.icon size="100%" />}
+                text={item.text}
+                onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -266,29 +268,43 @@ const styles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(12px, 3vw, 18px)',
     padding: 'clamp(15px, 4vw, 30px)',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    boxSizing: 'border-box'
   },
 
-  insightRow: {
+  // PC에서 카드가 지나치게 넓게 늘어지지 않도록 폭을 제한하고 가운데 정렬
+  dashboardInner: {
+    flex: 1,
     display: 'flex',
-    gap: 'clamp(10px, 3vw, 16px)',
-    flexWrap: 'wrap'
+    flexDirection: 'column',
+    gap: 'clamp(12px, 3vw, 18px)',
+    width: '100%',
+    maxWidth: '760px',
+    margin: '0 auto'
+  },
+
+  // auto-fit 그리드: 카드 폭이 200px 미만이 되면 자동으로 세로 배치되어 잘림 방지
+  insightRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: 'clamp(10px, 3vw, 16px)'
   },
 
   insightCard: {
-    flex: '1 1 220px',
     display: 'flex',
     alignItems: 'flex-start',
     gap: '12px',
+    minWidth: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.55)',
     backdropFilter: 'blur(10px)',
     border: '1px solid rgba(255, 255, 255, 0.6)',
     borderRadius: '16px',
     padding: '14px 16px',
     cursor: 'pointer',
-    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)'
+    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
+    boxSizing: 'border-box',
+    overflow: 'hidden'
   },
 
   insightIconWrap: {
@@ -313,9 +329,12 @@ const styles = {
   },
   insightSubtitle: { fontSize: '12px', color: '#777', marginTop: '3px' },
 
+  // flex: 1 로 contentArea의 남는 세로 공간을 항상 채워 하단에 빈 공간이 생기지 않도록 함
   menuGridContainer: {
+    flex: 1,
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
+    gridTemplateRows: 'repeat(3, minmax(90px, 1fr))',
     gap: 'clamp(10px, 3vw, 20px)'
   },
 
@@ -333,7 +352,9 @@ const styles = {
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
 
     cursor: 'pointer',
-    minHeight: 'clamp(90px, 22vw, 130px)',
+    width: '100%',
+    height: '100%',
+    boxSizing: 'border-box',
     padding: '12px'
   },
 
