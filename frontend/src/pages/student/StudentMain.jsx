@@ -156,7 +156,7 @@ function StudentMain() {
               <MenuRow
                 key={item.text}
                 index={idx}
-                icon={<item.icon size={22} />}
+                icon={<item.icon size={24} />}
                 text={item.text}
                 isLast={idx === LIST_ITEMS.length - 1}
                 onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
@@ -299,37 +299,39 @@ const styles = {
     gap: '10px'
   },
 
-  // 리스트(menuRow)보다 톤을 진하게/크게 줘서 먼저 눈에 띄도록 강조
+  // 리스트(menuRow)보다 훨씬 눈에 띄도록: 그라데이션 배경 + 그림자 + 큰 아이콘
   infoHalf: {
     display: 'flex',
     alignItems: 'flex-start',
     gap: '14px',
     minWidth: 0,
-    backgroundColor: 'rgba(0, 54, 117, 0.09)',
-    borderLeft: '4px solid #003675',
-    borderRadius: '14px',
-    padding: '16px 16px',
+    background: 'linear-gradient(135deg, rgba(0, 54, 117, 0.16), rgba(0, 54, 117, 0.05))',
+    borderLeft: '5px solid #003675',
+    borderRadius: '16px',
+    padding: '18px',
+    boxShadow: '0 4px 14px rgba(0, 54, 117, 0.14)',
     cursor: 'pointer'
   },
 
   infoIconWrap: {
-    width: '42px',
-    height: '42px',
-    borderRadius: '12px',
+    width: '48px',
+    height: '48px',
+    borderRadius: '14px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#003675',
     color: 'white',
+    boxShadow: '0 3px 8px rgba(0, 54, 117, 0.35)',
     flexShrink: 0
   },
 
-  insightLabel: { fontSize: '12px', fontWeight: '800', color: '#003675', marginBottom: '3px', letterSpacing: '0.2px' },
+  insightLabel: { fontSize: '13px', fontWeight: '800', color: '#003675', marginBottom: '4px', letterSpacing: '0.3px' },
   // 폭이 넓어졌으니 한 줄로 자르지 않고 최대 2줄까지 자연스럽게 보여줌
   insightTitle: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontSize: '16px',
+    fontWeight: '800',
+    color: '#111',
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
@@ -338,9 +340,9 @@ const styles = {
   },
   insightSubtitle: {
     fontSize: '12px',
-    color: '#666',
-    marginTop: '4px',
-    fontWeight: '600'
+    color: '#555',
+    marginTop: '5px',
+    fontWeight: '700'
   },
 
   primaryCta: {
@@ -381,15 +383,15 @@ const styles = {
   menuRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '14px',
-    padding: 'clamp(16px, 4vw, 20px) 18px',
+    gap: '16px',
+    padding: 'clamp(20px, 5.5vw, 26px) 18px',
     cursor: 'pointer'
   },
 
   menuRowIconWrap: {
-    width: 'clamp(36px, 9vw, 42px)',
-    height: 'clamp(36px, 9vw, 42px)',
-    borderRadius: '11px',
+    width: 'clamp(42px, 11vw, 48px)',
+    height: 'clamp(42px, 11vw, 48px)',
+    borderRadius: '12px',
     backgroundColor: 'rgba(0, 54, 117, 0.08)',
     color: '#003675',
     display: 'flex',
@@ -400,7 +402,7 @@ const styles = {
 
   menuRowText: {
     flex: 1,
-    fontSize: 'clamp(15px, 4vw, 17px)',
+    fontSize: 'clamp(16px, 4.4vw, 18px)',
     fontWeight: '600',
     color: '#222'
   },
