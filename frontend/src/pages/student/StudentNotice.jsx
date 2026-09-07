@@ -412,6 +412,13 @@ const styles = {
     color: '#003675',
     cursor: 'pointer',
     padding: '10px'
+  },
+  navIconWrap: {
+    width: '20px',
+    height: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 };
 

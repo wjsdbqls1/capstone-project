@@ -415,10 +415,7 @@ const styles = {
   },
 
   bottomNav: {
-    minHeight: '70px',
-    boxSizing: 'border-box',
-    // 홈 화면에 추가 시 하단 홈 인디케이터에 가리지 않도록 안전 영역만큼 추가 여백
-    paddingBottom: 'env(safe-area-inset-bottom)',
+    height: '70px',
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
