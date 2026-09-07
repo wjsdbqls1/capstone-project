@@ -34,7 +34,7 @@ function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={withTransition(<Login />)} />
         <Route path="/change-password" element={withTransition(<ForcePasswordChange />)} />
