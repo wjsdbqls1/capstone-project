@@ -256,15 +256,15 @@ const styles = {
   },
 
   avatar: {
-    width: 'clamp(36px, 9vw, 46px)',
-    height: 'clamp(36px, 9vw, 46px)',
+    width: 'clamp(46px, 12vw, 60px)',
+    height: 'clamp(46px, 12vw, 60px)',
     borderRadius: '50%',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     border: '1px solid rgba(255, 255, 255, 0.5)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 'clamp(15px, 4vw, 19px)',
+    fontSize: 'clamp(19px, 5.5vw, 25px)',
     fontWeight: 'bold',
     flexShrink: 0
   },
