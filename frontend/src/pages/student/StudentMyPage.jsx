@@ -217,13 +217,13 @@ function StudentMyPage() {
       {/* 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <MdPerson size={18} /> 마이페이지
+          <span style={styles.navIconWrap}><MdPerson size={18} /></span> 마이페이지
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <MdHome size={18} /> 홈
+          <span style={styles.navIconWrap}><MdHome size={18} /></span> 홈
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <MdLogout size={18} /> 로그아웃
+          <span style={styles.navIconWrap}><MdLogout size={18} /></span> 로그아웃
         </motion.button>
       </nav>
     </div>
@@ -255,6 +255,8 @@ const styles = {
   header: {
     backgroundColor: 'rgba(0, 54, 117, 0.9)',
     padding: '10px 15px',
+    // 홈 화면에 추가(PWA standalone) 시 상태 표시줄에 내용이 가리지 않도록 안전 영역만큼 추가 여백
+    paddingTop: 'calc(10px + env(safe-area-inset-top))',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     zIndex: 10,
     display: 'flex',
@@ -428,7 +430,10 @@ const styles = {
     marginBottom: '10px' // 하단 여백 추가
   },
   bottomNav: {
-    height: '70px',
+    minHeight: '70px',
+    boxSizing: 'border-box',
+    // 홈 화면에 추가 시 하단 홈 인디케이터에 가리지 않도록 안전 영역만큼 추가 여백
+    paddingBottom: 'env(safe-area-inset-bottom)',
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -448,6 +453,13 @@ const styles = {
     color: '#003675',
     cursor: 'pointer',
     padding: '10px'
+  },
+  navIconWrap: {
+    width: '20px',
+    height: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 };
 

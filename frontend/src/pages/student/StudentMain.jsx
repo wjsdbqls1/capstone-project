@@ -169,13 +169,13 @@ function StudentMain() {
       {/* 4. 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <MdPerson size={18} /> 마이페이지
+          <span style={styles.navIconWrap}><MdPerson size={18} /></span> 마이페이지
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <MdHome size={18} /> 홈
+          <span style={styles.navIconWrap}><MdHome size={18} /></span> 홈
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <MdLogout size={18} /> 로그아웃
+          <span style={styles.navIconWrap}><MdLogout size={18} /></span> 로그아웃
         </motion.button>
       </nav>
     </div>
@@ -232,6 +232,8 @@ const styles = {
   header: {
     backgroundColor: 'rgba(0, 54, 117, 0.92)',
     padding: '15px 20px',
+    // 홈 화면에 추가(PWA standalone) 시 상태 표시줄에 내용이 가리지 않도록 안전 영역만큼 추가 여백
+    paddingTop: 'calc(15px + env(safe-area-inset-top))',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     color: 'white',
     zIndex: 10,
@@ -349,14 +351,14 @@ const styles = {
   primaryCta: {
     display: 'flex',
     alignItems: 'center',
-    gap: '14px',
+    gap: 'clamp(10px, 3vw, 14px)',
     width: '100%',
     backgroundColor: '#003675',
     color: 'white',
     border: 'none',
     borderRadius: '16px',
-    padding: '20px 18px',
-    fontSize: 'clamp(17px, 4.6vw, 19px)',
+    padding: 'clamp(15px, 4.5vw, 20px) clamp(14px, 4vw, 18px)',
+    fontSize: 'clamp(15px, 4.6vw, 19px)',
     fontWeight: 'bold',
     cursor: 'pointer',
     boxShadow: '0 6px 16px rgba(0, 54, 117, 0.28)',
@@ -364,8 +366,8 @@ const styles = {
   },
 
   primaryCtaIcon: {
-    width: '38px',
-    height: '38px',
+    width: 'clamp(32px, 8.5vw, 38px)',
+    height: 'clamp(32px, 8.5vw, 38px)',
     borderRadius: '11px',
     backgroundColor: 'rgba(255,255,255,0.18)',
     display: 'flex',
@@ -381,17 +383,18 @@ const styles = {
     overflow: 'hidden'
   },
 
+  // clamp() 기반으로 화면 폭이 바뀌면 패딩/아이콘/글자 크기가 자동으로 따라 조절됨
   menuRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '15px',
-    padding: '22px 16px',
+    gap: 'clamp(12px, 3.6vw, 15px)',
+    padding: 'clamp(15px, 4.6vw, 22px) clamp(12px, 4vw, 16px)',
     cursor: 'pointer'
   },
 
   menuRowIconWrap: {
-    width: '43px',
-    height: '43px',
+    width: 'clamp(36px, 9.5vw, 43px)',
+    height: 'clamp(36px, 9.5vw, 43px)',
     borderRadius: '12px',
     backgroundColor: 'rgba(0, 54, 117, 0.08)',
     color: '#003675',
@@ -403,13 +406,16 @@ const styles = {
 
   menuRowText: {
     flex: 1,
-    fontSize: 'clamp(18px, 4.4vw, 19px)',
+    fontSize: 'clamp(15px, 4.4vw, 19px)',
     fontWeight: '600',
     color: '#222'
   },
 
   bottomNav: {
-    height: '70px', // 높이 약간 축소
+    minHeight: '70px',
+    boxSizing: 'border-box',
+    // 홈 화면에 추가 시 하단 홈 인디케이터에 가리지 않도록 안전 영역만큼 추가 여백
+    paddingBottom: 'env(safe-area-inset-bottom)',
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -430,6 +436,16 @@ const styles = {
     color: '#003675',
     cursor: 'pointer',
     padding: '10px'
+  },
+
+  // 아이콘마다 시각적 크기/여백이 조금씩 달라 보이는 것을 방지하기 위해
+  // 항상 같은 크기의 박스 정중앙에 아이콘을 배치
+  navIconWrap: {
+    width: '20px',
+    height: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 };
 
