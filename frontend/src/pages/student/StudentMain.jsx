@@ -221,9 +221,12 @@ const styles = {
     backgroundImage: `url(${bgImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    // 100vh 대신 100dvh 사용 (모바일 브라우저 주소창 대응)
-    height: '100dvh',
-    width: '100vw',
+    // height:100dvh 대신 position:fixed + inset:0 사용.
+    // iOS PWA(홈 화면 추가) standalone 모드에서는 100dvh가 실제 화면과
+    // 미묘하게 어긋나는 경우가 있어, 뷰포트 4면에 항상 정확히 맞춰지는
+    // fixed+inset 방식이 더 안전함
+    position: 'fixed',
+    inset: 0,
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden'
