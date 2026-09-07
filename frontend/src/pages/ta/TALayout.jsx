@@ -142,8 +142,12 @@ const layoutStyles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100vh',
-    width: '100vw',
+    // height:100vh 대신 position:fixed + inset:0 사용.
+    // iOS PWA(홈 화면 추가) standalone 모드에서는 100vh가 실제 화면과
+    // 어긋나 하단에 흰 여백이 드러나는 경우가 있어, 뷰포트 4면에
+    // 항상 정확히 맞춰지는 fixed+inset 방식이 더 안전함
+    position: 'fixed',
+    inset: 0,
     overflow: 'hidden'
   },
   header: {
