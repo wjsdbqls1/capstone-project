@@ -146,6 +146,15 @@ def list_all_inquiries(
 
     return results
 
+# 3-1. 대기중인 문의 개수만 조회 (사이드바 배지용 — 목록 전체를 불러오지 않아 가벼움)
+@r.get("/pending-count")
+def count_pending_inquiries(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_assistant)
+):
+    count = db.query(Inquiry).filter(Inquiry.status.notin_(["COMPLETED", "답변 완료"])).count()
+    return {"count": count}
+
 # 4. 상세 조회
 @r.get("/{inquiry_id}")
 def inquiry_detail(inquiry_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

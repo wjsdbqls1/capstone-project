@@ -42,15 +42,14 @@ function TALayout() {
       .catch(() => {});
   }, [navigate]);
 
-  // 대기중인 문의 개수 — 페이지 이동할 때마다(문의 처리 후 등) 최신 상태로 갱신
+  // 대기중인 문의 개수 — 페이지 이동할 때마다(문의 처리 후 등) 최신 상태로 갱신.
+  // 전체 목록(/inquiries)을 불러오면 문의 목록 페이지 자체의 조회와 겹쳐 무거워지므로
+  // 개수만 세는 가벼운 전용 API를 사용함
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    axios.get(`${API}/inquiries`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
-        const count = res.data.filter((item) => item.status !== 'COMPLETED' && item.status !== '답변 완료').length;
-        setPendingCount(count);
-      })
+    axios.get(`${API}/inquiries/pending-count`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => setPendingCount(res.data.count))
       .catch(() => {});
   }, [location.pathname]);
 
