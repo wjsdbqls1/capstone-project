@@ -217,13 +217,13 @@ function StudentInquiry() {
       {/* 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <span style={styles.navIconWrap}><MdPerson size={36} /></span> 마이페이지
+          <span style={styles.navIconWrap}><MdPerson size={25} /></span> 마이페이지
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <span style={styles.navIconWrap}><MdHome size={36} /></span> 홈
+          <span style={styles.navIconWrap}><MdHome size={25} /></span> 홈
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <span style={styles.navIconWrap}><MdLogout size={36} /></span> 로그아웃
+          <span style={styles.navIconWrap}><MdLogout size={25} /></span> 로그아웃
         </motion.button>
       </nav>
     </div>
@@ -433,7 +433,7 @@ const styles = {
     marginTop: '5px'
   },
   bottomNav: {
-    height: '100px',
+    height: '70px',
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -445,18 +445,18 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '5px',
+    gap: '4px',
     background: 'none',
     border: 'none',
-    fontSize: 'clamp(24px, 6.4vw, 30px)',
+    fontSize: 'clamp(17px, 4.5vw, 21px)',
     fontWeight: 'bold',
     color: '#003675',
     cursor: 'pointer',
     padding: '10px'
   },
   navIconWrap: {
-    width: '40px',
-    height: '40px',
+    width: '27px',
+    height: '27px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'

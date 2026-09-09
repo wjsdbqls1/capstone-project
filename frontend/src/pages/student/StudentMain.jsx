@@ -169,13 +169,13 @@ function StudentMain() {
       {/* 4. 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <span style={styles.navIconWrap}><MdPerson size={36} /></span> 마이페이지
+          <span style={styles.navIconWrap}><MdPerson size={25} /></span> 마이페이지
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <span style={styles.navIconWrap}><MdHome size={36} /></span> 홈
+          <span style={styles.navIconWrap}><MdHome size={25} /></span> 홈
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <span style={styles.navIconWrap}><MdLogout size={36} /></span> 로그아웃
+          <span style={styles.navIconWrap}><MdLogout size={25} /></span> 로그아웃
         </motion.button>
       </nav>
     </div>
@@ -415,7 +415,7 @@ const styles = {
   },
 
   bottomNav: {
-    height: '100px', // 아이콘/글자 확대에 맞춰 높이 조정
+    height: '70px',
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -428,10 +428,10 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '5px',
+    gap: '4px',
     background: 'none',
     border: 'none',
-    fontSize: 'clamp(24px, 6.4vw, 30px)', // 하단 버튼 폰트 반응형 (아이콘과 함께 2배로 확대)
+    fontSize: 'clamp(17px, 4.5vw, 21px)', // 하단 버튼 폰트 반응형
     fontWeight: 'bold',
     color: '#003675',
     cursor: 'pointer',
@@ -441,8 +441,8 @@ const styles = {
   // 아이콘마다 시각적 크기/여백이 조금씩 달라 보이는 것을 방지하기 위해
   // 항상 같은 크기의 박스 정중앙에 아이콘을 배치
   navIconWrap: {
-    width: '40px',
-    height: '40px',
+    width: '27px',
+    height: '27px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
