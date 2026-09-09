@@ -16,6 +16,7 @@ function TALayout() {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   // 화면 크기 감지
   useEffect(() => {
@@ -40,6 +41,18 @@ function TALayout() {
       })
       .catch(() => {});
   }, [navigate]);
+
+  // 대기중인 문의 개수 — 페이지 이동할 때마다(문의 처리 후 등) 최신 상태로 갱신
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    axios.get(`${API}/inquiries`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        const count = res.data.filter((item) => item.status !== 'COMPLETED' && item.status !== '답변 완료').length;
+        setPendingCount(count);
+      })
+      .catch(() => {});
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     if (window.confirm("로그아웃 하시겠습니까?")) {
@@ -102,7 +115,10 @@ function TALayout() {
           
           <div style={layoutStyles.menuGroup}>
             <div style={layoutStyles.groupTitle}>문의</div>
-            <div style={isActive('/ta/pending') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/pending')}><MdInbox size={18} /> 대기중인 문의</div>
+            <div style={isActive('/ta/pending') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/pending')}>
+              <MdInbox size={18} /> 대기중인 문의
+              {pendingCount > 0 && <span style={layoutStyles.badge}>{pendingCount}</span>}
+            </div>
             <div style={isActive('/ta/completed') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/completed')}><MdCheckCircle size={18} /> 처리 완료 문의</div>
           </div>
 
@@ -224,6 +240,22 @@ const layoutStyles = {
   groupTitle: { fontSize: '20px', fontWeight: '800', color: '#003675', padding: '10px 30px', marginBottom: '5px' }, // 폰트 사이즈 증가
   menuItem: { display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 30px 14px 40px', fontSize: '17px', color: '#555', cursor: 'pointer', transition: 'all 0.2s', fontWeight: '500' }, // 폰트 사이즈 및 패딩 증가
   menuItemActive: { display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 30px 14px 35px', fontSize: '17px', color: '#003675', fontWeight: 'bold', backgroundColor: '#e3f2fd', borderLeft: '5px solid #003675', cursor: 'pointer' }, // 폰트 사이즈 및 패딩 증가
+  // 대기중인 문의 개수 배지
+  badge: {
+    marginLeft: 'auto',
+    backgroundColor: '#e53935',
+    color: 'white',
+    fontSize: '13px',
+    fontWeight: 'bold',
+    minWidth: '22px',
+    height: '22px',
+    borderRadius: '11px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '0 6px',
+    boxShadow: '0 1px 4px rgba(229, 57, 53, 0.5)'
+  },
   divider: { height: '1px', backgroundColor: '#eee', margin: '15px 30px' },
   aiMenuItem: { margin: '10px 20px', padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #003675 0%, #1976d2 100%)', color: 'white', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0, 54, 117, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }, // 폰트 사이즈 증가
 
