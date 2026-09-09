@@ -24,8 +24,8 @@ function TAPending() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const resInq = await axios.get(`${API_BASE}/inquiries`, { headers: { Authorization: `Bearer ${token}` } });
-      const pendingList = resInq.data.filter(item => item.status !== 'COMPLETED' && item.status !== '답변 완료');
+      const resInq = await axios.get(`${API_BASE}/inquiries?status=pending`, { headers: { Authorization: `Bearer ${token}` } });
+      const pendingList = resInq.data;
       const resEvents = await axios.get(`${API_BASE}/academic-events`);
       const eventMap = {}; resEvents.data.forEach(ev => { eventMap[ev.id] = ev; });
       setAcademicEvents(eventMap);

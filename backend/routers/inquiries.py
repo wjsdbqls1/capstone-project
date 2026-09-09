@@ -87,17 +87,23 @@ def list_my_inquiries(
 # 3. 조교용 목록 조회
 @r.get("")
 def list_all_inquiries(
+    status: Optional[str] = None,  # "pending" | "completed" — 지정하면 서버에서 걸러서 내려줌
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
-    # (1) DB에서 문의글 가져오기 (작성자 정보와 학사일정 정보를 미리 같이 로딩) 
-    inquiries = db.query(Inquiry)\
-        .options(
-            joinedload(Inquiry.user),           # 작성자 정보 로딩
-            joinedload(Inquiry.academic_event)  # 학사일정 정보 로딩
-        )\
-        .order_by(Inquiry.id.desc())\
-        .all()
+    # (1) DB에서 문의글 가져오기 (작성자 정보와 학사일정 정보를 미리 같이 로딩)
+    query = db.query(Inquiry).options(
+        joinedload(Inquiry.user),           # 작성자 정보 로딩
+        joinedload(Inquiry.academic_event)  # 학사일정 정보 로딩
+    )
+
+    completed_statuses = ["COMPLETED", "답변 완료"]
+    if status == "pending":
+        query = query.filter(Inquiry.status.notin_(completed_statuses))
+    elif status == "completed":
+        query = query.filter(Inquiry.status.in_(completed_statuses))
+
+    inquiries = query.order_by(Inquiry.id.desc()).all()
 
     # 수정(재답변)된 답변이 있는 문의 id 집합 (updated_at이 채워진 답변)
     edited_ids = {

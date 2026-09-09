@@ -55,8 +55,8 @@ function TACompleted() {
     const token = localStorage.getItem('token');
     if (!token) { navigate('/'); return; }
     try {
-      const response = await axios.get('https://capstone-project-of74.onrender.com/inquiries', { headers: { Authorization: `Bearer ${token}` } });
-      const completedList = response.data.filter(item => item.status === 'COMPLETED' || item.status === '답변 완료');
+      const response = await axios.get('https://capstone-project-of74.onrender.com/inquiries?status=completed', { headers: { Authorization: `Bearer ${token}` } });
+      const completedList = response.data;
       const resEvents = await axios.get('https://capstone-project-of74.onrender.com/academic-events');
       const eventMap = {}; resEvents.data.forEach(ev => { eventMap[ev.id] = ev; }); setAcademicEvents(eventMap);
       const sortedList = completedList.sort((a, b) => b.id - a.id);
