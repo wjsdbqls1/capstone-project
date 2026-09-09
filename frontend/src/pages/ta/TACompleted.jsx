@@ -153,16 +153,20 @@ function TACompleted() {
                </div>
                <hr style={{margin:'25px 0', border:'0', borderTop:'1px dashed #ddd'}}/>
                <div style={modalStyles.section}>
-                  <div style={{fontSize:'16px', fontWeight:'bold', color:'#2e7d32', marginBottom:'10px'}}>A. 답변 내역</div>
-                  {inq.replies?.map(r => (
-                    <div key={r.id} style={modalStyles.answerBox}>
+                  <div style={{fontSize:'16px', fontWeight:'bold', color:'#2e7d32', marginBottom:'10px'}}>대화 내역</div>
+                  {inq.replies?.map(r => {
+                    const isStudent = r.sender_role === 'student';
+                    return (
+                    <div key={r.id} style={isStudent ? modalStyles.studentMsgBox : modalStyles.answerBox}>
+                        <div style={modalStyles.msgSenderLabel}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
                         {editingReplyId === r.id ? (
                             <div><textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/><div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}><button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button><button onClick={()=>handleUpdateReply(inq.id, r.id)} style={modalStyles.saveBtn}>저장</button></div></div>
                         ) : (
-                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`https://capstone-project-of74.onrender.com${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdAttachFile size={12} /> 답변 첨부파일</a></div>)}<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdEdit size={11} /> 수정하기</button></div></div>
+                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`https://capstone-project-of74.onrender.com${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdAttachFile size={12} /> 첨부파일</a></div>)}{!isStudent && (<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdEdit size={11} /> 수정하기</button></div>)}</div>
                         )}
                     </div>
-                  ))}
+                    );
+                  })}
                </div>
             </div>
           </>
@@ -208,6 +212,8 @@ const modalStyles = {
   eventBox: { marginTop:'10px', padding:'8px', backgroundColor:'#e8f5e9', borderRadius:'8px', color:'#2e7d32', fontSize:'13px', fontWeight:'bold' },
   section: { marginBottom: '15px' },
   answerBox: { backgroundColor: '#f1f8e9', padding: '15px', borderRadius: '12px', marginBottom: '10px', border: '1px solid #c5e1a5' },
+  studentMsgBox: { backgroundColor: '#fff8e1', padding: '15px', borderRadius: '12px', marginBottom: '10px', border: '1px solid #ffe0b2' },
+  msgSenderLabel: { fontSize: '11px', fontWeight: 'bold', color: '#888', marginBottom: '6px' },
   editTextarea: { width: '100%', minHeight: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', boxSizing: 'border-box', fontSize:'14px' },
   saveBtn: { padding: '8px 16px', backgroundColor: '#2e7d32', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight:'bold' },
   cancelBtn: { padding: '8px 16px', backgroundColor: '#e9ecef', color: '#495057', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight:'bold' }

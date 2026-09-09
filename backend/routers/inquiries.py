@@ -188,7 +188,12 @@ def inquiry_replies(inquiry_id: int, db: Session = Depends(get_db), current_user
     if current_user.role not in ("assistant", "admin") and current_user.id != q.user_id:
         raise HTTPException(status_code=403, detail="접근 권한이 없습니다.")
 
-    return db.query(InquiryReply).filter(InquiryReply.inquiry_id == inquiry_id).all()
+    return (
+        db.query(InquiryReply)
+        .filter(InquiryReply.inquiry_id == inquiry_id)
+        .order_by(InquiryReply.created_at.asc(), InquiryReply.id.asc())
+        .all()
+    )
 
 # 6. 답변 등록
 @r.post("/{inquiry_id}/replies")
@@ -208,6 +213,7 @@ def create_reply(
     new_reply = InquiryReply(
         inquiry_id=inquiry_id,
         assistant_id=current_user.id,
+        sender_role="assistant",
         content=content,
         attachment=attachment_url
     )
@@ -224,6 +230,45 @@ def create_reply(
     )
 
     return {"message": "reply created"}
+
+# ★ 6-1. 학생 추가 질문 등록 (한 문의 안에서 대화 이어가기)
+@r.post("/{inquiry_id}/followup")
+def create_student_followup(
+    inquiry_id: int,
+    content: str = Form(...),
+    file: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    q = db.query(Inquiry).filter(Inquiry.id == inquiry_id).first()
+    if not q:
+        raise HTTPException(status_code=404, detail="not found")
+
+    if current_user.id != q.user_id:
+        raise HTTPException(status_code=403, detail="본인 문의에만 추가 질문을 등록할 수 있습니다.")
+
+    attachment_url = save_upload_file(file)
+
+    new_message = InquiryReply(
+        inquiry_id=inquiry_id,
+        assistant_id=current_user.id,
+        sender_role="student",
+        content=content,
+        attachment=attachment_url
+    )
+    db.add(new_message)
+    q.status = "OPEN"  # 조교가 다시 확인할 수 있도록 대기 상태로 되돌림
+
+    db.commit()
+
+    send_push_to_staff(
+        db,
+        title="문의에 추가 질문 등록",
+        body=f"{current_user.name} 학생: '{q.title}'",
+        url="/ta/pending",
+    )
+
+    return {"message": "followup created"}
 
 # ★ 7. 답변 수정 (새로 추가됨)
 @r.put("/{inquiry_id}/replies/{reply_id}")

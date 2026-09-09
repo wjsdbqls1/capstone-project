@@ -46,7 +46,8 @@ class InquiryReply(Base):
     __tablename__ = "inquiry_replies"
     id = Column(Integer, primary_key=True)
     inquiry_id = Column(Integer, ForeignKey("inquiries.id"), nullable=False)
-    assistant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    assistant_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # 작성자 id (조교 답변/학생 추가질문 공용)
+    sender_role = Column(String(20), nullable=False, default="assistant", server_default="assistant")  # assistant/student
     content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=True, onupdate=func.now())

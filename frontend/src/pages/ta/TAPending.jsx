@@ -12,6 +12,7 @@ function TAPending() {
   const [inquiries, setInquiries] = useState([]);
   const [academicEvents, setAcademicEvents] = useState({});
   const [selectedInquiry, setSelectedInquiry] = useState(null);
+  const [threadReplies, setThreadReplies] = useState([]);
   const [replyContent, setReplyContent] = useState("");
   const [replyFile, setReplyFile] = useState(null);
   const [sortType, setSortType] = useState('latest');
@@ -52,20 +53,29 @@ function TAPending() {
   const handleSelect = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.get(`${API_BASE}/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      const inquiry = response.data;
+      const [qRes, rRes] = await Promise.all([
+        axios.get(`${API_BASE}/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE}/inquiries/${id}/replies`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      const inquiry = qRes.data;
+      const replies = rRes.data;
       setSelectedInquiry(inquiry);
+      setThreadReplies(replies);
       setReplyContent("");
       setReplyFile(null);
       setAiCandidates([]);
       setAiKeywords([]);
 
+      // 답변할 대상 텍스트: 학생이 추가 질문을 올렸다면 그 내용, 없으면(첫 답변) 원래 문의 내용
+      const lastMsg = replies.length > 0 ? replies[replies.length - 1] : null;
+      const targetText = (lastMsg && lastMsg.sender_role === 'student') ? lastMsg.content : inquiry.content;
+
       // AI 답변 후보 + 키워드 하이라이팅 동시 호출
       setAiLoading(true);
       try {
         const [predictRes, highlightRes] = await Promise.allSettled([
-          axios.post(`${AI_BASE}/api/ai/predict`, { question: `${inquiry.title} ${inquiry.content}` }),
-          axios.post(`${AI_BASE}/api/ai/highlight`, { question: inquiry.content }),
+          axios.post(`${AI_BASE}/api/ai/predict`, { question: `${inquiry.title} ${targetText}` }),
+          axios.post(`${AI_BASE}/api/ai/highlight`, { question: targetText }),
         ]);
         if (predictRes.status === 'fulfilled') setAiCandidates(predictRes.value.data.candidates || []);
         if (highlightRes.status === 'fulfilled') setAiKeywords(highlightRes.value.data.highlights || []);
@@ -136,10 +146,12 @@ function TAPending() {
               // AnimatedModal의 닫힘 애니메이션 도중에도 selectedInquiry가 null이 될 수 있어
               // 크래시 방지용 안전한 참조 객체를 사용
               const inq = selectedInquiry || {};
+              const lastMsg = threadReplies.length > 0 ? threadReplies[threadReplies.length - 1] : null;
+              const isFollowup = lastMsg && lastMsg.sender_role === 'student';
               return (
             <>
             <div style={modalStyles.header}>
-              <h3 style={{margin:0, color:'#003675'}}>답변 작성</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
+              <h3 style={{margin:0, color:'#003675'}}>{isFollowup ? '추가 질문 답변' : '답변 작성'}</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.questionBox}>
@@ -154,11 +166,30 @@ function TAPending() {
                 </div>
                 <div style={modalStyles.qTitle}>{inq.title}</div>
                 <div style={modalStyles.qText}>
-                  {renderHighlighted(inq.content, aiKeywords)}
+                  {isFollowup ? inq.content : renderHighlighted(inq.content, aiKeywords)}
                 </div>
                 {inq.attachment && <div style={modalStyles.attachBox}><a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={13} /> 첨부파일 보기</a></div>}
                 {inq.academic_event_id && academicEvents[inq.academic_event_id] && <div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><MdCalendarToday size={13} /> 관련 일정: {academicEvents[inq.academic_event_id].title}</div>}
               </div>
+
+              {/* 대화 스레드 (조교 답변 / 학생 추가 질문) */}
+              {threadReplies.length > 0 && (
+                <div style={modalStyles.threadArea}>
+                  {threadReplies.map((msg) => {
+                    const isStudent = msg.sender_role === 'student';
+                    const isLast = msg.id === lastMsg.id;
+                    return (
+                      <div key={msg.id} style={isStudent ? modalStyles.studentMsgBox : modalStyles.assistantMsgBox}>
+                        <div style={modalStyles.msgSenderLabel}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
+                        <div style={{whiteSpace: 'pre-wrap'}}>
+                          {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : msg.content}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* AI 답변 후보 */}
               {aiLoading && (
                 <div style={modalStyles.aiBox}>
@@ -234,6 +265,10 @@ const modalStyles = {
   attachBox: { marginTop:'10px', backgroundColor:'white', padding:'8px', borderRadius:'6px', border:'1px solid #eee', display:'inline-block' },
   fileLink: { display:'block', color:'#003675', fontWeight:'bold', textDecoration:'underline', fontSize:'13px' },
   eventBox: { marginTop:'10px', padding:'8px', backgroundColor:'#fff3e0', borderRadius:'8px', color:'#e65100', fontSize:'13px', fontWeight:'bold' },
+  threadArea: { display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' },
+  assistantMsgBox: { backgroundColor: '#e3f2fd', border: '1px solid #bbdefb', borderRadius: '10px', padding: '12px', color: '#003675', fontSize: '14px', lineHeight: '1.5' },
+  studentMsgBox: { backgroundColor: '#fff8e1', border: '1px solid #ffe0b2', borderRadius: '10px', padding: '12px', color: '#5d4037', fontSize: '14px', lineHeight: '1.5' },
+  msgSenderLabel: { fontSize: '11px', fontWeight: 'bold', opacity: 0.75, marginBottom: '4px' },
   aiBox: { backgroundColor:'#f0f4ff', border:'1px solid #c5d5f5', borderRadius:'10px', padding:'12px', marginBottom:'15px' },
   aiTitle: { fontWeight:'bold', color:'#003675', fontSize:'13px', marginBottom:'8px' },
   candidateRow: { display:'flex', alignItems:'flex-start', gap:'8px', marginBottom:'8px', backgroundColor:'white', borderRadius:'8px', padding:'8px', border:'1px solid #e0e8ff' },

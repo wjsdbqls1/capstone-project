@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdChevronLeft, MdClose, MdCalendarToday, MdAttachFile, MdDownload, MdSchool, MdLogout, MdHome, MdPerson } from 'react-icons/md';
+import { MdChevronLeft, MdClose, MdCalendarToday, MdAttachFile, MdDownload, MdSchool, MdLogout, MdHome, MdPerson, MdSend } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -13,38 +13,37 @@ import bgImage from '../../assets/로그인 이미지.jpg';
 function StudentHistory() {
   const navigate = useNavigate();
   const [inquiries, setInquiries] = useState([]);
-  const [selectedInquiry, setSelectedInquiry] = useState(null); 
-  const [detailData, setDetailData] = useState(null); 
+  const [selectedInquiry, setSelectedInquiry] = useState(null);
+  const [detailData, setDetailData] = useState(null);
+  const [followupText, setFollowupText] = useState('');
+  const [followupFile, setFollowupFile] = useState(null);
+  const [sendingFollowup, setSendingFollowup] = useState(false);
 
-  useEffect(() => {
-    const fetchInquiries = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert("로그인이 필요합니다.");
+  const fetchInquiries = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      navigate('/');
+      return;
+    }
+
+    try {
+      const response = await axios.get('https://capstone-project-of74.onrender.com/inquiries/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setInquiries(response.data);
+    } catch (error) {
+      console.error("목록 로딩 실패:", error);
+      if (error.response && error.response.status === 401) {
+        localStorage.clear();
         navigate('/');
-        return;
       }
+    }
+  };
 
-      try {
-        const response = await axios.get('https://capstone-project-of74.onrender.com/inquiries/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setInquiries(response.data);
-      } catch (error) {
-        console.error("목록 로딩 실패:", error);
-        if (error.response && error.response.status === 401) {
-          localStorage.clear();
-          navigate('/');
-        }
-      }
-    };
-    fetchInquiries();
-  }, [navigate]);
+  useEffect(() => { fetchInquiries(); }, [navigate]);
 
-  const handleClickItem = async (item) => {
-    setSelectedInquiry(item);
-    setDetailData(null); 
-    
+  const fetchDetail = async (id) => {
     const token = localStorage.getItem('token');
     if (!token) {
         alert("로그인이 필요합니다.");
@@ -53,13 +52,13 @@ function StudentHistory() {
     }
 
     try {
-      const qRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${item.id}`, {
+      const qRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const rRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${item.id}/replies`, {
+      const rRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${id}/replies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       setDetailData({
         ...qRes.data,
         replies: rRes.data
@@ -67,6 +66,46 @@ function StudentHistory() {
     } catch (error) {
       console.error("상세 정보 로딩 실패:", error);
       alert("상세 내용을 불러오지 못했습니다.");
+    }
+  };
+
+  const handleClickItem = async (item) => {
+    setSelectedInquiry(item);
+    setDetailData(null);
+    setFollowupText('');
+    setFollowupFile(null);
+    fetchDetail(item.id);
+  };
+
+  const handleSendFollowup = async () => {
+    if (!followupText.trim() || !selectedInquiry) return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      navigate('/');
+      return;
+    }
+
+    setSendingFollowup(true);
+    const formData = new FormData();
+    formData.append('content', followupText);
+    if (followupFile) formData.append('file', followupFile);
+
+    try {
+      await axios.post(
+        `https://capstone-project-of74.onrender.com/inquiries/${selectedInquiry.id}/followup`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
+      );
+      setFollowupText('');
+      setFollowupFile(null);
+      await fetchDetail(selectedInquiry.id);
+      fetchInquiries(); // 목록의 상태 배지(대기중/완료)도 갱신
+    } catch (error) {
+      console.error("추가 질문 등록 실패:", error);
+      alert("추가 질문 등록에 실패했습니다.");
+    } finally {
+      setSendingFollowup(false);
     }
   };
 
@@ -183,33 +222,64 @@ function StudentHistory() {
                   <div style={modalStyles.divider}></div>
 
                   <div style={modalStyles.section}>
-                    <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdSchool size={14} /> 조교 답변</div>
+                    <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdSchool size={14} /> 대화 내역</div>
                     {detailData.replies && detailData.replies.length > 0 ? (
-                      detailData.replies.map(reply => (
-                        <div key={reply.id} style={modalStyles.answerBox}>
-                          <div style={{whiteSpace:'pre-wrap'}}>
-                              {reply.content}
-                              {/* 수정된 답변인 경우 표시 */}
-                              {reply.updated_at && <span style={{fontSize:'11px', color:'#999', marginLeft:'5px'}}>(수정됨)</span>}
-                          </div>
-
-                          {reply.attachment && (
-                            <div style={{marginTop:'10px', fontSize:'14px', borderTop:'1px dashed #a6cbf3', paddingTop:'5px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
-                                <MdAttachFile size={13} /> <b>첨부파일:</b>
-                                <a href={`https://capstone-project-of74.onrender.com${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
-                                    확인하기
-                                </a>
+                      detailData.replies.map(reply => {
+                        const isStudent = reply.sender_role === 'student';
+                        return (
+                          <div key={reply.id} style={isStudent ? modalStyles.myMessageBox : modalStyles.answerBox}>
+                            <div style={modalStyles.senderLabel}>{isStudent ? '나의 추가 질문' : '조교 답변'}</div>
+                            <div style={{whiteSpace:'pre-wrap'}}>
+                                {reply.content}
+                                {/* 수정된 답변인 경우 표시 */}
+                                {reply.updated_at && <span style={{fontSize:'11px', color:'#999', marginLeft:'5px'}}>(수정됨)</span>}
                             </div>
-                          )}
 
-                          <div style={modalStyles.answerDate}>{reply.created_at.split('T')[0]}</div>
-                        </div>
-                      ))
+                            {reply.attachment && (
+                              <div style={{marginTop:'10px', fontSize:'14px', borderTop:'1px dashed rgba(0,0,0,0.15)', paddingTop:'5px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
+                                  <MdAttachFile size={13} /> <b>첨부파일:</b>
+                                  <a href={`https://capstone-project-of74.onrender.com${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
+                                      확인하기
+                                  </a>
+                              </div>
+                            )}
+
+                            <div style={modalStyles.answerDate}>{reply.created_at.split('T')[0]}</div>
+                          </div>
+                        );
+                      })
                     ) : (
                       <div style={modalStyles.noAnswer}>
                         아직 답변이 등록되지 않았습니다. <br/>조금만 기다려주세요!
                       </div>
                     )}
+                  </div>
+
+                  {/* 추가 질문 입력 — 답변을 받은 뒤에도 같은 문의에서 계속 대화 가능 */}
+                  <div style={modalStyles.followupBox}>
+                    <div style={modalStyles.label}>추가로 질문하기</div>
+                    <textarea
+                      style={modalStyles.followupTextarea}
+                      placeholder="궁금한 점을 추가로 물어보세요."
+                      value={followupText}
+                      onChange={(e) => setFollowupText(e.target.value)}
+                    />
+                    <div style={modalStyles.followupActions}>
+                      <input
+                        type="file"
+                        style={modalStyles.followupFileInput}
+                        onChange={(e) => setFollowupFile(e.target.files[0])}
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
+                        style={{...modalStyles.followupSendBtn, opacity: sendingFollowup ? 0.6 : 1}}
+                        onClick={handleSendFollowup}
+                        disabled={sendingFollowup}
+                      >
+                        <MdSend size={15} /> {sendingFollowup ? '등록 중...' : '등록'}
+                      </motion.button>
+                    </div>
                   </div>
                 </>
               ) : (
@@ -422,16 +492,61 @@ const modalStyles = {
   
   divider: { margin:'20px 0', border:'0', borderTop:'2px dashed #ddd' },
   
-  answerBox: { 
-    backgroundColor:'#e3f2fd', padding:'15px', borderRadius:'10px', 
+  answerBox: {
+    backgroundColor:'#e3f2fd', padding:'15px', borderRadius:'10px',
     color:'#003675', lineHeight:'1.6', marginBottom:'10px',
     border: '1px solid #bbdefb',
     fontSize: '16px'
   },
+  // 내가 보낸 추가 질문 — 조교 답변과 구분되는 톤
+  myMessageBox: {
+    backgroundColor: '#fff8e1', padding: '15px', borderRadius: '10px',
+    color: '#5d4037', lineHeight: '1.6', marginBottom: '10px',
+    border: '1px solid #ffe0b2',
+    fontSize: '16px'
+  },
+  senderLabel: { fontSize: '12px', fontWeight: 'bold', opacity: 0.75, marginBottom: '4px' },
   answerDate: { fontSize:'13px', color:'#5472d3', marginTop:'8px', textAlign:'right' },
-  noAnswer: { 
-    color:'#888', padding:'20px', backgroundColor:'#f5f5f5', 
+  noAnswer: {
+    color:'#888', padding:'20px', backgroundColor:'#f5f5f5',
     borderRadius:'10px', textAlign:'center', fontSize:'16px', lineHeight:'1.5'
+  },
+  followupBox: {
+    marginTop: '10px',
+    paddingTop: '15px',
+    borderTop: '1px dashed #ddd'
+  },
+  followupTextarea: {
+    width: '100%',
+    minHeight: '80px',
+    padding: '10px',
+    border: '1px solid #ced4da',
+    borderRadius: '8px',
+    fontSize: '15px',
+    resize: 'none',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit'
+  },
+  followupActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    marginTop: '8px'
+  },
+  followupFileInput: { flex: 1, fontSize: '13px', minWidth: 0 },
+  followupSendBtn: {
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '10px 16px',
+    backgroundColor: '#003675',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    cursor: 'pointer'
   }
 };
 
