@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdAttachFile, MdSmartToy } from 'react-icons/md';
-import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 
 const API_BASE = 'https://capstone-project-of74.onrender.com';
@@ -101,7 +100,7 @@ function TAPending() {
   };
 
   return (
-    <TALayout>
+    <>
       <div style={styles.pageTitle}>대기중인 문의</div>
       <div style={styles.sortBar}>
           <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSortType('deadline'); setInquiries(sortList(inquiries, 'deadline', academicEvents)); }} style={sortType === 'deadline' ? styles.activeSortBtn : styles.sortBtn}><MdCalendarToday size={13} /> 마감순</motion.button>
@@ -201,7 +200,7 @@ function TAPending() {
               );
             })()}
       </AnimatedModal>
-    </TALayout>
+    </>
   );
 }
 

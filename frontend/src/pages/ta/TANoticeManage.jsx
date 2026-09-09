@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
-import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -136,7 +135,7 @@ function TANoticeManage() {
   };
 
   return (
-    <TALayout>
+    <>
         <div style={styles.pageTitle}>공지사항 관리</div>
         
         {/* 필터 및 검색 바 */}
@@ -225,7 +224,7 @@ function TANoticeManage() {
               <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.saveBtn} onClick={handleSave}>{isEditMode ? "수정 완료" : "등록하기"}</motion.button>
             </div>
       </AnimatedModal>
-    </TALayout>
+    </>
   );
 }
 

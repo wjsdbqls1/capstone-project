@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdCalendarToday, MdSearch, MdClose, MdPerson, MdAttachFile, MdEdit } from 'react-icons/md';
-import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -87,7 +86,7 @@ function TACompleted() {
   };
 
   return (
-    <TALayout>
+    <>
       <div style={styles.glassBox}>
         <div style={styles.pageTitle}>처리 완료 문의</div>
         <div style={styles.filterBar}>
@@ -170,7 +169,7 @@ function TACompleted() {
           );
         })()}
       </AnimatedModal>
-    </TALayout>
+    </>
   );
 }
 

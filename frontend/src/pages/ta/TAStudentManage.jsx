@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdSearch, MdClose, MdAdd, MdLightbulb } from 'react-icons/md';
-import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -144,7 +143,7 @@ function TAStudentManage() {
   };
 
   return (
-    <TALayout>
+    <>
       <div style={styles.pageTitle}>학생 관리</div>
 
       {/* 필터 및 검색 바 */}
@@ -285,7 +284,7 @@ function TAStudentManage() {
               <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.saveBtn} onClick={handleCreate}>등록하기</motion.button>
             </div>
       </AnimatedModal>
-    </TALayout>
+    </>
   );
 }
 

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdChevronLeft, MdPerson, MdDescription, MdAttachFile, MdCheckCircle, MdBlock } from 'react-icons/md';
-import TALayout from './TALayout';
 
 function TAAbsenceManage() {
   const [requests, setRequests] = useState([]);
@@ -91,7 +90,7 @@ function TAAbsenceManage() {
   };
 
   return (
-    <TALayout>
+    <>
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
           <div style={styles.pageTitle}>{view === 'detail' ? '신청서 검토' : '공결 신청 관리'}</div>
       </div>
@@ -215,7 +214,7 @@ function TAAbsenceManage() {
               )}
           </div>
       )}
-    </TALayout>
+    </>
   );
 }
 

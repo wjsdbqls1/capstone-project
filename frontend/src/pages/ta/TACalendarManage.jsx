@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdChevronLeft, MdChevronRight, MdAdd, MdClose, MdDelete } from 'react-icons/md';
-import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -201,7 +200,7 @@ function TACalendarManage() {
   };
 
   return (
-    <TALayout>
+    <>
       <div style={styles.pageTitle}>캘린더 관리</div>
       <div style={calStyles.controls}>
         <div style={calStyles.monthNav}>
@@ -263,7 +262,7 @@ function TACalendarManage() {
             </div>
           </div>
       </AnimatedModal>
-    </TALayout>
+    </>
   );
 }
 

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
-import TALayout from './TALayout';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -110,7 +109,7 @@ function TAFaqManage() {
   const handleOpenEdit = (item) => { setIsEditMode(true); setTargetId(item.id); setFormData({ question: item.question, answer_html: item.answer_html }); setFile(null); setShowModal(true); };
 
   return (
-    <TALayout>
+    <>
         <div style={styles.pageTitle}>FAQ 관리</div>
         
         {/* 필터 및 검색 바 */}
@@ -186,7 +185,7 @@ function TAFaqManage() {
               <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.saveBtn} onClick={handleSave}>{isEditMode ? "수정 완료" : "등록하기"}</motion.button>
             </div>
       </AnimatedModal>
-    </TALayout>
+    </>
   );
 }
 

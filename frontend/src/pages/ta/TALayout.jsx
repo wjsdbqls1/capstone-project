@@ -1,8 +1,8 @@
 // src/pages/ta/TALayout.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MdMenu, MdInbox, MdCheckCircle, MdCampaign, MdHelp, MdDescription, MdCalendarToday, MdPeople, MdBarChart, MdLogout } from 'react-icons/md';
 import '../../App.css';
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -11,7 +11,7 @@ import { unsubscribeFromPush } from '../../pushNotifications';
 
 const API = 'https://capstone-project-of74.onrender.com';
 
-function TALayout({ children }) {
+function TALayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -127,10 +127,21 @@ function TALayout({ children }) {
           </motion.div>
         </nav>
 
-        {/* 3. 메인 컨텐츠 영역 */}
+        {/* 3. 메인 컨텐츠 영역 — 사이드바/헤더는 그대로 두고 이 안쪽만 부드럽게 전환 */}
         <main style={{...layoutStyles.mainContent, padding: isMobile ? '15px' : '30px'}}>
             <div style={{...layoutStyles.glassBox, padding: isMobile ? '15px' : '30px'}}>
-                {children}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={location.pathname}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    style={layoutStyles.contentAnimator}
+                  >
+                    <Outlet />
+                  </motion.div>
+                </AnimatePresence>
             </div>
         </main>
       </div>
@@ -236,6 +247,14 @@ const layoutStyles = {
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden'
+  },
+  // 각 TA 페이지가 기존에 flex:1로 스스로 높이를 채우던 방식을 그대로 쓸 수 있도록
+  // 이 래퍼도 동일하게 flex 컨테이너로 동작시킴
+  contentAnimator: {
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column'
   }
 };
 

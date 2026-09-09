@@ -5,6 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import Login from './pages/Login';
 import ForcePasswordChange from './pages/ForcePasswordChange';
 import PageTransition from './components/PageTransition';
+import TALayout from './pages/ta/TALayout';
 
 // 학생 페이지
 import StudentMain from './pages/student/StudentMain';
@@ -33,9 +34,15 @@ const withTransition = (el) => <PageTransition>{el}</PageTransition>;
 function AnimatedRoutes() {
   const location = useLocation();
 
+  // 조교(/ta/*) 화면들은 사이드바가 있는 공용 레이아웃(TALayout)을 공유함.
+  // 전체 페이지를 pathname으로 매번 새로 키(key)를 주면 메뉴를 클릭할 때마다
+  // 사이드바/헤더까지 통째로 사라졌다 나타나 버벅여 보이므로, /ta 구간에서는
+  // 키를 고정해 TALayout이 유지되게 하고 내부 콘텐츠만 TALayout이 직접 애니메이션함
+  const transitionKey = location.pathname.startsWith('/ta') ? 'ta-section' : location.pathname;
+
   return (
     <AnimatePresence>
-      <Routes location={location} key={location.pathname}>
+      <Routes location={location} key={transitionKey}>
         <Route path="/" element={withTransition(<Login />)} />
         <Route path="/change-password" element={withTransition(<ForcePasswordChange />)} />
 
@@ -50,16 +57,19 @@ function AnimatedRoutes() {
         <Route path="/student/mypage" element={withTransition(<StudentMyPage />)} />
         <Route path="/student/notice/:id" element={withTransition(<StudentNoticeDetail />)} />
 
-        {/* 2. 조교 화면 라우팅 */}
+        {/* 2. 조교 화면 라우팅 — TALayout이 사이드바/헤더를 유지한 채
+            내부 콘텐츠(Outlet)만 자체적으로 부드럽게 전환함 */}
         <Route path="/ta/main" element={withTransition(<TAMain />)} />
-        <Route path="/ta/pending" element={withTransition(<TAPending />)} />
-        <Route path="/ta/completed" element={withTransition(<TACompleted />)} />
-        <Route path="/ta/notice" element={withTransition(<TANoticeManage />)} />
-        <Route path="/ta/faq" element={withTransition(<TAFAQManage />)} />
-        <Route path="/ta/absence" element={withTransition(<TAAbsenceManage />)} />
-        <Route path="/ta/calendar" element={withTransition(<TACalendarManage />)} />
-        <Route path="/ta/students" element={withTransition(<TAStudentManage />)} />
-        <Route path="/ta/ai" element={withTransition(<TAAIReport />)} />
+        <Route path="/ta" element={<TALayout />}>
+          <Route path="pending" element={<TAPending />} />
+          <Route path="completed" element={<TACompleted />} />
+          <Route path="notice" element={<TANoticeManage />} />
+          <Route path="faq" element={<TAFAQManage />} />
+          <Route path="absence" element={<TAAbsenceManage />} />
+          <Route path="calendar" element={<TACalendarManage />} />
+          <Route path="students" element={<TAStudentManage />} />
+          <Route path="ai" element={<TAAIReport />} />
+        </Route>
       </Routes>
     </AnimatePresence>
   );
