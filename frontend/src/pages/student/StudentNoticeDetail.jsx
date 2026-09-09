@@ -146,13 +146,13 @@ function StudentNoticeDetail() {
       {/* 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <span style={styles.navIconWrap}><MdPerson size={18} /></span> 마이페이지
+          <span style={styles.navIconWrap}><MdPerson size={36} /></span> 마이페이지
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <span style={styles.navIconWrap}><MdHome size={18} /></span> 홈
+          <span style={styles.navIconWrap}><MdHome size={36} /></span> 홈
         </motion.button>
         <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <span style={styles.navIconWrap}><MdLogout size={18} /></span> 로그아웃
+          <span style={styles.navIconWrap}><MdLogout size={36} /></span> 로그아웃
         </motion.button>
       </nav>
     </div>
@@ -309,7 +309,7 @@ const styles = {
     overflowX: 'auto'
   },
   bottomNav: {
-    height: '70px',
+    height: '100px',
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -321,10 +321,10 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '3px',
+    gap: '5px',
     background: 'none',
     border: 'none',
-    fontSize: 'clamp(12px, 3.2vw, 15px)',
+    fontSize: 'clamp(24px, 6.4vw, 30px)',
     fontWeight: 'bold',
     color: '#003675',
     cursor: 'pointer',
@@ -333,8 +333,8 @@ const styles = {
   // 아이콘마다 시각적 크기/여백이 조금씩 달라 보이는 것을 방지하기 위해
   // 항상 같은 크기의 박스 정중앙에 아이콘을 배치
   navIconWrap: {
-    width: '20px',
-    height: '20px',
+    width: '40px',
+    height: '40px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
