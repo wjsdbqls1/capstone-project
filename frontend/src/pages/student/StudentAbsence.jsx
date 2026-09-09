@@ -465,10 +465,12 @@ const styles = {
     fontWeight: 'bold',
     boxShadow: '0 4px 10px rgba(0, 54, 117, 0.3)'
   },
+  // 버튼 글자 길이(마이페이지/홈/로그아웃)가 서로 달라서 flex+space-around로는
+  // 가운데 버튼이 정확히 중앙에 오지 않았음. 3등분 grid로 바꿔 항상 정중앙에 오도록 함
   bottomNav: {
     height: '70px',
-    display: 'flex',
-    justifyContent: 'space-around',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderTop: '1px solid rgba(0,0,0,0.1)',
