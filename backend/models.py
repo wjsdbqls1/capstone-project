@@ -33,7 +33,7 @@ class Inquiry(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(200), nullable=False)
     content = Column(Text, nullable=False)
-    status = Column(String(20), nullable=False, default="OPEN")
+    status = Column(String(20), nullable=False, default="OPEN", index=True)  # 목록을 상태별로 자주 필터링해서 인덱스 추가
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     academic_event_id = Column(Integer, ForeignKey("academic_events.id"), nullable=True)

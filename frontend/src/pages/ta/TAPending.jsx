@@ -24,9 +24,12 @@ function TAPending() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const resInq = await axios.get(`${API_BASE}/inquiries?status=pending`, { headers: { Authorization: `Bearer ${token}` } });
+      // 두 요청이 서로 의존하지 않는데 순서대로 기다리고 있었어서 병렬로 변경 (로딩 시간 절반으로)
+      const [resInq, resEvents] = await Promise.all([
+        axios.get(`${API_BASE}/inquiries?status=pending`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE}/academic-events`),
+      ]);
       const pendingList = resInq.data;
-      const resEvents = await axios.get(`${API_BASE}/academic-events`);
       const eventMap = {}; resEvents.data.forEach(ev => { eventMap[ev.id] = ev; });
       setAcademicEvents(eventMap);
       setInquiries(sortList(pendingList, 'latest', eventMap));

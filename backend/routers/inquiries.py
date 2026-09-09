@@ -70,11 +70,12 @@ def list_my_inquiries(
         .all()
     }
 
+    # 목록 화면에서는 본문(content)을 표시하지 않으므로 응답에서 제외 (상세 조회 시 별도로 받음).
+    # 완료된 문의는 계속 쌓이기만 하는데 매번 전체 본문까지 실어 보내면 목록이 갈수록 무거워짐
     return [
         {
             "id": q.id,
             "title": q.title,
-            "content": q.content,
             "status": q.status,
             "created_at": q.created_at,
             "academic_event_id": q.academic_event_id,
@@ -135,11 +136,10 @@ def list_all_inquiries(
                 "end_date": str(q.academic_event.end_date)
             }
 
-        # 결과 리스트에 추가
+        # 결과 리스트에 추가 (목록에서는 안 쓰이는 본문(content)은 빼서 응답을 가볍게 함)
         results.append({
             "id": q.id,
             "title": q.title,
-            "content": q.content,
             "status": q.status,
             "created_at": q.created_at,
             "user_id": q.user_id,
