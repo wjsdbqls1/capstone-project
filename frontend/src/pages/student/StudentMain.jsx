@@ -150,15 +150,15 @@ function StudentMain() {
             <MdChevronRight size={24} />
           </motion.button>
 
-          {/* 3-3. 보조 메뉴 리스트 */}
-          <div style={styles.menuList}>
+          {/* 3-3. 보조 메뉴 그리드 — 기기별로 글자/아이콘 크기가 들쭉날쭉하던 리스트형 대신
+              고정 크기 타일로 통일해 화면 폭에 따라 크기가 변하지 않도록 함 */}
+          <div style={styles.menuGrid}>
             {LIST_ITEMS.map((item, idx) => (
-              <MenuRow
+              <MenuTile
                 key={item.text}
                 index={idx}
                 icon={<item.icon size={22} />}
                 text={item.text}
-                isLast={idx === LIST_ITEMS.length - 1}
                 onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
               />
             ))}
@@ -197,21 +197,20 @@ function InfoHalf({ icon, label, title, subtitle, onClick }) {
   );
 }
 
-// 보조 메뉴 리스트의 한 행
-function MenuRow({ onClick, icon, text, index, isLast }) {
+// 보조 메뉴 그리드의 타일 하나
+function MenuTile({ onClick, icon, text, index }) {
   return (
     <motion.div
-      style={{ ...styles.menuRow, borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,0.06)' }}
+      style={styles.menuTile}
       onClick={onClick}
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 + index * 0.05 }}
-      whileHover={{ backgroundColor: 'rgba(0, 54, 117, 0.05)' }}
-      whileTap={{ scale: 0.99 }}
+      whileHover={{ y: -2, boxShadow: '0 6px 14px rgba(0, 54, 117, 0.15)' }}
+      whileTap={{ scale: 0.97 }}
     >
-      <span style={styles.menuRowIconWrap}>{icon}</span>
-      <span style={styles.menuRowText}>{text}</span>
-      <MdChevronRight size={20} color="#aaa" />
+      <span style={styles.menuTileIconWrap}>{icon}</span>
+      <span style={styles.menuTileText}>{text}</span>
     </motion.div>
   );
 }
@@ -379,25 +378,31 @@ const styles = {
     flexShrink: 0
   },
 
-  menuList: {
-    backgroundColor: 'rgba(255, 255, 255, 0.55)',
-    borderRadius: '14px',
-    border: '1px solid rgba(0,0,0,0.05)',
-    overflow: 'hidden'
+  // 2열 그리드. 화면 폭은 fr 비율로만 나뉘고 아이콘/글자는 고정 px라
+  // 기기(화면 폭)가 달라져도 타일 안의 아이콘·글자 크기는 항상 동일함
+  menuGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '10px'
   },
 
-  // clamp() 기반으로 화면 폭이 바뀌면 패딩/아이콘/글자 크기가 자동으로 따라 조절됨
-  menuRow: {
+  menuTile: {
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: 'clamp(12px, 3.6vw, 15px)',
-    padding: 'clamp(15px, 4.6vw, 22px) clamp(12px, 4vw, 16px)',
-    cursor: 'pointer'
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '18px 10px',
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+    border: '1px solid rgba(0,0,0,0.05)',
+    borderRadius: '14px',
+    cursor: 'pointer',
+    textAlign: 'center'
   },
 
-  menuRowIconWrap: {
-    width: 'clamp(36px, 9.5vw, 43px)',
-    height: 'clamp(36px, 9.5vw, 43px)',
+  menuTileIconWrap: {
+    width: '40px',
+    height: '40px',
     borderRadius: '12px',
     backgroundColor: 'rgba(0, 54, 117, 0.08)',
     color: '#003675',
@@ -407,9 +412,8 @@ const styles = {
     flexShrink: 0
   },
 
-  menuRowText: {
-    flex: 1,
-    fontSize: 'clamp(15px, 4.4vw, 19px)',
+  menuTileText: {
+    fontSize: '15px',
     fontWeight: '600',
     color: '#222'
   },
