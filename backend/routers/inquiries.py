@@ -1,6 +1,7 @@
 # backend/routers/inquiries.py
 import os
 from typing import Optional
+from sqlalchemy import exists, and_
 from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from deps import get_db, get_current_user
@@ -59,16 +60,17 @@ def list_my_inquiries(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    rows = db.query(Inquiry).filter(Inquiry.user_id == current_user.id).order_by(Inquiry.id.desc()).all()
-
-    # 수정(재답변)된 답변이 있는 문의 id 집합
-    edited_ids = {
-        row[0]
-        for row in db.query(InquiryReply.inquiry_id)
-        .filter(InquiryReply.updated_at.isnot(None))
-        .distinct()
+    # 재답변 여부를 별도 쿼리로 조회하면 DB 왕복이 한 번 더 생겨(리전 간 지연 시 특히 느림)
+    # 상관 서브쿼리(EXISTS)로 메인 쿼리 한 번에 같이 받아오도록 합침
+    edited_exists = exists().where(
+        and_(InquiryReply.inquiry_id == Inquiry.id, InquiryReply.updated_at.isnot(None))
+    )
+    rows = (
+        db.query(Inquiry, edited_exists.label("reply_edited"))
+        .filter(Inquiry.user_id == current_user.id)
+        .order_by(Inquiry.id.desc())
         .all()
-    }
+    )
 
     # 목록 화면에서는 본문(content)을 표시하지 않으므로 응답에서 제외 (상세 조회 시 별도로 받음).
     # 완료된 문의는 계속 쌓이기만 하는데 매번 전체 본문까지 실어 보내면 목록이 갈수록 무거워짐
@@ -80,9 +82,9 @@ def list_my_inquiries(
             "created_at": q.created_at,
             "academic_event_id": q.academic_event_id,
             "attachment": q.attachment,
-            "reply_edited": q.id in edited_ids,  # 답변 수정(재답변) 여부
+            "reply_edited": bool(edited),  # 답변 수정(재답변) 여부
         }
-        for q in rows
+        for q, edited in rows
     ]
 
 # 3. 조교용 목록 조회
@@ -92,8 +94,14 @@ def list_all_inquiries(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
+    # 재답변 여부를 별도 쿼리로 조회하면 DB 왕복이 한 번 더 생겨(리전 간 지연 시 특히 느림)
+    # 상관 서브쿼리(EXISTS)로 메인 쿼리 한 번에 같이 받아오도록 합침
+    edited_exists = exists().where(
+        and_(InquiryReply.inquiry_id == Inquiry.id, InquiryReply.updated_at.isnot(None))
+    )
+
     # (1) DB에서 문의글 가져오기 (작성자 정보와 학사일정 정보를 미리 같이 로딩)
-    query = db.query(Inquiry).options(
+    query = db.query(Inquiry, edited_exists.label("reply_edited")).options(
         joinedload(Inquiry.user),           # 작성자 정보 로딩
         joinedload(Inquiry.academic_event)  # 학사일정 정보 로딩
     )
@@ -104,20 +112,11 @@ def list_all_inquiries(
     elif status == "completed":
         query = query.filter(Inquiry.status.in_(completed_statuses))
 
-    inquiries = query.order_by(Inquiry.id.desc()).all()
-
-    # 수정(재답변)된 답변이 있는 문의 id 집합 (updated_at이 채워진 답변)
-    edited_ids = {
-        row[0]
-        for row in db.query(InquiryReply.inquiry_id)
-        .filter(InquiryReply.updated_at.isnot(None))
-        .distinct()
-        .all()
-    }
+    rows = query.order_by(Inquiry.id.desc()).all()
 
     # (2) 프론트엔드가 원하는 형태로 데이터 가공
     results = []
-    for q in inquiries:
+    for q, edited in rows:
         # 작성자 정보 추출
         author_info = None
         if q.user:
@@ -147,7 +146,7 @@ def list_all_inquiries(
             "academic_event_id": q.academic_event_id,
             "author_info": author_info,
             "academic_event": event_info,
-            "reply_edited": q.id in edited_ids,  # 답변 수정(재답변) 여부
+            "reply_edited": bool(edited),  # 답변 수정(재답변) 여부
         })
 
     return results
