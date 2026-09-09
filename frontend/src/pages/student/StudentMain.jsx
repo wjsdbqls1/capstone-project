@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdEdit, MdAssignment, MdHelp, MdCampaign, MdCalendarToday, MdDescription, MdLogout, MdHome, MdPerson, MdChevronRight } from 'react-icons/md';
+import { MdEdit, MdAssignment, MdHelp, MdCampaign, MdCalendarToday, MdLogout, MdHome, MdPerson, MdChevronRight } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -17,7 +17,7 @@ const LIST_ITEMS = [
   { icon: MdHelp, text: 'FAQ', path: '/student/faq' },
   { icon: MdCampaign, text: '공지사항', path: '/student/notice' },
   { icon: MdCalendarToday, text: '캘린더', path: '/student/calendar' },
-  { icon: MdDescription, text: '공결 서류 제출', alert: '추후에 추가될 기능입니다.' },
+  // 공결 서류 제출: 백엔드 기능이 아직 없어 프론트에서 임시로 숨김
 ];
 
 const todayStr = () => {
