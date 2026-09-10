@@ -8,6 +8,7 @@ import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
+import { API_BASE } from '../../config';
 
 function StudentAbsence() {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ function StudentAbsence() {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       
-      const response = await axios.get('https://capstone-project-of74.onrender.com/absence/me', config);
+      const response = await axios.get(`${API_BASE}/absence/me`, config);
       setAbsences(response.data);
     } catch (error) {
       console.error("공결 내역 로딩 실패:", error);
@@ -100,7 +101,7 @@ function StudentAbsence() {
       submitData.append('reason', formData.reason);
       submitData.append('file', file);
 
-      await axios.post('https://capstone-project-of74.onrender.com/absence', submitData, {
+      await axios.post(`${API_BASE}/absence`, submitData, {
         headers: { 
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${token}`

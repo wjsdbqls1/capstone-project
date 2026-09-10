@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MdTrendingUp, MdAssignment } from 'react-icons/md';
+import { API_BASE } from '../../config';
 
-const API_BASE = 'https://capstone-project-of74.onrender.com';
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
 function TAAIReport() {

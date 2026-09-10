@@ -8,6 +8,7 @@ import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
+import { API_BASE } from '../../config';
 
 function StudentFaq() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ function StudentFaq() {
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
-        const response = await axios.get('https://capstone-project-of74.onrender.com/faqs');
+        const response = await axios.get(`${API_BASE}/faqs`);
         setFaqs(response.data);
       } catch (error) {
         console.error("FAQ 로딩 실패:", error);
@@ -124,7 +125,7 @@ function StudentFaq() {
                           {item.file_path && (
                             <div style={styles.fileBox}>
                               <a
-                                href={`https://capstone-project-of74.onrender.com/uploads/faqs/${item.file_path}`}
+                                href={`${API_BASE}/uploads/faqs/${item.file_path}`}
                                 download={item.original_filename}
                                 style={{ ...styles.downloadLink, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                               >

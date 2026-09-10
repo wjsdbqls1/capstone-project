@@ -8,8 +8,9 @@ import '../../App.css';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import NotificationToggle from '../../components/NotificationToggle';
 import { unsubscribeFromPush } from '../../pushNotifications';
+import { API_BASE } from '../../config';
 
-const API = 'https://capstone-project-of74.onrender.com';
+const API = API_BASE;
 
 function TALayout() {
   const navigate = useNavigate();

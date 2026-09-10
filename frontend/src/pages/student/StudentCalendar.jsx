@@ -9,6 +9,7 @@ import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
+import { API_BASE } from '../../config';
 
 function StudentCalendar() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ function StudentCalendar() {
   const fetchEvents = async () => {
     try {
       // 현재 보고 있는 연도의 일정을 불러옴 (연도 이동 시에도 표시되도록)
-      const response = await axios.get(`https://capstone-project-of74.onrender.com/academic-events?year=${currentDate.getFullYear()}&limit=500`);
+      const response = await axios.get(`${API_BASE}/academic-events?year=${currentDate.getFullYear()}&limit=500`);
       setEvents(response.data);
     } catch (error) {
       console.error("일정 로딩 실패:", error);

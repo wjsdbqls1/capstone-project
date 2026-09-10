@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
+import { API_BASE } from '../../config';
 
 function TANoticeManage() {
   const [notices, setNotices] = useState([]);
@@ -25,7 +26,7 @@ function TANoticeManage() {
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.get('https://capstone-project-of74.onrender.com/notices?source=internal', config);
+      const response = await axios.get(`${API_BASE}/notices?source=internal`, config);
       setNotices(response.data);
       setFilteredList(response.data);
     } catch (error) {
@@ -77,7 +78,7 @@ function TANoticeManage() {
 
   const handleOpenEdit = async (id) => {
     try {
-      const response = await axios.get(`https://capstone-project-of74.onrender.com/notices/internal/${id}`);
+      const response = await axios.get(`${API_BASE}/notices/internal/${id}`);
       const parsedGrades = (response.data.target_grades || "0")
         .split(",")
         .map((g) => parseInt(g, 10))
@@ -123,10 +124,10 @@ function TANoticeManage() {
     try {
       const config = { headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` } };
       if (isEditMode) {
-        await axios.put(`https://capstone-project-of74.onrender.com/admin/notices/${targetId}`, sendData, config);
+        await axios.put(`${API_BASE}/admin/notices/${targetId}`, sendData, config);
         alert("수정되었습니다.");
       } else {
-        await axios.post(`https://capstone-project-of74.onrender.com/admin/notices`, sendData, config);
+        await axios.post(`${API_BASE}/admin/notices`, sendData, config);
         alert("등록되었습니다.");
       }
       setShowModal(false);
@@ -138,7 +139,7 @@ function TANoticeManage() {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       const token = localStorage.getItem('token');
       try {
-        await axios.delete(`https://capstone-project-of74.onrender.com/admin/notices/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.delete(`${API_BASE}/admin/notices/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         fetchNotices();
       } catch (error) { alert("삭제 실패"); }
     }

@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import bgImage from '../assets/로그인 이미지.jpg';
+import { API_BASE } from '../config';
 
-const API = 'https://capstone-project-of74.onrender.com';
+const API = API_BASE;
 const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 const PASSWORD_RULE_MESSAGE = '새 비밀번호는 8자 이상이며 영문, 숫자, 특수문자를 모두 포함해야 합니다.';
 

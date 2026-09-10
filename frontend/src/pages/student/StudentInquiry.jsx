@@ -8,6 +8,7 @@ import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
+import { API_BASE } from '../../config';
 
 function StudentInquiry() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ function StudentInquiry() {
       return;
     }
 
-    axios.get('https://capstone-project-of74.onrender.com/academic-events')
+    axios.get(`${API_BASE}/academic-events`)
       .then(res => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -79,7 +80,7 @@ function StudentInquiry() {
     }
 
     try {
-      await axios.post('https://capstone-project-of74.onrender.com/inquiries', formData, { 
+      await axios.post(`${API_BASE}/inquiries`, formData, { 
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data' 

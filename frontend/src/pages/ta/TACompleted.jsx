@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { MdCalendarToday, MdSearch, MdClose, MdPerson, MdAttachFile, MdEdit } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
+import { API_BASE } from '../../config';
 
 function TACompleted() {
   const navigate = useNavigate();
@@ -57,8 +58,8 @@ function TACompleted() {
     try {
       // 두 요청이 서로 의존하지 않는데 순서대로 기다리고 있었어서 병렬로 변경 (로딩 시간 절반으로)
       const [response, resEvents] = await Promise.all([
-        axios.get('https://capstone-project-of74.onrender.com/inquiries?status=completed', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('https://capstone-project-of74.onrender.com/academic-events'),
+        axios.get(`${API_BASE}/inquiries?status=completed`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE}/academic-events`),
       ]);
       const completedList = response.data;
       const eventMap = {}; resEvents.data.forEach(ev => { eventMap[ev.id] = ev; }); setAcademicEvents(eventMap);
@@ -70,8 +71,8 @@ function TACompleted() {
   const handleSelect = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const qRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      const rRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${id}/replies`, { headers: { Authorization: `Bearer ${token}` } });
+      const qRes = await axios.get(`${API_BASE}/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const rRes = await axios.get(`${API_BASE}/inquiries/${id}/replies`, { headers: { Authorization: `Bearer ${token}` } });
       setSelectedInquiry({ ...qRes.data, replies: rRes.data }); setEditingReplyId(null);
     } catch (error) { alert("상세 정보를 불러오지 못했습니다."); }
   };
@@ -83,7 +84,7 @@ function TACompleted() {
     formData.append("content", editContent);
     if (editFile) formData.append("file", editFile);
     try {
-      await axios.put(`https://capstone-project-of74.onrender.com/inquiries/${inquiryId}/replies/${replyId}`, formData, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } });
+      await axios.put(`${API_BASE}/inquiries/${inquiryId}/replies/${replyId}`, formData, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } });
       alert("수정되었습니다."); handleSelect(inquiryId);
     } catch (error) { alert("수정 실패"); }
   };
@@ -151,7 +152,7 @@ function TACompleted() {
                   </div>
                   <div style={modalStyles.qTitle}>Q. {inq.title}</div>
                   <div style={modalStyles.qText}>{inq.content}</div>
-                  {inq.attachment && (<div style={modalStyles.attachBox}><a href={`https://capstone-project-of74.onrender.com${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={13} /> 학생 첨부파일 보기</a></div>)}
+                  {inq.attachment && (<div style={modalStyles.attachBox}><a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={13} /> 학생 첨부파일 보기</a></div>)}
                   {inq.academic_event_id && academicEvents[inq.academic_event_id] && (<div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><MdCalendarToday size={13} /><span>관련 일정: {academicEvents[inq.academic_event_id].title} (~{academicEvents[inq.academic_event_id].end_date})</span></div>)}
                </div>
                <hr style={{margin:'25px 0', border:'0', borderTop:'1px dashed #ddd'}}/>
@@ -165,7 +166,7 @@ function TACompleted() {
                         {editingReplyId === r.id ? (
                             <div><textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/><div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}><button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button><button onClick={()=>handleUpdateReply(inq.id, r.id)} style={modalStyles.saveBtn}>저장</button></div></div>
                         ) : (
-                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`https://capstone-project-of74.onrender.com${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdAttachFile size={12} /> 첨부파일</a></div>)}{!isStudent && (<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdEdit size={11} /> 수정하기</button></div>)}</div>
+                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`${API_BASE}${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdAttachFile size={12} /> 첨부파일</a></div>)}{!isStudent && (<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdEdit size={11} /> 수정하기</button></div>)}</div>
                         )}
                     </div>
                     );

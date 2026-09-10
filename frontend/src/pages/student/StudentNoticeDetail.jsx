@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import '../../App.css';
 
 import bgImage from '../../assets/로그인 이미지.jpg'; 
+import { API_BASE } from '../../config';
 
 function StudentNoticeDetail() {
   const { id } = useParams();
@@ -20,7 +21,7 @@ function StudentNoticeDetail() {
   useEffect(() => {
     const fetchDetail = async () => {
       try {
-        const response = await axios.get(`https://capstone-project-of74.onrender.com/notices/internal/${id}`);
+        const response = await axios.get(`${API_BASE}/notices/internal/${id}`);
         setNotice(response.data);
       } catch (error) {
         console.error("상세 정보 로딩 실패:", error);
@@ -47,9 +48,9 @@ function StudentNoticeDetail() {
   const getFileUrl = () => {
     if (!notice.file_path) return "";
     if (source === 'external') {
-      return `https://capstone-project-of74.onrender.com/uploads/external_notices/${notice.file_path}`;
+      return `${API_BASE}/uploads/external_notices/${notice.file_path}`;
     }
-    return `https://capstone-project-of74.onrender.com/uploads/notices/${notice.file_path}`;
+    return `${API_BASE}/uploads/notices/${notice.file_path}`;
   };
 
   return (

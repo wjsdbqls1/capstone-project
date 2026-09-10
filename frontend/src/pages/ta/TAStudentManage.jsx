@@ -5,8 +5,9 @@ import { motion } from 'framer-motion';
 import { MdSearch, MdClose, MdAdd, MdLightbulb } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
+import { API_BASE } from '../../config';
 
-const API = 'https://capstone-project-of74.onrender.com';
+const API = API_BASE;
 
 // 상태 드롭다운 옵션 (표시값 → 서버 전송값)
 const STATUS_OPTIONS = [

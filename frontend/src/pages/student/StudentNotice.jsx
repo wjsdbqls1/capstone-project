@@ -8,6 +8,7 @@ import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg'; 
+import { API_BASE } from '../../config';
 
 function StudentNotice() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ function StudentNotice() {
         return;
       }
       try {
-        const response = await axios.get('https://capstone-project-of74.onrender.com/users/me', {
+        const response = await axios.get(`${API_BASE}/users/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUserGrade(response.data.grade); 
@@ -47,7 +48,7 @@ function StudentNotice() {
 
     const fetchNotices = async () => {
       try {
-        const response = await axios.get('https://capstone-project-of74.onrender.com/notices?source=all&limit=1000');
+        const response = await axios.get(`${API_BASE}/notices?source=all&limit=1000`);
         setNotices(response.data);
       } catch (error) {
         console.error("공지사항 로딩 실패:", error);

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { MdChevronLeft, MdChevronRight, MdAdd, MdClose, MdDelete } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
+import { API_BASE } from '../../config';
 
 function TACalendarManage() {
   const navigate = useNavigate();
@@ -33,11 +34,11 @@ function TACalendarManage() {
   const fetchData = async () => {
     try {
       // 현재 보고 있는 연도의 일정을 불러옴 (연도 이동 시에도 표시되도록)
-      const eventRes = await axios.get(`https://capstone-project-of74.onrender.com/academic-events?year=${currentDate.getFullYear()}&limit=500`);
+      const eventRes = await axios.get(`${API_BASE}/academic-events?year=${currentDate.getFullYear()}&limit=500`);
       setAcademicEvents(eventRes.data);
       let memos = [];
       if (token) {
-        const memoRes = await axios.get('https://capstone-project-of74.onrender.com/memos', { headers: { Authorization: `Bearer ${token}` } });
+        const memoRes = await axios.get(`${API_BASE}/memos`, { headers: { Authorization: `Bearer ${token}` } });
         memos = memoRes.data;
         setMyMemos(memos);
       }
@@ -52,7 +53,7 @@ function TACalendarManage() {
     if (!memoInput.trim()) return;
     if (!token) { alert("조교 로그인이 필요합니다."); return; }
     try {
-        await axios.post('https://capstone-project-of74.onrender.com/memos', { memo_date: selectedDate, content: memoInput }, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.post(`${API_BASE}/memos`, { memo_date: selectedDate, content: memoInput }, { headers: { Authorization: `Bearer ${token}` } });
         setMemoInput("");
         const { events, memos } = await fetchData();
         updateSelectedItems(selectedDate, events, memos); // 최신 데이터로 모달 갱신
@@ -61,14 +62,14 @@ function TACalendarManage() {
   const handleDeleteMemo = async (id) => {
     if(!window.confirm("삭제?")) return;
     try {
-      await axios.delete(`https://capstone-project-of74.onrender.com/memos/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${API_BASE}/memos/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       const { events, memos } = await fetchData();
       updateSelectedItems(selectedDate, events, memos);
     } catch (err) {}
   };
   const handleRegister = async () => {
     if(!newEvent.title || !newEvent.start_date || !newEvent.end_date) return;
-    const base = 'https://capstone-project-of74.onrender.com/academic-events';
+    const base = `${API_BASE}/academic-events`;
     try {
       if (editingEventId) {
         await axios.put(`${base}/${editingEventId}`, newEvent);
@@ -94,7 +95,7 @@ function TACalendarManage() {
   const handleDeleteEvent = async (id) => {
     if(!window.confirm("이 일정을 삭제하시겠습니까?")) return;
     try {
-      await axios.delete(`https://capstone-project-of74.onrender.com/academic-events/${id}`);
+      await axios.delete(`${API_BASE}/academic-events/${id}`);
       const { events, memos } = await fetchData();
       if (selectedDate) updateSelectedItems(selectedDate, events, memos);
     } catch (error) { alert(error.response?.data?.detail || "삭제 실패"); }

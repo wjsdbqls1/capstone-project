@@ -1,7 +1,8 @@
+import { API_BASE } from './config';
 // src/pushNotifications.js
 import axios from 'axios'
 
-const API = 'https://capstone-project-of74.onrender.com'
+const API = API_BASE
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)

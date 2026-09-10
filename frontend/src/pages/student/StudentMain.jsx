@@ -8,8 +8,9 @@ import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
+import { API_BASE } from '../../config';
 
-const API = 'https://capstone-project-of74.onrender.com';
+const API = API_BASE;
 
 // 목록형 보조 메뉴 (문의하기는 상단 CTA로 별도 처리)
 const LIST_ITEMS = [

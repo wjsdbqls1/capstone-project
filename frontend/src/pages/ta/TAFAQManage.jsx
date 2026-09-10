@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
+import { API_BASE } from '../../config';
 
 function TAFaqManage() {
   const [faqs, setFaqs] = useState([]);
@@ -23,7 +24,7 @@ function TAFaqManage() {
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.get('https://capstone-project-of74.onrender.com/faqs', config);
+      const response = await axios.get(`${API_BASE}/faqs`, config);
       setFaqs(response.data);
       setFilteredFaqs(response.data);
     } catch (error) { console.error("FAQ 로딩 실패:", error); }
@@ -84,10 +85,10 @@ function TAFaqManage() {
     try {
       const config = { headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` } };
       if (isEditMode) {
-        await axios.put(`https://capstone-project-of74.onrender.com/faqs/${targetId}`, sendData, config);
+        await axios.put(`${API_BASE}/faqs/${targetId}`, sendData, config);
         alert("수정되었습니다.");
       } else {
-        await axios.post(`https://capstone-project-of74.onrender.com/faqs`, sendData, config);
+        await axios.post(`${API_BASE}/faqs`, sendData, config);
         alert("등록되었습니다.");
       }
       setShowModal(false);
@@ -99,7 +100,7 @@ function TAFaqManage() {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       const token = localStorage.getItem('token');
       try {
-        await axios.delete(`https://capstone-project-of74.onrender.com/faqs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.delete(`${API_BASE}/faqs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         fetchFaqs();
       } catch (error) { alert("삭제 실패"); }
     }

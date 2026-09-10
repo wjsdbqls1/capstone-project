@@ -11,8 +11,9 @@ import { MdChevronLeft, MdPerson, MdClose, MdLogout, MdHome } from 'react-icons/
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
+import { API_BASE } from '../../config';
 
-const API = 'https://capstone-project-of74.onrender.com';
+const API = API_BASE;
 const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 const PASSWORD_RULE_MESSAGE = '새 비밀번호는 8자 이상이며 영문, 숫자, 특수문자를 모두 포함해야 합니다.';
 
@@ -60,7 +61,7 @@ function StudentMyPage() {
       return;
     }
 
-    axios.get('https://capstone-project-of74.onrender.com/users/me', {
+    axios.get(`${API_BASE}/users/me`, {
       headers: {
         Authorization: `Bearer ${token}` 
       }

@@ -9,6 +9,7 @@ import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
+import { API_BASE } from '../../config';
 
 function StudentHistory() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ function StudentHistory() {
     }
 
     try {
-      const response = await axios.get('https://capstone-project-of74.onrender.com/inquiries/me', {
+      const response = await axios.get(`${API_BASE}/inquiries/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInquiries(response.data);
@@ -52,10 +53,10 @@ function StudentHistory() {
     }
 
     try {
-      const qRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${id}`, {
+      const qRes = await axios.get(`${API_BASE}/inquiries/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const rRes = await axios.get(`https://capstone-project-of74.onrender.com/inquiries/${id}/replies`, {
+      const rRes = await axios.get(`${API_BASE}/inquiries/${id}/replies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -93,7 +94,7 @@ function StudentHistory() {
 
     try {
       await axios.post(
-        `https://capstone-project-of74.onrender.com/inquiries/${selectedInquiry.id}/followup`,
+        `${API_BASE}/inquiries/${selectedInquiry.id}/followup`,
         formData,
         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
       );
@@ -213,7 +214,7 @@ function StudentHistory() {
                   {detailData.attachment && (
                     <div style={modalStyles.section}>
                         <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={14} /> 내 첨부파일</div>
-                        <a href={`https://capstone-project-of74.onrender.com${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={{...modalStyles.link, display: 'inline-flex', alignItems: 'center', gap: '5px'}}>
+                        <a href={`${API_BASE}${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={{...modalStyles.link, display: 'inline-flex', alignItems: 'center', gap: '5px'}}>
                             <MdDownload size={14} /> 다운로드 / 보기
                         </a>
                     </div>
@@ -238,7 +239,7 @@ function StudentHistory() {
                             {reply.attachment && (
                               <div style={{marginTop:'10px', fontSize:'14px', borderTop:'1px dashed rgba(0,0,0,0.15)', paddingTop:'5px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
                                   <MdAttachFile size={13} /> <b>첨부파일:</b>
-                                  <a href={`https://capstone-project-of74.onrender.com${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
+                                  <a href={`${API_BASE}${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
                                       확인하기
                                   </a>
                               </div>

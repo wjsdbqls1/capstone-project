@@ -4,8 +4,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdAttachFile, MdSmartToy } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
+import { API_BASE } from '../../config';
 
-const API_BASE = 'https://capstone-project-of74.onrender.com';
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
 function TAPending() {
