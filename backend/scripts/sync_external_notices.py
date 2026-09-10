@@ -22,6 +22,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sqlalchemy.orm import Session
 from db import SessionLocal
 from models import Notice, User
+import storage_service
 
 # 설정
 BASE_URL = "https://home.sch.ac.kr"
@@ -75,8 +76,15 @@ def download_file(session, file_url, original_filename):
         # 세션(session)을 사용해서 다운로드
         resp = session.get(file_url, stream=True, timeout=30, verify=False)
         if resp.status_code == 200:
-            with open(saved_path, "wb") as f:
-                f.write(resp.content)
+            if storage_service.enabled:
+                storage_service.upload_bytes(
+                    f"external_notices/{saved_filename}",
+                    resp.content,
+                    resp.headers.get("Content-Type"),
+                )
+            else:
+                with open(saved_path, "wb") as f:
+                    f.write(resp.content)
             return saved_filename
     except Exception as e:
         print(f"      ❌ 다운로드 오류: {e}")

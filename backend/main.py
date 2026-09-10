@@ -5,9 +5,11 @@ import threading
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, date
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
+
+import storage_service
 from sqlalchemy.orm import Session
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -61,8 +63,24 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
     print(f"📂 '{UPLOAD_DIR}' 폴더가 생성되었습니다.")
 
-# http://13.219.208.109:8000/uploads/파일명 으로 접근 가능하게 설정
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+# 첨부파일은 Supabase Storage에 있지만, DB와 프론트엔드가 쓰던 /uploads/... 주소를
+# 그대로 유지하기 위해 이 경로에서 실제 저장 위치로 넘겨준다.
+# 디스크에 남아 있는 예전 파일이 있으면 그걸 먼저 돌려준다.
+@app.get("/uploads/{path:path}")
+def serve_upload(path: str):
+    if not path or path.startswith("/") or ".." in path.replace("\\", "/").split("/"):
+        raise HTTPException(status_code=404, detail="not found")
+
+    local_path = os.path.join(UPLOAD_DIR, path)
+    if os.path.isfile(local_path):
+        return FileResponse(local_path)
+
+    if not storage_service.enabled:
+        raise HTTPException(status_code=404, detail="not found")
+
+    # 폴더 없이 저장되던 문의 첨부(/uploads/파일명)는 misc/ 아래에 올라간다
+    object_path = path if "/" in path else f"misc/{path}"
+    return RedirectResponse(storage_service.public_url(object_path), status_code=307)
 
 
 # -----------------------------------------------------------
