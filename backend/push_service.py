@@ -75,6 +75,25 @@ def send_push_to_users(user_ids, title: str, body: str, url: str = "/"):
         db.close()
 
 
+def send_push_to_students_by_grade(grades: list[int], title: str, body: str, url: str = "/"):
+    """대상 학년으로 수신자를 백그라운드에서 직접 찾아 발송.
+    학생 수만큼의 조회를 요청-응답 경로에서 빼기 위한 것(grades에 0이 있으면 전체)."""
+    if not _vapid:
+        return
+    db = SessionLocal()
+    try:
+        q = db.query(User.id).filter(User.role == "student")
+        if 0 not in grades:
+            q = q.filter(User.grade.in_(grades))
+        user_ids = [row[0] for row in q.all()]
+        if not user_ids:
+            return
+        subs = db.query(PushSubscription).filter(PushSubscription.user_id.in_(user_ids)).all()
+        _send_to_subscriptions(db, subs, title, body, url)
+    finally:
+        db.close()
+
+
 def send_push_to_staff(title: str, body: str, url: str = "/"):
     db = SessionLocal()
     try:

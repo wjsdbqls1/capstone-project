@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from deps import get_db
 from auth import require_assistant
 from models import Notice, User
-from push_service import send_push_to_users
+from push_service import send_push_to_students_by_grade
 from upload_utils import save_upload
 
 r = APIRouter(prefix="/admin/notices", tags=["admin-notices"])
@@ -50,33 +50,47 @@ def create_notice(
     normalized = _normalize_target_grades(target_grades)
     grades = _grade_list(normalized)
 
+    # commit 이후에 ORM 객체 속성을 읽으면 만료된 값을 다시 불러오느라 DB 왕복이 한 번 더 생김.
+    # 서버-DB 왕복이 비싼 환경이라 응답에 쓸 값은 미리 지역 변수로 확보해 둔다.
+    legacy_grade = grades[0] if len(grades) == 1 else 0
+    posted = date.today()
+    author_id = current_user.id
+
     new_notice = Notice(
         title=title,
         content_html=content_html,
-        target_grade=grades[0] if len(grades) == 1 else 0,  # 하위 호환용
+        target_grade=legacy_grade,  # 하위 호환용
         target_grades=normalized,
-        posted_date=date.today(),
-        author_id=current_user.id,
+        posted_date=posted,
+        author_id=author_id,
         file_path=saved_filename,       # ★ 저장
         original_filename=original_filename # ★ 저장
     )
     db.add(new_notice)
+    db.flush()  # id만 먼저 확보 (INSERT)
+    notice_id = new_notice.id
     db.commit()
-    db.refresh(new_notice)
 
-    q = db.query(User).filter(User.role == "student")
-    if 0 not in grades:
-        q = q.filter(User.grade.in_(grades))
-    # 대상자 수가 많으면(특히 "전체") 푸시 발송이 오래 걸릴 수 있어 응답을 기다리게 하지 않고 백그라운드로 처리
+    # 수신자 조회까지 백그라운드로 넘겨 응답 경로의 DB 왕복을 줄임
     background_tasks.add_task(
-        send_push_to_users,
-        [u.id for u in q.all()],
+        send_push_to_students_by_grade,
+        grades,
         title="새 공지사항",
-        body=new_notice.title,
+        body=title,
         url="/student/notice",
     )
 
-    return new_notice
+    return {
+        "id": notice_id,
+        "title": title,
+        "content_html": content_html,
+        "target_grade": legacy_grade,
+        "target_grades": normalized,
+        "posted_date": str(posted),
+        "author_id": author_id,
+        "file_path": saved_filename,
+        "original_filename": original_filename,
+    }
 
 # 2. 수정 (간단하게 구현: 새 파일 올리면 교체, 안 올리면 유지)
 @r.put("/{notice_id}")
@@ -109,14 +123,11 @@ def update_notice(
 
     db.commit()
 
-    q = db.query(User).filter(User.role == "student")
-    if 0 not in grades:
-        q = q.filter(User.grade.in_(grades))
     background_tasks.add_task(
-        send_push_to_users,
-        [u.id for u in q.all()],
+        send_push_to_students_by_grade,
+        grades,
         title="공지사항 수정",
-        body=notice.title,
+        body=title,
         url="/student/notice",
     )
 

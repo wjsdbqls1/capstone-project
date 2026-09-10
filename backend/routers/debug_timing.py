@@ -49,7 +49,12 @@ def db_timing(db: Session = Depends(get_db), current_user: User = Depends(requir
         finally:
             c.close()
 
+    steps["pool_status_before_reuse"] = engine.pool.status()
     measure("raw_engine_connect", raw_connect)
+    steps["pool_status_after_reuse"] = engine.pool.status()
+    # 방금 반납한 커넥션을 곧바로 다시 꺼내 쓰면 재사용되는지 확인
+    measure("raw_engine_connect_again", raw_connect)
+    measure("raw_engine_connect_again2", raw_connect)
 
     # 인증에서 쓰는 사용자 단건 조회
     measure("user_lookup", lambda: db.query(User).filter(User.id == current_user.id).first())
