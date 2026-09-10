@@ -89,6 +89,9 @@ function TAPending() {
 
   // 키워드를 하이라이팅해서 렌더링
   const renderHighlighted = (text, keywords) => {
+    // 모달이 닫히는 애니메이션 도중 selectedInquiry가 null이 되면서
+    // text가 undefined로 들어와 .split()에서 크래시 나는 걸 방지
+    if (!text) return null;
     if (!keywords || keywords.length === 0) return <span>{text}</span>;
     const escaped = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
