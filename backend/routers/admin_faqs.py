@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,7 @@ class FAQCreateIn(BaseModel):
     category: str = "기타"
 
 @r.post("")
-def create_faq(data: FAQCreateIn, a=Depends(require_assistant), db: Session = Depends(get_db)):
+def create_faq(data: FAQCreateIn, background_tasks: BackgroundTasks, a=Depends(require_assistant), db: Session = Depends(get_db)):
     if data.category not in VALID_CATEGORIES:
         raise HTTPException(status_code=400, detail=f"유효하지 않은 카테고리입니다. 허용값: {VALID_CATEGORIES}")
     f = FAQ(
@@ -34,8 +34,8 @@ def create_faq(data: FAQCreateIn, a=Depends(require_assistant), db: Session = De
     db.refresh(f)
 
     student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
-    send_push_to_users(
-        db, student_ids,
+    background_tasks.add_task(
+        send_push_to_users, student_ids,
         title="새 FAQ 등록",
         body=f.question,
         url="/student/faq",
@@ -49,7 +49,7 @@ class FAQUpdateIn(BaseModel):
     category: str | None = None
 
 @r.patch("/{faq_id}")
-def update_faq(faq_id: int, data: FAQUpdateIn, a=Depends(require_assistant), db: Session = Depends(get_db)):
+def update_faq(faq_id: int, data: FAQUpdateIn, background_tasks: BackgroundTasks, a=Depends(require_assistant), db: Session = Depends(get_db)):
     f = db.query(FAQ).filter(FAQ.id == faq_id).first()
     if not f:
         raise HTTPException(status_code=404, detail="faq not found")
@@ -66,8 +66,8 @@ def update_faq(faq_id: int, data: FAQUpdateIn, a=Depends(require_assistant), db:
     db.commit()
 
     student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
-    send_push_to_users(
-        db, student_ids,
+    background_tasks.add_task(
+        send_push_to_users, student_ids,
         title="FAQ 수정",
         body=f.question,
         url="/student/faq",

@@ -3,7 +3,7 @@ import os
 from typing import Optional
 from sqlalchemy import exists, and_
 from sqlalchemy.orm import Session, joinedload
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, BackgroundTasks
 from deps import get_db, get_current_user
 from auth import require_assistant
 from models import Inquiry, InquiryReply, InquiryHistory, AcademicEvent, User
@@ -29,6 +29,7 @@ def create_inquiry(
     content: str = Form(...),
     academic_event_id: Optional[int] = Form(None),
     file: Optional[UploadFile] = File(None),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -45,8 +46,8 @@ def create_inquiry(
     db.add(q)
     db.commit()
 
-    send_push_to_staff(
-        db,
+    background_tasks.add_task(
+        send_push_to_staff,
         title="새 문의 등록",
         body=f"{current_user.name} 학생: '{title}'",
         url="/ta/pending",
@@ -215,6 +216,7 @@ def create_reply(
     inquiry_id: int,
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
@@ -236,8 +238,8 @@ def create_reply(
 
     db.commit()
 
-    send_push_to_user(
-        db, q.user_id,
+    background_tasks.add_task(
+        send_push_to_user, q.user_id,
         title="문의 답변 등록",
         body=f"'{q.title}' 문의에 답변이 등록되었습니다.",
         url="/student/history",
@@ -251,6 +253,7 @@ def create_student_followup(
     inquiry_id: int,
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -275,8 +278,8 @@ def create_student_followup(
 
     db.commit()
 
-    send_push_to_staff(
-        db,
+    background_tasks.add_task(
+        send_push_to_staff,
         title="문의에 추가 질문 등록",
         body=f"{current_user.name} 학생: '{q.title}'",
         url="/ta/pending",
@@ -291,6 +294,7 @@ def update_reply(
     reply_id: int,
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
@@ -318,8 +322,8 @@ def update_reply(
 
     q = db.query(Inquiry).filter(Inquiry.id == inquiry_id).first()
     if q:
-        send_push_to_user(
-            db, q.user_id,
+        background_tasks.add_task(
+            send_push_to_user, q.user_id,
             title="문의 답변 수정",
             body=f"'{q.title}' 문의의 답변이 수정되었습니다.",
             url="/student/history",

@@ -1,6 +1,6 @@
 # backend/routers/absence.py
 import os
-from fastapi import APIRouter, Depends, File, UploadFile, Form
+from fastapi import APIRouter, Depends, File, UploadFile, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from deps import get_db, get_current_user
 from models import AbsenceRequest, AbsenceAttachment, User
@@ -17,6 +17,7 @@ def create_absence(
     subject: str = Form(...),
     reason: str = Form(...),
     file: UploadFile = File(...),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -47,8 +48,8 @@ def create_absence(
     db.add(new_attachment)
     db.commit()
 
-    send_push_to_staff(
-        db,
+    background_tasks.add_task(
+        send_push_to_staff,
         title="새 공결 신청",
         body=f"{current_user.name} 학생: '{subject}' ({target_date})",
         url="/ta/absence",

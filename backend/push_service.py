@@ -7,6 +7,7 @@ from py_vapid import Vapid01
 from pywebpush import webpush, WebPushException
 from sqlalchemy.orm import Session
 
+from db import SessionLocal
 from models import PushSubscription, User
 
 load_dotenv()
@@ -19,11 +20,10 @@ VAPID_CLAIM_EMAIL = os.getenv("VAPID_CLAIM_EMAIL", "mailto:admin@example.com")
 _vapid = Vapid01.from_pem(_VAPID_PRIVATE_KEY_PEM.encode()) if _VAPID_PRIVATE_KEY_PEM else None
 
 
-def send_push_to_user(db: Session, user_id: int, title: str, body: str, url: str = "/"):
-    if not _vapid:
-        return
-
-    subs = db.query(PushSubscription).filter(PushSubscription.user_id == user_id).all()
+def _send_to_subscriptions(db: Session, subs: list[PushSubscription], title: str, body: str, url: str):
+    """구독 목록에 실제로 webpush를 쏘는 내부 헬퍼.
+    각 요청이 외부 푸시 서비스로 나가는 블로킹 네트워크 호출이라 느릴 수 있으므로,
+    이 함수는 항상 백그라운드 태스크로만 호출해야 함(요청-응답 경로를 막지 않도록)."""
     payload = json.dumps({"title": title, "body": body, "url": url})
 
     for sub in subs:
@@ -47,11 +47,38 @@ def send_push_to_user(db: Session, user_id: int, title: str, body: str, url: str
             print(f"⚠️ [push] 알림 발송 실패: {e}")
 
 
-def send_push_to_users(db: Session, user_ids, title: str, body: str, url: str = "/"):
-    for uid in user_ids:
-        send_push_to_user(db, uid, title, body, url)
+# ★ 아래 세 함수는 요청 처리 중 직접 호출하지 말고 항상
+#   background_tasks.add_task(send_push_to_..., ...) 로만 호출할 것.
+# 요청에서 쓰던 DB 세션을 재사용하지 않고 함수 안에서 새로 열고 닫는다
+# (요청이 끝나면 그 세션은 닫혀버리므로, 백그라운드에서는 반드시 새 세션이 필요함).
+
+def send_push_to_user(user_id: int, title: str, body: str, url: str = "/"):
+    if not _vapid:
+        return
+    db = SessionLocal()
+    try:
+        subs = db.query(PushSubscription).filter(PushSubscription.user_id == user_id).all()
+        _send_to_subscriptions(db, subs, title, body, url)
+    finally:
+        db.close()
 
 
-def send_push_to_staff(db: Session, title: str, body: str, url: str = "/"):
-    staff_ids = [u.id for u in db.query(User).filter(User.role.in_(("assistant", "admin"))).all()]
-    send_push_to_users(db, staff_ids, title, body, url)
+def send_push_to_users(user_ids, title: str, body: str, url: str = "/"):
+    if not _vapid or not user_ids:
+        return
+    db = SessionLocal()
+    try:
+        # 대상자 수만큼 쿼리를 반복하지 않고 한 번에 조회
+        subs = db.query(PushSubscription).filter(PushSubscription.user_id.in_(list(user_ids))).all()
+        _send_to_subscriptions(db, subs, title, body, url)
+    finally:
+        db.close()
+
+
+def send_push_to_staff(title: str, body: str, url: str = "/"):
+    db = SessionLocal()
+    try:
+        staff_ids = [u.id for u in db.query(User).filter(User.role.in_(("assistant", "admin"))).all()]
+    finally:
+        db.close()
+    send_push_to_users(staff_ids, title, body, url)

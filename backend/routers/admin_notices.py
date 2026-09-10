@@ -2,7 +2,7 @@
 import os
 from datetime import date
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from deps import get_db
 from auth import require_assistant
@@ -35,6 +35,7 @@ def create_notice(
     content_html: str = Form(...),
     target_grades: str = Form("0"),  # 콤마로 구분된 대상 학년, 예: "0"(전체) 또는 "1,3"
     file: Optional[UploadFile] = File(None), # 파일은 선택사항
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
@@ -66,8 +67,10 @@ def create_notice(
     q = db.query(User).filter(User.role == "student")
     if 0 not in grades:
         q = q.filter(User.grade.in_(grades))
-    send_push_to_users(
-        db, [u.id for u in q.all()],
+    # 대상자 수가 많으면(특히 "전체") 푸시 발송이 오래 걸릴 수 있어 응답을 기다리게 하지 않고 백그라운드로 처리
+    background_tasks.add_task(
+        send_push_to_users,
+        [u.id for u in q.all()],
         title="새 공지사항",
         body=new_notice.title,
         url="/student/notice",
@@ -83,6 +86,7 @@ def update_notice(
     content_html: str = Form(...),
     target_grades: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
@@ -108,8 +112,9 @@ def update_notice(
     q = db.query(User).filter(User.role == "student")
     if 0 not in grades:
         q = q.filter(User.grade.in_(grades))
-    send_push_to_users(
-        db, [u.id for u in q.all()],
+    background_tasks.add_task(
+        send_push_to_users,
+        [u.id for u in q.all()],
         title="공지사항 수정",
         body=notice.title,
         url="/student/notice",

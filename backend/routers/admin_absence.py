@@ -1,5 +1,5 @@
 # backend/routers/admin_absence.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from pydantic import BaseModel
@@ -67,8 +67,9 @@ def get_absence_list(db: Session = Depends(get_db), current_user: User = Depends
 # 2. 공결 승인/반려 처리
 @router.put("/{request_id}/status")
 def update_absence_status(
-    request_id: int, 
+    request_id: int,
     update_data: AbsenceStatusUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
@@ -99,8 +100,8 @@ def update_absence_status(
     db.commit()
 
     status_label = "승인" if update_data.status == "APPROVED" else "반려"
-    send_push_to_user(
-        db, req.student_id,
+    background_tasks.add_task(
+        send_push_to_user, req.student_id,
         title="공결 신청 처리 결과",
         body=f"'{req.course_name}' 공결 신청이 {status_label}되었습니다.",
         url="/student/absence",

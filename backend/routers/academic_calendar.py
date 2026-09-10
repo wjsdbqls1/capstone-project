@@ -1,7 +1,7 @@
 # backend/routers/academic_calendar.py
 from datetime import date, datetime
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -59,7 +59,7 @@ def list_events(
     ]
 
 @r.post("")
-def create_academic_event(data: AcademicEventCreate, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
+def create_academic_event(data: AcademicEventCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
     print(f"[DEBUG] Received event data: {data}")
     
     try:
@@ -88,8 +88,8 @@ def create_academic_event(data: AcademicEventCreate, db: Session = Depends(get_d
     print(f"[SUCCESS] Event created: {new_event.id} ({new_event.title})")
 
     student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
-    send_push_to_users(
-        db, student_ids,
+    background_tasks.add_task(
+        send_push_to_users, student_ids,
         title="새 일정 등록",
         body=new_event.title,
         url="/student/calendar",
@@ -99,7 +99,7 @@ def create_academic_event(data: AcademicEventCreate, db: Session = Depends(get_d
 
 
 @r.put("/{event_id}")
-def update_academic_event(event_id: int, data: AcademicEventCreate, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
+def update_academic_event(event_id: int, data: AcademicEventCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
     ev = db.query(AcademicEvent).filter(AcademicEvent.id == event_id).first()
     if not ev:
         raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다.")
@@ -121,8 +121,8 @@ def update_academic_event(event_id: int, data: AcademicEventCreate, db: Session 
     db.commit()
 
     student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
-    send_push_to_users(
-        db, student_ids,
+    background_tasks.add_task(
+        send_push_to_users, student_ids,
         title="일정 수정",
         body=ev.title,
         url="/student/calendar",
