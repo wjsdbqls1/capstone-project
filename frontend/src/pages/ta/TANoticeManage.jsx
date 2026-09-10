@@ -17,7 +17,8 @@ function TANoticeManage() {
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [targetId, setTargetId] = useState(null);
-  const [formData, setFormData] = useState({ title: "", content_html: "", target_grade: 0 });
+  // targetGrades: 선택된 학년 배열. [0]이면 전체 공지, 그 외엔 [1,3]처럼 중복 선택된 학년들
+  const [formData, setFormData] = useState({ title: "", content_html: "", targetGrades: [0] });
   const [file, setFile] = useState(null);
 
   const fetchNotices = async () => {
@@ -69,24 +70,45 @@ function TANoticeManage() {
 
   const handleOpenCreate = () => {
     setIsEditMode(false);
-    setFormData({ title: "", content_html: "", target_grade: 0 });
-    setFile(null); 
+    setFormData({ title: "", content_html: "", targetGrades: [0] });
+    setFile(null);
     setShowModal(true);
   };
 
   const handleOpenEdit = async (id) => {
     try {
       const response = await axios.get(`https://capstone-project-of74.onrender.com/notices/internal/${id}`);
+      const parsedGrades = (response.data.target_grades || "0")
+        .split(",")
+        .map((g) => parseInt(g, 10))
+        .filter((g) => !isNaN(g));
       setFormData({
         title: response.data.title,
         content_html: response.data.content_html,
-        target_grade: response.data.target_grade || 0
+        targetGrades: parsedGrades.length > 0 ? parsedGrades : [0]
       });
-      setFile(null); 
+      setFile(null);
       setTargetId(id);
       setIsEditMode(true);
       setShowModal(true);
     } catch (error) { alert("공지 정보를 불러오지 못했습니다."); }
+  };
+
+  // "전체"를 고르면 나머지는 자동 해제되고, 특정 학년을 고르면 "전체"가 자동 해제됨.
+  // 마지막 하나까지 해제하려고 하면 다시 "전체"로 되돌림(빈 선택 방지)
+  const toggleGrade = (grade) => {
+    setFormData((prev) => {
+      let next;
+      if (grade === 0) {
+        next = [0];
+      } else {
+        const withoutAll = prev.targetGrades.filter((g) => g !== 0);
+        next = withoutAll.includes(grade)
+          ? withoutAll.filter((g) => g !== grade)
+          : [...withoutAll, grade];
+      }
+      return { ...prev, targetGrades: next.length > 0 ? next : [0] };
+    });
   };
 
   const handleSave = async () => {
@@ -95,7 +117,7 @@ function TANoticeManage() {
     const sendData = new FormData();
     sendData.append("title", formData.title);
     sendData.append("content_html", formData.content_html);
-    sendData.append("target_grade", formData.target_grade);
+    sendData.append("target_grades", formData.targetGrades.join(","));
     if (file) sendData.append("file", file);
 
     try {
@@ -122,14 +144,21 @@ function TANoticeManage() {
     }
   };
 
-  const getGradeText = (grade) => grade === 0 ? "전체 공지" : `${grade}학년`;
-  const getGradeBadgeStyle = (grade) => {
-    switch (grade) {
-        case 0: return { backgroundColor: '#37474f', color: 'white' }; 
-        case 1: return { backgroundColor: '#e8f5e9', color: '#2e7d32' };
-        case 2: return { backgroundColor: '#e3f2fd', color: '#1565c0' };
-        case 3: return { backgroundColor: '#fff3e0', color: '#ef6c00' };
-        case 4: return { backgroundColor: '#ffebee', color: '#c62828' };
+  // target_grades: "0"(전체) 또는 "1,3"처럼 콤마로 구분된 학년 문자열
+  const getGradeText = (targetGrades) => {
+    const grades = (targetGrades || "0").split(",").map((g) => g.trim());
+    if (grades.includes("0")) return "전체 공지";
+    return grades.map((g) => `${g}학년`).join(", ");
+  };
+  const getGradeBadgeStyle = (targetGrades) => {
+    const grades = (targetGrades || "0").split(",").map((g) => g.trim());
+    if (grades.includes("0")) return { backgroundColor: '#37474f', color: 'white' };
+    if (grades.length > 1) return { backgroundColor: '#ede7f6', color: '#5e35b1' }; // 여러 학년 동시 대상
+    switch (grades[0]) {
+        case '1': return { backgroundColor: '#e8f5e9', color: '#2e7d32' };
+        case '2': return { backgroundColor: '#e3f2fd', color: '#1565c0' };
+        case '3': return { backgroundColor: '#fff3e0', color: '#ef6c00' };
+        case '4': return { backgroundColor: '#ffebee', color: '#c62828' };
         default: return { backgroundColor: '#eee', color: '#333' };
     }
   };
@@ -176,8 +205,8 @@ function TANoticeManage() {
                     >
                         <div style={styles.cardContent}>
                             <div style={styles.metaRow}>
-                                <span style={{...styles.gradeBadge, ...getGradeBadgeStyle(item.target_grade)}}>
-                                    {getGradeText(item.target_grade)}
+                                <span style={{...styles.gradeBadge, ...getGradeBadgeStyle(item.target_grades)}}>
+                                    {getGradeText(item.target_grades)}
                                 </span>
                                 <span style={styles.date}>{item.posted_date}</span>
                                 {item.original_filename && <MdAttachFile size={12} color="#888" />}
@@ -200,14 +229,22 @@ function TANoticeManage() {
             </div>
             <div style={modalStyles.content}>
               <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>대상 학년</label>
-                <select style={modalStyles.selectInput} value={formData.target_grade} onChange={(e) => setFormData({...formData, target_grade: parseInt(e.target.value)})}>
-                  <option value={0}>전체 공지</option>
-                  <option value={1}>1학년</option>
-                  <option value={2}>2학년</option>
-                  <option value={3}>3학년</option>
-                  <option value={4}>4학년</option>
-                </select>
+                <label style={modalStyles.label}>대상 학년 <span style={{fontWeight:'normal', color:'#888', fontSize:'12px'}}>(여러 학년 중복 선택 가능)</span></label>
+                <div style={modalStyles.gradeChipRow}>
+                  {[{ value: 0, label: '전체' }, { value: 1, label: '1학년' }, { value: 2, label: '2학년' }, { value: 3, label: '3학년' }, { value: 4, label: '4학년' }].map((opt) => {
+                    const active = formData.targetGrades.includes(opt.value);
+                    return (
+                      <button
+                        type="button"
+                        key={opt.value}
+                        onClick={() => toggleGrade(opt.value)}
+                        style={active ? modalStyles.gradeChipActive : modalStyles.gradeChip}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div style={modalStyles.inputGroup}>
                 <label style={modalStyles.label}>제목</label>
@@ -278,6 +315,9 @@ const modalStyles = {
   label: { fontSize: '14px', color: '#333', fontWeight: 'bold', marginBottom: '6px', display: 'block' },
   input: { width: '100%', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', boxSizing: 'border-box', fontSize: '15px' },
   selectInput: { width: '100%', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', fontSize: '15px', backgroundColor: 'white' },
+  gradeChipRow: { display: 'flex', flexWrap: 'wrap', gap: '8px' },
+  gradeChip: { padding: '8px 14px', borderRadius: '20px', border: '1px solid #ced4da', backgroundColor: 'white', color: '#495057', fontSize: '14px', fontWeight: '500', cursor: 'pointer' },
+  gradeChipActive: { padding: '8px 14px', borderRadius: '20px', border: '1px solid #003675', backgroundColor: '#003675', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
   fileInput: { width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#f8f9fa' },
   textarea: { width: '100%', minHeight: '180px', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', boxSizing: 'border-box', resize: 'none', fontSize: '15px', lineHeight: '1.5' },
   saveBtn: { width: '100%', padding: '15px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }

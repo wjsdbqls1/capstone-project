@@ -72,7 +72,10 @@ function StudentNoticeDetail() {
         <div style={styles.titleSection}>
           <div style={styles.badgeWrapper}>
               <span style={styles.badge}>
-                {notice.target_grade === 0 ? '전체' : `${notice.target_grade}학년`}
+                {(() => {
+                  const grades = (notice.target_grades || "0").split(",").map(Number);
+                  return grades.includes(0) ? '전체' : `${grades.join(', ')}학년`;
+                })()}
               </span>
               {source === 'external' && <span style={styles.extBadge}>학과홈페이지</span>}
           </div>

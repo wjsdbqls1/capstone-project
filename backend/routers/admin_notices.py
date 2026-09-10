@@ -15,12 +15,25 @@ r = APIRouter(prefix="/admin/notices", tags=["admin-notices"])
 UPLOAD_DIR = "uploads/notices"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
+def _normalize_target_grades(raw: str) -> str:
+    """"0,1,3" 같은 입력을 정리. 0(전체)이 포함되면 다른 값은 무시하고 "0"만 남김."""
+    grades = {g.strip() for g in raw.split(",") if g.strip() != ""}
+    if not grades or "0" in grades:
+        return "0"
+    return ",".join(sorted(grades, key=int))
+
+
+def _grade_list(target_grades: str) -> list[int]:
+    return [int(g) for g in target_grades.split(",") if g.strip() != ""]
+
+
 # 1. 공지사항 등록 (파일 업로드 포함)
 @r.post("")
 def create_notice(
     title: str = Form(...),
     content_html: str = Form(...),
-    target_grade: int = Form(0),
+    target_grades: str = Form("0"),  # 콤마로 구분된 대상 학년, 예: "0"(전체) 또는 "1,3"
     file: Optional[UploadFile] = File(None), # 파일은 선택사항
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
@@ -33,10 +46,14 @@ def create_notice(
         saved_filename = save_upload(file, UPLOAD_DIR)
         original_filename = file.filename
 
+    normalized = _normalize_target_grades(target_grades)
+    grades = _grade_list(normalized)
+
     new_notice = Notice(
         title=title,
         content_html=content_html,
-        target_grade=target_grade,
+        target_grade=grades[0] if len(grades) == 1 else 0,  # 하위 호환용
+        target_grades=normalized,
         posted_date=date.today(),
         author_id=current_user.id,
         file_path=saved_filename,       # ★ 저장
@@ -47,8 +64,8 @@ def create_notice(
     db.refresh(new_notice)
 
     q = db.query(User).filter(User.role == "student")
-    if new_notice.target_grade != 0:
-        q = q.filter(User.grade == new_notice.target_grade)
+    if 0 not in grades:
+        q = q.filter(User.grade.in_(grades))
     send_push_to_users(
         db, [u.id for u in q.all()],
         title="새 공지사항",
@@ -64,7 +81,7 @@ def update_notice(
     notice_id: int,
     title: str = Form(...),
     content_html: str = Form(...),
-    target_grade: int = Form(...),
+    target_grades: str = Form(...),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
@@ -72,10 +89,14 @@ def update_notice(
     notice = db.query(Notice).filter(Notice.id == notice_id).first()
     if not notice:
         raise HTTPException(status_code=404, detail="notice not found")
-    
+
+    normalized = _normalize_target_grades(target_grades)
+    grades = _grade_list(normalized)
+
     notice.title = title
     notice.content_html = content_html
-    notice.target_grade = target_grade
+    notice.target_grades = normalized
+    notice.target_grade = grades[0] if len(grades) == 1 else 0  # 하위 호환용
 
     # 새 파일이 들어오면 기존 파일 정보 덮어쓰기 (기존 파일 삭제는 생략함)
     if file:
@@ -85,8 +106,8 @@ def update_notice(
     db.commit()
 
     q = db.query(User).filter(User.role == "student")
-    if notice.target_grade != 0:
-        q = q.filter(User.grade == notice.target_grade)
+    if 0 not in grades:
+        q = q.filter(User.grade.in_(grades))
     send_push_to_users(
         db, [u.id for u in q.all()],
         title="공지사항 수정",

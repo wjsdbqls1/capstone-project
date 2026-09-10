@@ -21,7 +21,7 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
                 "id": n.id,
                 "title": n.title,
                 "posted_date": str(n.posted_date),
-                "target_grade": n.target_grade,
+                "target_grades": n.target_grades,
                 "original_filename": n.original_filename,
                 "file_path": n.file_path
             })
@@ -35,7 +35,7 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
                 "id": n.id, # ★ 중요: 외부 공지도 DB ID를 사용
                 "title": n.title,
                 "posted_date": str(n.posted_date),
-                "target_grade": 0, # 외부 공지는 전체 대상
+                "target_grades": "0", # 외부 공지는 전체 대상
                 "original_filename": n.original_filename,
                 "file_path": n.file_path
             })
@@ -58,7 +58,7 @@ def get_internal_notice_detail(notice_id: int, db: Session = Depends(get_db)):
         "title": n.title,
         "content_html": n.content_html,
         "posted_date": str(n.posted_date),
-        "target_grade": n.target_grade,
+        "target_grades": n.target_grades if n.source == "internal" else "0",
         "original_filename": n.original_filename,
         "file_path": n.file_path,
         "source": n.source # 소스 정보 추가 (프론트에서 파일 경로 분기용)

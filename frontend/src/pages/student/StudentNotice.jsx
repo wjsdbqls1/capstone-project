@@ -73,17 +73,18 @@ function StudentNotice() {
   };
 
   const filteredNotices = notices.filter(item => {
-    const isVisibleGrade = (item.target_grade === 0) || (userGrade !== null && item.target_grade === userGrade);
+    const grades = (item.target_grades || "0").split(",").map(Number);
+    const isVisibleGrade = grades.includes(0) || (userGrade !== null && grades.includes(userGrade));
     if (!isVisibleGrade) return false;
 
     if (filterType === 'external') {
         if (item.source !== 'external') return false;
-    } 
+    }
     else if (filterType === 'internal_common') {
-        if (item.source !== 'internal' || item.target_grade !== 0) return false;
-    } 
+        if (item.source !== 'internal' || !grades.includes(0)) return false;
+    }
     else if (filterType === 'internal_my') {
-        if (item.source !== 'internal' || item.target_grade === 0) return false;
+        if (item.source !== 'internal' || grades.includes(0)) return false;
     }
 
     if (searchKeyword.trim() !== '') {
@@ -107,10 +108,11 @@ function StudentNotice() {
     if (item.source === 'external') {
         return <span style={styles.extBadge}>학과홈페이지</span>;
     }
-    if (item.target_grade === 0) {
+    const grades = (item.target_grades || "0").split(",").map(Number);
+    if (grades.includes(0)) {
         return <span style={styles.badgeCommon}>전체</span>;
     }
-    return <span style={styles.badgeMyGrade}>{item.target_grade}학년</span>;
+    return <span style={styles.badgeMyGrade}>{grades.join(', ')}학년</span>;
   };
 
   return (

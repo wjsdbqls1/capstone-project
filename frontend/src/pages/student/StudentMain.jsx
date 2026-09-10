@@ -90,7 +90,10 @@ function StudentMain() {
   };
 
   const today = todayStr();
-  const latestNotice = notices.find(n => n.target_grade === 0 || n.target_grade === userGrade);
+  const latestNotice = notices.find(n => {
+    const grades = (n.target_grades || "0").split(",").map(Number);
+    return grades.includes(0) || grades.includes(userGrade);
+  });
   const upcomingEvent = events
     .filter(ev => ev.end_date >= today)
     .sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
