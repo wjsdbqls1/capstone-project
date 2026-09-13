@@ -1,10 +1,17 @@
 # backend/routers/notices.py
 from fastapi import APIRouter, Depends, HTTPException # ★ HTTPException 추가됨
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 from deps import get_db
 from models import Notice
 
 r = APIRouter(prefix="/notices", tags=["notices"])
+
+# 목록에 실제로 쓰는 컬럼만. 본문(content_html)은 평균 700바이트가 넘는데
+# 목록 응답에는 들어가지 않으므로, 공지가 쌓일수록 DB에서 헛되이 실어 오는 양만 커진다.
+_LIST_COLS = load_only(
+    Notice.id, Notice.title, Notice.posted_date,
+    Notice.target_grades, Notice.original_filename, Notice.file_path,
+)
 
 # 1. 공지사항 목록 조회 (내부 + 외부 통합)
 @r.get("")
@@ -14,7 +21,7 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
 
     # 1) 내부 공지 or 전체
     if source in ("all", "internal"):
-        rows = db.query(Notice).filter(Notice.source == "internal").order_by(Notice.posted_date.desc(), Notice.id.desc()).limit(limit).all()
+        rows = db.query(Notice).options(_LIST_COLS).filter(Notice.source == "internal").order_by(Notice.posted_date.desc(), Notice.id.desc()).limit(limit).all()
         for n in rows:
             out.append({
                 "source": "internal",
@@ -28,7 +35,7 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
 
     # 2) 외부 공지 or 전체
     if source in ("all", "external"):
-        rows = db.query(Notice).filter(Notice.source == "external").order_by(Notice.posted_date.desc(), Notice.id.desc()).limit(limit).all()
+        rows = db.query(Notice).options(_LIST_COLS).filter(Notice.source == "external").order_by(Notice.posted_date.desc(), Notice.id.desc()).limit(limit).all()
         for n in rows:
             out.append({
                 "source": "external",

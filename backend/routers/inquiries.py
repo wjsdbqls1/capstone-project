@@ -92,9 +92,14 @@ def list_my_inquiries(
 @r.get("")
 def list_all_inquiries(
     status: Optional[str] = None,  # "pending" | "completed" — 지정하면 서버에서 걸러서 내려줌
+    limit: int = 500,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
+    # 처리 완료 문의는 계속 쌓이기만 해서 상한이 없으면 응답이 무한정 커진다.
+    # 조교 화면의 검색/필터가 클라이언트에서 동작하므로 한 번에 넉넉히 내려주되,
+    # 병적으로 커지는 것만 막는 안전장치로 상한을 둔다.
+    limit = max(1, min(limit, 1000))
     # 재답변 여부를 별도 쿼리로 조회하면 DB 왕복이 한 번 더 생겨(리전 간 지연 시 특히 느림)
     # 상관 서브쿼리(EXISTS)로 메인 쿼리 한 번에 같이 받아오도록 합침
     edited_exists = exists().where(
@@ -113,7 +118,7 @@ def list_all_inquiries(
     elif status == "completed":
         query = query.filter(Inquiry.status.in_(completed_statuses))
 
-    rows = query.order_by(Inquiry.id.desc()).all()
+    rows = query.order_by(Inquiry.id.desc()).limit(limit).all()
 
     # (2) 프론트엔드가 원하는 형태로 데이터 가공
     results = []
