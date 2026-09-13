@@ -24,6 +24,7 @@ function StudentHistory() {
   const [followupText, setFollowupText] = useState('');
   const [followupFile, setFollowupFile] = useState(null);
   const [sendingFollowup, setSendingFollowup] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const fetchInquiries = async () => {
     const token = localStorage.getItem('token');
@@ -115,10 +116,25 @@ function StudentHistory() {
     }
   };
 
-  const getStatusBadge = (status) => {
-    const isDone = status === 'COMPLETED' || status === '답변 완료';
-    return isDone ? styles.statusDone : styles.statusWaiting;
+  // 서버에는 'COMPLETED'와 예전 값 '답변 완료'가 섞여 있어 둘 다 완료로 취급
+  const isDoneStatus = (status) => status === 'COMPLETED' || status === '답변 완료';
+
+  const getStatusBadge = (status) => (isDoneStatus(status) ? styles.statusDone : styles.statusWaiting);
+
+  const counts = {
+    all: inquiries.length,
+    pending: inquiries.filter(i => !isDoneStatus(i.status)).length,
+    completed: inquiries.filter(i => isDoneStatus(i.status)).length,
   };
+  const FILTERS = [
+    { key: 'all', label: '전체' },
+    { key: 'pending', label: '답변 대기중' },
+    { key: 'completed', label: '답변 완료' },
+  ];
+  const visibleInquiries =
+    statusFilter === 'all' ? inquiries
+    : statusFilter === 'pending' ? inquiries.filter(i => !isDoneStatus(i.status))
+    : inquiries.filter(i => isDoneStatus(i.status));
 
   const handleLogout = () => {
     localStorage.clear();
@@ -148,13 +164,36 @@ function StudentHistory() {
 
       {/* 목록 유리 박스 */}
       <div style={styles.glassContainer}>
+        {inquiries.length > 0 && (
+          <div style={styles.filterBar}>
+            {FILTERS.map(f => (
+              <motion.button
+                key={f.key}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setStatusFilter(f.key)}
+                style={statusFilter === f.key ? styles.filterBtnActive : styles.filterBtn}
+              >
+                {f.label}
+                <span style={statusFilter === f.key ? styles.filterCountActive : styles.filterCount}>
+                  {counts[f.key]}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        )}
+
+        <div style={styles.listArea}>
         {inquiries.length === 0 ? (
           <div style={styles.emptyMessage}>
              아직 작성한 문의가 없습니다. <br/>
              새로운 문의를 등록해보세요!
           </div>
+        ) : visibleInquiries.length === 0 ? (
+          <div style={styles.emptyMessage}>
+            {statusFilter === 'pending' ? '답변을 기다리는 문의가 없습니다.' : '답변이 완료된 문의가 없습니다.'}
+          </div>
         ) : (
-          inquiries.map((item) => (
+          visibleInquiries.map((item) => (
             <motion.div
               key={item.id}
               style={styles.card}
@@ -163,9 +202,9 @@ function StudentHistory() {
               whileTap={{ scale: 0.99 }}
             >
               <div style={styles.cardHeader}>
-                <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                <div style={{display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap'}}>
                   <span style={getStatusBadge(item.status)}>
-                    {item.status === 'COMPLETED' ? '답변 완료' : '답변 대기중'}
+                    {isDoneStatus(item.status) ? '답변 완료' : '답변 대기중'}
                   </span>
                   {item.reply_edited && <span style={styles.reAnswer}>답변 수정됨</span>}
                 </div>
@@ -175,6 +214,7 @@ function StudentHistory() {
             </motion.div>
           ))
         )}
+        </div>
       </div>
 
       {/* 상세 보기 팝업 (모달) */}
@@ -388,11 +428,45 @@ const styles = {
     overflow: 'hidden'
   },
   
-  emptyMessage: { 
-    textAlign: 'center', 
-    marginTop: '50px', 
-    color: '#333', 
-    fontWeight:'bold', 
+  // 필터 바는 고정, 목록만 스크롤
+  filterBar: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '15px',
+    flexShrink: 0,
+    flexWrap: 'wrap',
+  },
+  filterBtn: {
+    display: 'inline-flex', alignItems: 'center', gap: '6px',
+    padding: '8px 14px', borderRadius: '999px',
+    border: '1px solid rgba(0,54,117,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    color: '#003675', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+  },
+  filterBtnActive: {
+    display: 'inline-flex', alignItems: 'center', gap: '6px',
+    padding: '8px 14px', borderRadius: '999px',
+    border: '1px solid #003675',
+    backgroundColor: '#003675',
+    color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+  },
+  filterCount: {
+    fontSize: '12px', fontWeight: 800, minWidth: '18px', textAlign: 'center',
+    padding: '1px 6px', borderRadius: '999px',
+    backgroundColor: 'rgba(0,54,117,0.1)', color: '#003675',
+  },
+  filterCountActive: {
+    fontSize: '12px', fontWeight: 800, minWidth: '18px', textAlign: 'center',
+    padding: '1px 6px', borderRadius: '999px',
+    backgroundColor: 'rgba(255,255,255,0.25)', color: '#fff',
+  },
+  listArea: { flex: 1, overflowY: 'auto', minHeight: 0, paddingRight: '2px' },
+
+  emptyMessage: {
+    textAlign: 'center',
+    marginTop: '50px',
+    color: '#333',
+    fontWeight:'bold',
     lineHeight: '1.6',
     fontSize: '16px'
   },
