@@ -208,6 +208,16 @@ function TAPending() {
                           <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
                           <div style={isStudent ? modalStyles.bubbleMuted : modalStyles.bubbleAccent}>
                             {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : msg.content}
+                            {msg.attachment && (
+                              <div>
+                                <a
+                                  href={`${API_BASE}${msg.attachment}`} target="_blank" rel="noreferrer"
+                                  style={{...modalStyles.bubbleFile, color: isStudent ? '#003675' : '#fff'}}
+                                >
+                                  <MdAttachFile size={12} /> 첨부파일
+                                </a>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
