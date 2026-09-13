@@ -1,5 +1,6 @@
 # backend/routers/debug_timing.py
 # ※ 성능 원인 파악을 위한 임시 진단용 라우터. 원인 확정 후 삭제할 것.
+import os
 import time
 from datetime import date
 
@@ -26,6 +27,33 @@ def db_timing(db: Session = Depends(get_db), current_user: User = Depends(requir
         result = fn()
         steps[label] = round(time.perf_counter() - s, 4)
         return result
+
+    # 순수 TCP 핸드셰이크 왕복 — 네트워크 지연인지 DB/pooler 처리 지연인지 가르기 위함
+    import socket
+    from urllib.parse import urlparse
+
+    def tcp_rtt(host, port, family=socket.AF_UNSPEC):
+        best = None
+        for _ in range(3):
+            try:
+                info = socket.getaddrinfo(host, port, family, socket.SOCK_STREAM)[0]
+                s = socket.socket(info[0], socket.SOCK_STREAM)
+                s.settimeout(5)
+                t0 = time.perf_counter()
+                s.connect(info[4])
+                dt = time.perf_counter() - t0
+                s.close()
+                best = dt if best is None else min(best, dt)
+            except Exception as e:
+                return "실패: %s" % str(e)[:60]
+        return round(best, 4)
+
+    db_host = urlparse(os.getenv("DATABASE_URL", "")).hostname or ""
+    steps["tcp_pooler"] = tcp_rtt(db_host, 5432)
+    steps["tcp_direct_ipv6"] = tcp_rtt("db.hhzxhsiuatiqjtjvjkst.supabase.co", 5432, socket.AF_INET6)
+    steps["tcp_aws_uswest2_ref"] = tcp_rtt("s3.us-west-2.amazonaws.com", 443)
+    steps["tcp_aws_useast1_ref"] = tcp_rtt("s3.us-east-1.amazonaws.com", 443)
+    steps["db_host"] = db_host
 
     # 이미 열려 있는 세션에서의 순수 왕복 1회
     measure("select1_warm", lambda: db.execute(text("SELECT 1")).scalar())
