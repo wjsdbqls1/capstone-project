@@ -2,7 +2,7 @@
 import os
 from datetime import date
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from deps import get_db
 from auth import require_assistant
@@ -31,6 +31,7 @@ def create_faq(
     answer_html: str = Form(...),
     category: str = Form("기타"),
     file: Optional[UploadFile] = File(None),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
@@ -58,8 +59,8 @@ def create_faq(
     db.refresh(new_faq)
 
     student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
-    send_push_to_users(
-        db, student_ids,
+    background_tasks.add_task(
+        send_push_to_users, student_ids,
         title="새 FAQ 등록",
         body=new_faq.question,
         url="/student/faq",
@@ -75,6 +76,7 @@ def update_faq(
     answer_html: str = Form(...),
     category: str = Form("기타"),
     file: Optional[UploadFile] = File(None),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
@@ -97,8 +99,8 @@ def update_faq(
     db.commit()
 
     student_ids = [u.id for u in db.query(User).filter(User.role == "student").all()]
-    send_push_to_users(
-        db, student_ids,
+    background_tasks.add_task(
+        send_push_to_users, student_ids,
         title="FAQ 수정",
         body=faq.question,
         url="/student/faq",
