@@ -7,7 +7,7 @@ import { MdCalendarToday, MdSearch, MdClose, MdPerson, MdAttachFile, MdEdit } fr
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 import { API_BASE } from '../../config';
-import { makeInquiryModalStyles, ACCENTS } from './inquiryModalStyles';
+import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
 function TACompleted() {
   const navigate = useNavigate();
@@ -117,7 +117,7 @@ function TACompleted() {
                 <div style={styles.cardHeader}>
                   <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
                     <span style={styles.statusDone}>답변 완료</span>
-                    {item.reply_edited && (<span style={styles.reAnswer}>재답변</span>)}
+                    {item.reply_edited && (<span style={styles.reAnswer}>답변 수정됨</span>)}
                     {item.author_info && (<span style={styles.nameTag}>{item.author_info.name}</span>)}
                   </div>
                   <span style={styles.date}>{item.created_at.split('T')[0]}</span>
@@ -198,9 +198,9 @@ function TACompleted() {
                       );
                     }
                     return (
-                      <div key={r.id} style={isStudent ? modalStyles.bubbleWrapStudent : modalStyles.bubbleWrapTA}>
+                      <div key={r.id} style={isStudent ? modalStyles.bubbleWrapLeft : modalStyles.bubbleWrapRight}>
                         <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
-                        <div style={isStudent ? modalStyles.bubbleStudent : modalStyles.bubbleTA}>
+                        <div style={isStudent ? modalStyles.bubbleMuted : modalStyles.bubbleAccent}>
                           {r.content}
                           {r.attachment && (
                             <div>

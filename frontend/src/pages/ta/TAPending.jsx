@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdAttachFile, MdSmartToy } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import { API_BASE } from '../../config';
-import { makeInquiryModalStyles, ACCENTS } from './inquiryModalStyles';
+import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
@@ -204,9 +204,9 @@ function TAPending() {
                       const isStudent = msg.sender_role === 'student';
                       const isLast = msg.id === lastMsg.id;
                       return (
-                        <div key={msg.id} style={isStudent ? modalStyles.bubbleWrapStudent : modalStyles.bubbleWrapTA}>
+                        <div key={msg.id} style={isStudent ? modalStyles.bubbleWrapLeft : modalStyles.bubbleWrapRight}>
                           <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
-                          <div style={isStudent ? modalStyles.bubbleStudent : modalStyles.bubbleTA}>
+                          <div style={isStudent ? modalStyles.bubbleMuted : modalStyles.bubbleAccent}>
                             {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : msg.content}
                           </div>
                         </div>

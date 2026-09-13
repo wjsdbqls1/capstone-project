@@ -10,6 +10,11 @@ import '../../App.css';
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
+
+// 조교 화면과 같은 모달 구조를 쓰되, 색은 그 문의의 상태를 따른다(답변 대기=주황, 완료=초록)
+const pendingModal = makeInquiryModalStyles(ACCENTS.pending);
+const completedModal = makeInquiryModalStyles(ACCENTS.completed);
 
 function StudentHistory() {
   const navigate = useNavigate();
@@ -162,7 +167,7 @@ function StudentHistory() {
                   <span style={getStatusBadge(item.status)}>
                     {item.status === 'COMPLETED' ? '답변 완료' : '답변 대기중'}
                   </span>
-                  {item.reply_edited && <span style={styles.reAnswer}>재답변</span>}
+                  {item.reply_edited && <span style={styles.reAnswer}>답변 수정됨</span>}
                 </div>
                 <span style={styles.date}>{item.created_at.split('T')[0]}</span>
               </div>
@@ -173,112 +178,113 @@ function StudentHistory() {
       </div>
 
       {/* 상세 보기 팝업 (모달) */}
+      {(() => {
+      // 문의 상태에 따라 모달 색이 달라진다 (조교 화면과 같은 기준)
+      const isDone = selectedInquiry && (selectedInquiry.status === 'COMPLETED' || selectedInquiry.status === '답변 완료');
+      const modalStyles = isDone ? completedModal : pendingModal;
+      return (
       <AnimatedModal
         isOpen={!!selectedInquiry}
         onClose={() => setSelectedInquiry(null)}
         overlayStyle={modalStyles.overlay}
         modalStyle={modalStyles.modal}
       >
-            {/* 모달 헤더 */}
             <div style={modalStyles.header}>
-              <h3 style={{margin:0, color:'#003675', fontSize:'18px'}}>문의 상세</h3>
-              <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
+              <div style={modalStyles.headerTop}>
+                <div style={{minWidth: 0}}>
+                  <div style={modalStyles.kicker}>문의 상세</div>
+                  <h3 style={modalStyles.headerTitle}>{detailData ? detailData.title : ''}</h3>
+                </div>
+                <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={18} /></button>
+              </div>
+              <div style={modalStyles.metaRow}>
+                <span style={modalStyles.chipAccent}>{isDone ? '답변 완료' : '답변 대기중'}</span>
+                {detailData && detailData.created_at && (
+                  <span style={modalStyles.chip}>{detailData.created_at.split('T')[0]}</span>
+                )}
+                {detailData && detailData.academic_event && (
+                  <span style={modalStyles.chip}>
+                    <MdCalendarToday size={12} /> {detailData.academic_event.title} (~{detailData.academic_event.end_date})
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* 모달 내용 */}
             <div style={modalStyles.content}>
               {detailData ? (
                 <>
                   <div style={modalStyles.section}>
-                    <div style={modalStyles.label}>제목</div>
-                    <div style={modalStyles.text}>{detailData.title}</div>
-                  </div>
-
-                  {detailData.academic_event && (
-                      <div style={modalStyles.section}>
-                        <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdCalendarToday size={14} /> 관련 학사일정</div>
-                        <div style={{...modalStyles.text, color:'#e65100'}}>
-                            {detailData.academic_event.title} <br/>
-                            <span style={{fontSize:'14px', fontWeight:'normal'}}>
-                              (~{detailData.academic_event.end_date})
-                            </span>
-                        </div>
-                      </div>
-                  )}
-
-                  <div style={modalStyles.section}>
-                    <div style={modalStyles.label}>내용</div>
-                    <div style={modalStyles.textBox}>{detailData.content}</div>
-                  </div>
-
-                  {detailData.attachment && (
-                    <div style={modalStyles.section}>
-                        <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={14} /> 내 첨부파일</div>
-                        <a href={`${API_BASE}${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={{...modalStyles.link, display: 'inline-flex', alignItems: 'center', gap: '5px'}}>
-                            <MdDownload size={14} /> 다운로드 / 보기
-                        </a>
-                    </div>
-                  )}
-
-                  <div style={modalStyles.divider}></div>
-
-                  <div style={modalStyles.section}>
-                    <div style={{...modalStyles.label, display: 'flex', alignItems: 'center', gap: '5px'}}><MdSchool size={14} /> 대화 내역</div>
-                    {detailData.replies && detailData.replies.length > 0 ? (
-                      detailData.replies.map(reply => {
-                        const isStudent = reply.sender_role === 'student';
-                        return (
-                          <div key={reply.id} style={isStudent ? modalStyles.myMessageBox : modalStyles.answerBox}>
-                            <div style={modalStyles.senderLabel}>{isStudent ? '나의 추가 질문' : '조교 답변'}</div>
-                            <div style={{whiteSpace:'pre-wrap'}}>
-                                {reply.content}
-                                {/* 수정된 답변인 경우 표시 */}
-                                {reply.updated_at && <span style={{fontSize:'11px', color:'#999', marginLeft:'5px'}}>(수정됨)</span>}
-                            </div>
-
-                            {reply.attachment && (
-                              <div style={{marginTop:'10px', fontSize:'14px', borderTop:'1px dashed rgba(0,0,0,0.15)', paddingTop:'5px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
-                                  <MdAttachFile size={13} /> <b>첨부파일:</b>
-                                  <a href={`${API_BASE}${reply.attachment}`} target="_blank" rel="noopener noreferrer" style={{color:'#003675', fontWeight:'bold', textDecoration:'underline'}}>
-                                      확인하기
-                                  </a>
-                              </div>
-                            )}
-
-                            <div style={modalStyles.answerDate}>{reply.created_at.split('T')[0]}</div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div style={modalStyles.noAnswer}>
-                        아직 답변이 등록되지 않았습니다. <br/>조금만 기다려주세요!
-                      </div>
+                    <div style={modalStyles.sectionHead}>문의 내용<span style={modalStyles.sectionLine} /></div>
+                    <div style={modalStyles.qText}>{detailData.content}</div>
+                    {detailData.attachment && (
+                      <a href={`${API_BASE}${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.fileLink}>
+                        <MdDownload size={14} /> 내 첨부파일
+                      </a>
                     )}
                   </div>
 
+                  <div style={modalStyles.section}>
+                    <div style={modalStyles.sectionHead}>대화<span style={modalStyles.sectionLine} /></div>
+                    <div style={modalStyles.thread}>
+                      {detailData.replies && detailData.replies.length > 0 ? (
+                        detailData.replies.map(reply => {
+                          // 학생 화면이므로 '나'가 오른쪽, 조교가 왼쪽
+                          const isMine = reply.sender_role === 'student';
+                          return (
+                            <div key={reply.id} style={isMine ? modalStyles.bubbleWrapRight : modalStyles.bubbleWrapLeft}>
+                              <div style={modalStyles.who}>
+                                {isMine ? '나의 추가 질문' : '조교 답변'} · {reply.created_at.split('T')[0]}
+                                {reply.updated_at && !isMine && ' · 수정됨'}
+                              </div>
+                              <div style={isMine ? modalStyles.bubbleAccent : modalStyles.bubbleMuted}>
+                                {reply.content}
+                                {reply.attachment && (
+                                  <div>
+                                    <a
+                                      href={`${API_BASE}${reply.attachment}`} target="_blank" rel="noopener noreferrer"
+                                      style={{...modalStyles.bubbleFile, color: isMine ? '#fff' : '#003675'}}
+                                    >
+                                      <MdAttachFile size={12} /> 첨부파일
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div style={modalStyles.emptyThread}>
+                          아직 답변이 등록되지 않았습니다. 조금만 기다려주세요.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   {/* 추가 질문 입력 — 답변을 받은 뒤에도 같은 문의에서 계속 대화 가능 */}
-                  <div style={modalStyles.followupBox}>
-                    <div style={modalStyles.label}>추가로 질문하기</div>
+                  <div style={modalStyles.sectionLast}>
+                    <div style={modalStyles.sectionHead}>추가로 질문하기<span style={modalStyles.sectionLine} /></div>
                     <textarea
-                      style={modalStyles.followupTextarea}
+                      style={modalStyles.textarea}
                       placeholder="궁금한 점을 추가로 물어보세요."
                       value={followupText}
                       onChange={(e) => setFollowupText(e.target.value)}
                     />
-                    <div style={modalStyles.followupActions}>
-                      <input
-                        type="file"
-                        style={modalStyles.followupFileInput}
-                        onChange={(e) => setFollowupFile(e.target.files[0])}
-                      />
+                    <div style={modalStyles.charCount}>{followupText.length}자</div>
+                    <div style={modalStyles.footRow}>
+                      <label style={followupFile ? modalStyles.attachBtnActive : modalStyles.attachBtn}>
+                        <MdAttachFile size={15} />
+                        {followupFile ? followupFile.name : '파일 첨부'}
+                        <input type="file" style={{display:'none'}} onChange={(e) => setFollowupFile(e.target.files[0])} />
+                      </label>
                       <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.97 }}
-                        style={{...modalStyles.followupSendBtn, opacity: sendingFollowup ? 0.6 : 1}}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                        style={{...modalStyles.submitBtn, opacity: sendingFollowup ? 0.6 : 1,
+                                display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'6px'}}
                         onClick={handleSendFollowup}
                         disabled={sendingFollowup}
                       >
-                        <MdSend size={15} /> {sendingFollowup ? '등록 중...' : '등록'}
+                        <MdSend size={15} /> {sendingFollowup ? '등록 중...' : '질문 등록'}
                       </motion.button>
                     </div>
                   </div>
@@ -288,6 +294,8 @@ function StudentHistory() {
               )}
             </div>
       </AnimatedModal>
+      );
+      })()}
 
       {/* 하단 네비게이션 */}
       <nav style={styles.bottomNav}>
@@ -455,99 +463,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
-  }
-};
-
-const modalStyles = {
-  overlay: { 
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
-    backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
-    display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 
-  },
-  modal: { 
-    width: '90%', maxWidth: '500px', maxHeight: '85%', 
-    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-    borderRadius: '16px', 
-    boxShadow: '0 10px 40px rgba(0,0,0,0.3)', 
-    display: 'flex', flexDirection: 'column', overflow: 'hidden',
-    border: '1px solid rgba(255,255,255,0.5)'
-  },
-  header: { 
-    padding: '15px 20px', borderBottom: '1px solid rgba(0,0,0,0.1)', 
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-    backgroundColor: 'rgba(255,255,255,0.5)' 
-  },
-  closeBtn: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color:'#666' },
-  content: { padding: '20px 25px', overflowY: 'auto', flex: 1 },
-  section: { marginBottom: '20px' },
-  
-  label: { fontSize: '14px', color: '#666', marginBottom: '6px', fontWeight:'bold' },
-  text: { fontSize: '16px', fontWeight:'bold', color:'#333', lineHeight: '1.4' },
-  
-  textBox: { 
-    fontSize: '16px', lineHeight:'1.6', whiteSpace:'pre-wrap', color:'#333',
-    backgroundColor: 'rgba(0,0,0,0.03)', padding: '15px', borderRadius: '8px',
-    wordBreak: 'break-word' // 긴 단어 줄바꿈
-  },
-  link: { color:'#003675', fontWeight:'bold', textDecoration:'underline', fontSize:'15px' },
-  
-  divider: { margin:'20px 0', border:'0', borderTop:'2px dashed #ddd' },
-  
-  answerBox: {
-    backgroundColor:'#e3f2fd', padding:'15px', borderRadius:'10px',
-    color:'#003675', lineHeight:'1.6', marginBottom:'10px',
-    border: '1px solid #bbdefb',
-    fontSize: '16px'
-  },
-  // 내가 보낸 추가 질문 — 조교 답변과 구분되는 톤
-  myMessageBox: {
-    backgroundColor: '#fff8e1', padding: '15px', borderRadius: '10px',
-    color: '#5d4037', lineHeight: '1.6', marginBottom: '10px',
-    border: '1px solid #ffe0b2',
-    fontSize: '16px'
-  },
-  senderLabel: { fontSize: '12px', fontWeight: 'bold', opacity: 0.75, marginBottom: '4px' },
-  answerDate: { fontSize:'13px', color:'#5472d3', marginTop:'8px', textAlign:'right' },
-  noAnswer: {
-    color:'#888', padding:'20px', backgroundColor:'#f5f5f5',
-    borderRadius:'10px', textAlign:'center', fontSize:'16px', lineHeight:'1.5'
-  },
-  followupBox: {
-    marginTop: '10px',
-    paddingTop: '15px',
-    borderTop: '1px dashed #ddd'
-  },
-  followupTextarea: {
-    width: '100%',
-    minHeight: '80px',
-    padding: '10px',
-    border: '1px solid #ced4da',
-    borderRadius: '8px',
-    fontSize: '15px',
-    resize: 'none',
-    boxSizing: 'border-box',
-    fontFamily: 'inherit'
-  },
-  followupActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    marginTop: '8px'
-  },
-  followupFileInput: { flex: 1, fontSize: '13px', minWidth: 0 },
-  followupSendBtn: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '10px 16px',
-    backgroundColor: '#003675',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: 'bold',
-    cursor: 'pointer'
   }
 };
 

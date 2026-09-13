@@ -104,15 +104,15 @@ export function makeInquiryModalStyles(theme) {
 
     // 대화 — 색이 아니라 좌우 위치로도 구분되게
     thread: { display: 'flex', flexDirection: 'column', gap: '12px' },
-    bubbleWrapStudent: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' },
-    bubbleWrapTA: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end' },
+    bubbleWrapLeft: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' },
+    bubbleWrapRight: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end' },
     who: { fontSize: '10.5px', fontWeight: 800, color: '#9aa3af', marginBottom: '5px' },
-    bubbleStudent: {
+    bubbleMuted: {
       maxWidth: '84%', padding: '12px 15px', borderRadius: '14px', borderBottomLeftRadius: '4px',
       backgroundColor: '#f1f3f6', color: INK, fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
     },
     // 조교 말풍선·주요 버튼은 화면 색을 따른다. g1은 흰 글자를 올리기엔 밝아서 중간 단계(g2)를 쓴다.
-    bubbleTA: {
+    bubbleAccent: {
       maxWidth: '84%', padding: '12px 15px', borderRadius: '14px', borderBottomRightRadius: '4px',
       backgroundColor: g2, color: '#fff', fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
     },
