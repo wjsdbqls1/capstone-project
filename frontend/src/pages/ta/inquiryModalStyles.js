@@ -7,48 +7,52 @@ const LINE = '#e5e8ec';
 const GRAY = '#5b6572';
 const INK = '#1a1d21';
 
-// '#ff9800' -> 'rgba(255,152,0,0.3)'. 헤더 광원과 칩 배경에 강조색을 옅게 깔기 위함.
-function rgba(hex, alpha) {
-  const h = hex.replace('#', '');
-  const n = parseInt(h, 16);
-  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
-}
+// 화면별 팔레트. grad는 헤더 그라데이션의 3단계(밝음 → 중간 → 어두움),
+// chipText는 흰 칩 위에 올라갈 글자색.
+export const ACCENTS = {
+  pending: {
+    accent: '#ff9800',
+    grad: ['#ffa726', '#ef6c00', '#8d3b00'],
+    chipText: '#8d3b00',
+  },
+  completed: {
+    accent: '#2e7d32',
+    grad: ['#4caf50', '#2e7d32', '#14421a'],
+    chipText: '#14421a',
+  },
+};
 
-export function makeInquiryModalStyles(accent) {
+export function makeInquiryModalStyles(theme) {
+  const accent = theme.accent;
+  const [g1, g2, g3] = theme.grad;
   return {
-    // 헤더가 유리처럼 보이려면 뒤에 비칠 것이 있어야 한다.
-    // 오버레이를 너무 어둡게 덮으면 배경 이미지가 죽어 블러가 무의미해지므로 살짝 걷어냈다.
     overlay: {
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)',
-      WebkitBackdropFilter: 'blur(2px)',
+      backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)',
+      WebkitBackdropFilter: 'blur(3px)',
       display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100,
     },
-    // 모달 자체는 투명. 흰 배경은 본문(content)이 깔기 때문에,
-    // 이렇게 해야 헤더의 backdrop-filter가 '모달의 흰색'이 아니라 '뒤 화면'을 흐린다.
     modal: {
-      width: '90%', maxWidth: '620px', maxHeight: '85%', backgroundColor: 'transparent',
+      width: '90%', maxWidth: '620px', maxHeight: '85%', backgroundColor: '#fff',
       borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden',
       boxShadow: '0 24px 60px rgba(0,0,0,0.35)',
     },
 
-    // 헤더 — 반투명 남색 위에 blur를 걸어 뒤 화면이 뿌옇게 비치게 한다(진짜 유리).
-    // 여기에 대각 sheen(빛 반사)과 위쪽 1px 하이라이트를 얹어 표면감을 준다.
+    // 헤더 — 화면 색(대기=주황, 완료=초록)을 헤더 전체가 입는다.
+    // 광택은 backdrop-filter로 뒤를 비추는 대신 직접 그린다. 뒤에 흐릴 무늬가 없으면
+    // blur는 아무 효과가 없고, 애니메이션 중인 조상 안에서는 바깥을 읽지도 못하기 때문.
+    // 첫 번째 레이어가 대각선 빛 반사, 두 번째가 바탕 그라데이션.
     header: {
       position: 'relative',
       overflow: 'hidden',
       color: '#fff',
       padding: '20px 22px',
       flexShrink: 0,
-      backgroundColor: 'rgba(0, 38, 84, 0.72)',
       backgroundImage: [
-        'linear-gradient(125deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 32%, rgba(255,255,255,0) 56%)',
-        `radial-gradient(520px 210px at 106% 135%, ${rgba(accent, 0.45)}, transparent 62%)`,
+        'linear-gradient(118deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.10) 22%, rgba(255,255,255,0) 42%)',
+        `linear-gradient(135deg, ${g1} 0%, ${g2} 42%, ${g3} 100%)`,
       ].join(', '),
-      backdropFilter: 'blur(22px) saturate(150%)',
-      WebkitBackdropFilter: 'blur(22px) saturate(150%)',
-      borderBottom: '1px solid rgba(255,255,255,0.14)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.24)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.45)',
     },
     headerTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' },
     kicker: {
@@ -62,20 +66,20 @@ export function makeInquiryModalStyles(accent) {
       flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
     },
     metaRow: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '13px' },
-    // 칩도 테두리 하이라이트를 줘야 유리 조각처럼 읽힌다(블러만으로는 티가 안 남)
+    // 칩은 헤더 색 위에 얹히므로 반투명 흰색 + 테두리 하이라이트로 떠 보이게 한다
     chip: {
       fontSize: '11.5px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px',
-      backgroundColor: 'rgba(255,255,255,0.16)',
-      border: '1px solid rgba(255,255,255,0.24)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
+      backgroundColor: 'rgba(255,255,255,0.17)',
+      border: '1px solid rgba(255,255,255,0.26)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.24)',
       color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px',
     },
+    // 가장 중요한 정보(마감·상태)는 흰 칩으로 반전시켜 확실히 눈에 띄게
     chipAccent: {
       fontSize: '11.5px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px',
-      backgroundColor: rgba(accent, 0.88),
-      border: `1px solid ${rgba(accent, 1)}`,
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-      color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px',
+      backgroundColor: 'rgba(255,255,255,0.94)',
+      border: '1px solid #fff',
+      color: theme.chipText, display: 'inline-flex', alignItems: 'center', gap: '4px',
     },
 
     content: { padding: '22px', overflowY: 'auto', flex: 1, backgroundColor: '#fff' },

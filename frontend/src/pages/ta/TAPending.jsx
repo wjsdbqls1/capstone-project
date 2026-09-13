@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdAttachFile, MdSmartToy } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import { API_BASE } from '../../config';
-import { makeInquiryModalStyles } from './inquiryModalStyles';
+import { makeInquiryModalStyles, ACCENTS } from './inquiryModalStyles';
 
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
@@ -298,7 +298,7 @@ const styles = {
   writerInfo: { fontSize: '12px', color: '#495057', marginTop: '6px', backgroundColor: 'rgba(255,255,255,0.6)', padding: '4px 8px', borderRadius: '6px', display: 'inline-block' }
 };
 
-// 대기중 화면의 강조색은 목록 카드와 같은 주황 계열로 맞춘다
-const modalStyles = makeInquiryModalStyles('#ff9800');
+// 대기중 화면은 목록 카드와 같은 주황 계열
+const modalStyles = makeInquiryModalStyles(ACCENTS.pending);
 
 export default TAPending;

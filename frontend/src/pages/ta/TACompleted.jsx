@@ -7,7 +7,7 @@ import { MdCalendarToday, MdSearch, MdClose, MdPerson, MdAttachFile, MdEdit } fr
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 import { API_BASE } from '../../config';
-import { makeInquiryModalStyles } from './inquiryModalStyles';
+import { makeInquiryModalStyles, ACCENTS } from './inquiryModalStyles';
 
 function TACompleted() {
   const navigate = useNavigate();
@@ -253,7 +253,7 @@ const styles = {
   writerInfo: { fontSize: '12px', color: '#495057', backgroundColor: 'rgba(255,255,255,0.6)', padding: '4px 8px', borderRadius: '6px', display: 'inline-block' }
 };
 
-// 처리 완료 화면의 강조색은 목록 카드와 같은 초록 계열로 맞춘다
-const modalStyles = makeInquiryModalStyles('#2e7d32');
+// 처리 완료 화면은 목록 카드와 같은 초록 계열
+const modalStyles = makeInquiryModalStyles(ACCENTS.completed);
 
 export default TACompleted;
