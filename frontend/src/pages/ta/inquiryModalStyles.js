@@ -48,9 +48,11 @@ export function makeInquiryModalStyles(theme) {
       color: '#fff',
       padding: '20px 22px',
       flexShrink: 0,
+      // 225deg = 밝은 색이 오른쪽 위, 어두운 색이 왼쪽 아래.
+      // 빛 반사도 같은 쪽에서 들어오도록 좌우를 뒤집었다(118 -> 242).
       backgroundImage: [
-        'linear-gradient(118deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.10) 22%, rgba(255,255,255,0) 42%)',
-        `linear-gradient(135deg, ${g1} 0%, ${g2} 42%, ${g3} 100%)`,
+        'linear-gradient(242deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.10) 22%, rgba(255,255,255,0) 42%)',
+        `linear-gradient(225deg, ${g1} 0%, ${g2} 42%, ${g3} 100%)`,
       ].join(', '),
       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.45)',
     },
@@ -109,9 +111,10 @@ export function makeInquiryModalStyles(theme) {
       maxWidth: '84%', padding: '12px 15px', borderRadius: '14px', borderBottomLeftRadius: '4px',
       backgroundColor: '#f1f3f6', color: INK, fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
     },
+    // 조교 말풍선·주요 버튼은 화면 색을 따른다. g1은 흰 글자를 올리기엔 밝아서 중간 단계(g2)를 쓴다.
     bubbleTA: {
       maxWidth: '84%', padding: '12px 15px', borderRadius: '14px', borderBottomRightRadius: '4px',
-      backgroundColor: NAVY, color: '#fff', fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
+      backgroundColor: g2, color: '#fff', fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
     },
     bubbleFile: {
       display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '8px',
@@ -160,7 +163,7 @@ export function makeInquiryModalStyles(theme) {
       maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis',
     },
     submitBtn: {
-      flex: 1, padding: '13px', backgroundColor: NAVY, color: '#fff', border: 'none',
+      flex: 1, padding: '13px', backgroundColor: g2, color: '#fff', border: 'none',
       borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
     },
 
@@ -171,8 +174,9 @@ export function makeInquiryModalStyles(theme) {
       lineHeight: 1.7, fontFamily: 'inherit', resize: 'none', outline: 'none',
     },
     editActions: { marginTop: '8px', display: 'flex', justifyContent: 'flex-end', gap: '8px' },
+    // 답변 수정 저장도 '답변 등록'과 같은 성격의 동작이라 같은 색을 쓴다
     saveBtn: {
-      padding: '8px 16px', backgroundColor: NAVY, color: '#fff', border: 'none',
+      padding: '8px 16px', backgroundColor: g2, color: '#fff', border: 'none',
       borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '13px',
     },
     cancelBtn: {

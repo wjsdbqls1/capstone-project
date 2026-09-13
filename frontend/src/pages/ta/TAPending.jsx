@@ -99,7 +99,7 @@ function TAPending() {
     const parts = text.split(regex);
     return parts.map((part, i) =>
       regex.test(part)
-        ? <mark key={i} style={{ backgroundColor: 'rgba(0,54,117,0.1)', color: 'inherit', borderBottom: '2px solid #003675', fontWeight: 700, padding: '0 1px' }}>{part}</mark>
+        ? <mark key={i} style={{ backgroundColor: '#fff176', borderRadius: '3px', padding: '0 2px' }}>{part}</mark>
         : <span key={i}>{part}</span>
     );
   };
