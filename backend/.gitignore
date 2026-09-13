@@ -13,4 +13,8 @@ build/
 .env
 # .env.backup, .env.local 처럼 비밀키가 든 파생 파일까지 확실히 제외
 .env.*
+
+# 3. DB 백업 (학생 개인정보 포함 — 절대 커밋 금지)
+backups/
+
 .DS_Store
