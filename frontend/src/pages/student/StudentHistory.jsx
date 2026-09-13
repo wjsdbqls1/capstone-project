@@ -121,11 +121,6 @@ function StudentHistory() {
 
   const getStatusBadge = (status) => (isDoneStatus(status) ? styles.statusDone : styles.statusWaiting);
 
-  const counts = {
-    all: inquiries.length,
-    pending: inquiries.filter(i => !isDoneStatus(i.status)).length,
-    completed: inquiries.filter(i => isDoneStatus(i.status)).length,
-  };
   const FILTERS = [
     { key: 'all', label: '전체' },
     { key: 'pending', label: '답변 대기중' },
@@ -174,9 +169,6 @@ function StudentHistory() {
                 style={statusFilter === f.key ? styles.filterBtnActive : styles.filterBtn}
               >
                 {f.label}
-                <span style={statusFilter === f.key ? styles.filterCountActive : styles.filterCount}>
-                  {counts[f.key]}
-                </span>
               </motion.button>
             ))}
           </div>
@@ -449,16 +441,6 @@ const styles = {
     border: '1px solid #003675',
     backgroundColor: '#003675',
     color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-  },
-  filterCount: {
-    fontSize: '12px', fontWeight: 800, minWidth: '18px', textAlign: 'center',
-    padding: '1px 6px', borderRadius: '999px',
-    backgroundColor: 'rgba(0,54,117,0.1)', color: '#003675',
-  },
-  filterCountActive: {
-    fontSize: '12px', fontWeight: 800, minWidth: '18px', textAlign: 'center',
-    padding: '1px 6px', borderRadius: '999px',
-    backgroundColor: 'rgba(255,255,255,0.25)', color: '#fff',
   },
   listArea: { flex: 1, overflowY: 'auto', minHeight: 0, paddingRight: '2px' },
 
