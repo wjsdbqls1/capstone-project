@@ -16,30 +16,39 @@ function rgba(hex, alpha) {
 
 export function makeInquiryModalStyles(accent) {
   return {
+    // 헤더가 유리처럼 보이려면 뒤에 비칠 것이 있어야 한다.
+    // 오버레이를 너무 어둡게 덮으면 배경 이미지가 죽어 블러가 무의미해지므로 살짝 걷어냈다.
     overlay: {
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+      backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)',
+      WebkitBackdropFilter: 'blur(2px)',
       display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100,
     },
+    // 모달 자체는 투명. 흰 배경은 본문(content)이 깔기 때문에,
+    // 이렇게 해야 헤더의 backdrop-filter가 '모달의 흰색'이 아니라 '뒤 화면'을 흐린다.
     modal: {
-      width: '90%', maxWidth: '620px', maxHeight: '85%', backgroundColor: '#fff',
+      width: '90%', maxWidth: '620px', maxHeight: '85%', backgroundColor: 'transparent',
       borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      boxShadow: '0 24px 60px rgba(0,0,0,0.35)',
     },
 
-    // 헤더 — 제목을 본문에서 끌어올려 한눈에 보이게.
-    // 좌상단 흰빛과 우하단 강조색 빛을 겹쳐 깔았다. 인라인 스타일에는 ::before를 쓸 수 없어
-    // 가상 요소 대신 배경 레이어를 여러 겹 쌓는 방식으로 같은 효과를 낸다(마지막 색이 바탕).
+    // 헤더 — 반투명 남색 위에 blur를 걸어 뒤 화면이 뿌옇게 비치게 한다(진짜 유리).
+    // 여기에 대각 sheen(빛 반사)과 위쪽 1px 하이라이트를 얹어 표면감을 준다.
     header: {
       position: 'relative',
       overflow: 'hidden',
       color: '#fff',
       padding: '20px 22px',
       flexShrink: 0,
-      background: [
-        'radial-gradient(760px 150px at 12% -40%, rgba(255,255,255,0.20), transparent 62%)',
-        `radial-gradient(420px 190px at 108% 130%, ${rgba(accent, 0.3)}, transparent 62%)`,
-        '#002a5c',
+      backgroundColor: 'rgba(0, 38, 84, 0.72)',
+      backgroundImage: [
+        'linear-gradient(125deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 32%, rgba(255,255,255,0) 56%)',
+        `radial-gradient(520px 210px at 106% 135%, ${rgba(accent, 0.45)}, transparent 62%)`,
       ].join(', '),
+      backdropFilter: 'blur(22px) saturate(150%)',
+      WebkitBackdropFilter: 'blur(22px) saturate(150%)',
+      borderBottom: '1px solid rgba(255,255,255,0.14)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.24)',
     },
     headerTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' },
     kicker: {
@@ -53,17 +62,20 @@ export function makeInquiryModalStyles(accent) {
       flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
     },
     metaRow: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '13px' },
+    // 칩도 테두리 하이라이트를 줘야 유리 조각처럼 읽힌다(블러만으로는 티가 안 남)
     chip: {
       fontSize: '11.5px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px',
-      backgroundColor: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
-      WebkitBackdropFilter: 'blur(6px)', color: '#fff',
-      display: 'inline-flex', alignItems: 'center', gap: '4px',
+      backgroundColor: 'rgba(255,255,255,0.16)',
+      border: '1px solid rgba(255,255,255,0.24)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
+      color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px',
     },
     chipAccent: {
       fontSize: '11.5px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px',
-      backgroundColor: rgba(accent, 0.92), backdropFilter: 'blur(6px)',
-      WebkitBackdropFilter: 'blur(6px)', color: '#fff',
-      display: 'inline-flex', alignItems: 'center', gap: '4px',
+      backgroundColor: rgba(accent, 0.88),
+      border: `1px solid ${rgba(accent, 1)}`,
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+      color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px',
     },
 
     content: { padding: '22px', overflowY: 'auto', flex: 1, backgroundColor: '#fff' },
