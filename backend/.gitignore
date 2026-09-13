@@ -11,4 +11,6 @@ node_modules/
 dist/
 build/
 .env
+# .env.backup, .env.local 처럼 비밀키가 든 파생 파일까지 확실히 제외
+.env.*
 .DS_Store
