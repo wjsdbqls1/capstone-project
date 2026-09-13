@@ -7,6 +7,13 @@ const LINE = '#e5e8ec';
 const GRAY = '#5b6572';
 const INK = '#1a1d21';
 
+// '#ff9800' -> 'rgba(255,152,0,0.3)'. 헤더 광원과 칩 배경에 강조색을 옅게 깔기 위함.
+function rgba(hex, alpha) {
+  const h = hex.replace('#', '');
+  const n = parseInt(h, 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
 export function makeInquiryModalStyles(accent) {
   return {
     overlay: {
@@ -19,12 +26,25 @@ export function makeInquiryModalStyles(accent) {
       borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden',
     },
 
-    // 헤더 — 제목을 본문에서 끌어올려 한눈에 보이게
-    header: { backgroundColor: NAVY, color: '#fff', padding: '18px 22px', flexShrink: 0 },
+    // 헤더 — 제목을 본문에서 끌어올려 한눈에 보이게.
+    // 좌상단 흰빛과 우하단 강조색 빛을 겹쳐 깔았다. 인라인 스타일에는 ::before를 쓸 수 없어
+    // 가상 요소 대신 배경 레이어를 여러 겹 쌓는 방식으로 같은 효과를 낸다(마지막 색이 바탕).
+    header: {
+      position: 'relative',
+      overflow: 'hidden',
+      color: '#fff',
+      padding: '20px 22px',
+      flexShrink: 0,
+      background: [
+        'radial-gradient(760px 150px at 12% -40%, rgba(255,255,255,0.20), transparent 62%)',
+        `radial-gradient(420px 190px at 108% 130%, ${rgba(accent, 0.3)}, transparent 62%)`,
+        '#002a5c',
+      ].join(', '),
+    },
     headerTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' },
     kicker: {
-      fontSize: '11px', letterSpacing: '0.14em', opacity: 0.62,
-      fontWeight: 700, marginBottom: '7px', textTransform: 'uppercase',
+      fontSize: '11px', letterSpacing: '0.14em', opacity: 0.7,
+      fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase',
     },
     headerTitle: { margin: 0, fontSize: '19px', fontWeight: 800, lineHeight: 1.35, wordBreak: 'keep-all' },
     closeBtn: {
@@ -35,12 +55,14 @@ export function makeInquiryModalStyles(accent) {
     metaRow: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '13px' },
     chip: {
       fontSize: '11.5px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px',
-      backgroundColor: 'rgba(255,255,255,0.13)', color: '#fff',
+      backgroundColor: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
+      WebkitBackdropFilter: 'blur(6px)', color: '#fff',
       display: 'inline-flex', alignItems: 'center', gap: '4px',
     },
     chipAccent: {
       fontSize: '11.5px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px',
-      backgroundColor: accent, color: '#fff',
+      backgroundColor: rgba(accent, 0.92), backdropFilter: 'blur(6px)',
+      WebkitBackdropFilter: 'blur(6px)', color: '#fff',
       display: 'inline-flex', alignItems: 'center', gap: '4px',
     },
 
