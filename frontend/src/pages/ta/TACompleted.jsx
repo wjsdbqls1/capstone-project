@@ -7,6 +7,7 @@ import { MdCalendarToday, MdSearch, MdClose, MdPerson, MdAttachFile, MdEdit } fr
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 import { API_BASE } from '../../config';
+import { makeInquiryModalStyles } from './inquiryModalStyles';
 
 function TACompleted() {
   const navigate = useNavigate();
@@ -136,42 +137,93 @@ function TACompleted() {
           const inq = selectedInquiry || {};
           return (
           <>
-            <div style={modalStyles.header}><h3 style={{margin:0, color:'#2e7d32'}}>문의 상세</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={20} /></button></div>
+            <div style={modalStyles.header}>
+              <div style={modalStyles.headerTop}>
+                <div style={{minWidth: 0}}>
+                  <div style={modalStyles.kicker}>문의 상세</div>
+                  <h3 style={modalStyles.headerTitle}>{inq.title}</h3>
+                </div>
+                <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={18} /></button>
+              </div>
+              <div style={modalStyles.metaRow}>
+                {inq.author_info ? (
+                  <>
+                    <span style={modalStyles.chip}>{inq.author_info.department} · {inq.author_info.grade}학년</span>
+                    <span style={modalStyles.chip}><MdPerson size={12} /> {inq.author_info.name} ({inq.author_info.student_no})</span>
+                  </>
+                ) : (
+                  <span style={modalStyles.chip}><MdPerson size={12} /> ID: {inq.user_id}</span>
+                )}
+                <span style={modalStyles.chipAccent}>답변 완료</span>
+                {inq.academic_event_id && academicEvents[inq.academic_event_id] && (
+                  <span style={modalStyles.chip}>
+                    <MdCalendarToday size={12} /> {academicEvents[inq.academic_event_id].title} (~{academicEvents[inq.academic_event_id].end_date})
+                  </span>
+                )}
+              </div>
+            </div>
+
             <div style={modalStyles.content}>
-               <div style={modalStyles.questionBox}>
-                  {/* 모달 내 학생 정보 복구 */}
-                  <div style={{...modalStyles.infoRow, display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap'}}>
-                      <MdPerson size={14} /><span style={{fontWeight:'bold'}}>학생 정보: </span>
-                      {inq.author_info ? (
-                          <span>
-                              {inq.author_info.department} / {inq.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{inq.author_info.name}</span> ({inq.author_info.student_no})
-                          </span>
-                      ) : (
-                          <span>ID: {inq.user_id}</span>
-                      )}
-                  </div>
-                  <div style={modalStyles.qTitle}>Q. {inq.title}</div>
-                  <div style={modalStyles.qText}>{inq.content}</div>
-                  {inq.attachment && (<div style={modalStyles.attachBox}><a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={13} /> 학생 첨부파일 보기</a></div>)}
-                  {inq.academic_event_id && academicEvents[inq.academic_event_id] && (<div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><MdCalendarToday size={13} /><span>관련 일정: {academicEvents[inq.academic_event_id].title} (~{academicEvents[inq.academic_event_id].end_date})</span></div>)}
-               </div>
-               <hr style={{margin:'25px 0', border:'0', borderTop:'1px dashed #ddd'}}/>
-               <div style={modalStyles.section}>
-                  <div style={{fontSize:'16px', fontWeight:'bold', color:'#2e7d32', marginBottom:'10px'}}>대화 내역</div>
+              <div style={modalStyles.section}>
+                <div style={modalStyles.sectionHead}>문의 내용<span style={modalStyles.sectionLine} /></div>
+                <div style={modalStyles.qText}>{inq.content}</div>
+                {inq.attachment && (
+                  <a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>
+                    <MdAttachFile size={14} /> 학생 첨부파일 보기
+                  </a>
+                )}
+              </div>
+
+              <div style={modalStyles.sectionLast}>
+                <div style={modalStyles.sectionHead}>대화<span style={modalStyles.sectionLine} /></div>
+                <div style={modalStyles.thread}>
+                  {!inq.replies?.length && <div style={modalStyles.emptyThread}>아직 대화 내역이 없습니다.</div>}
                   {inq.replies?.map(r => {
                     const isStudent = r.sender_role === 'student';
+                    // 수정 중일 때는 말풍선 대신 입력 폼을 전체 폭으로 펼친다
+                    if (editingReplyId === r.id) {
+                      return (
+                        <div key={r.id}>
+                          <div style={{...modalStyles.who, textAlign: 'right'}}>조교 답변 수정</div>
+                          <textarea
+                            style={modalStyles.editTextarea}
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                          />
+                          <div style={modalStyles.editActions}>
+                            <button onClick={() => setEditingReplyId(null)} style={modalStyles.cancelBtn}>취소</button>
+                            <button onClick={() => handleUpdateReply(inq.id, r.id)} style={modalStyles.saveBtn}>저장</button>
+                          </div>
+                        </div>
+                      );
+                    }
                     return (
-                    <div key={r.id} style={isStudent ? modalStyles.studentMsgBox : modalStyles.answerBox}>
-                        <div style={modalStyles.msgSenderLabel}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
-                        {editingReplyId === r.id ? (
-                            <div><textarea style={modalStyles.editTextarea} value={editContent} onChange={(e)=>setEditContent(e.target.value)}/><div style={{marginTop:'8px', display:'flex', justifyContent:'flex-end', gap:'8px'}}><button onClick={()=>{setEditingReplyId(null)}} style={modalStyles.cancelBtn}>취소</button><button onClick={()=>handleUpdateReply(inq.id, r.id)} style={modalStyles.saveBtn}>저장</button></div></div>
-                        ) : (
-                            <div><div style={{whiteSpace:'pre-wrap', lineHeight:'1.5', color:'#333'}}>{r.content}</div>{r.attachment && (<div style={{marginTop:'8px'}}><a href={`${API_BASE}${r.attachment}`} target="_blank" rel="noreferrer" style={{fontSize:'13px', color:'#2e7d32', fontWeight:'bold', textDecoration:'none', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdAttachFile size={12} /> 첨부파일</a></div>)}{!isStudent && (<div style={{marginTop:'10px', textAlign:'right'}}><button onClick={()=>{setEditingReplyId(r.id); setEditContent(r.content);}} style={{fontSize:'12px', border:'none', background:'none', color:'#666', cursor:'pointer', textDecoration:'underline', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdEdit size={11} /> 수정하기</button></div>)}</div>
+                      <div key={r.id} style={isStudent ? modalStyles.bubbleWrapStudent : modalStyles.bubbleWrapTA}>
+                        <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
+                        <div style={isStudent ? modalStyles.bubbleStudent : modalStyles.bubbleTA}>
+                          {r.content}
+                          {r.attachment && (
+                            <div>
+                              <a
+                                href={`${API_BASE}${r.attachment}`} target="_blank" rel="noreferrer"
+                                style={{...modalStyles.bubbleFile, color: isStudent ? '#003675' : '#fff'}}
+                              >
+                                <MdAttachFile size={12} /> 첨부파일
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                        {!isStudent && (
+                          <button
+                            onClick={() => { setEditingReplyId(r.id); setEditContent(r.content); }}
+                            style={modalStyles.editBtn}
+                          ><MdEdit size={11} /> 수정하기</button>
                         )}
-                    </div>
+                      </div>
                     );
                   })}
-               </div>
+                </div>
+              </div>
             </div>
           </>
           );
@@ -201,26 +253,7 @@ const styles = {
   writerInfo: { fontSize: '12px', color: '#495057', backgroundColor: 'rgba(255,255,255,0.6)', padding: '4px 8px', borderRadius: '6px', display: 'inline-block' }
 };
 
-const modalStyles = {
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 },
-  modal: { width: '90%', maxWidth: '600px', maxHeight: '85%', backgroundColor: 'white', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  header: { padding: '15px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9' },
-  closeBtn: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#666' },
-  content: { padding: '20px', overflowY: 'auto', flex: 1, backgroundColor:'#fff' },
-  questionBox: { marginBottom: '20px', padding: '15px', backgroundColor: '#fff8e1', borderRadius: '12px', border:'1px solid #ffe0b2' },
-  infoRow: { fontSize:'13px', color:'#555', marginBottom:'10px', borderBottom:'1px dashed #e6cba8', paddingBottom:'8px' },
-  qTitle: { fontWeight: 'bold', marginBottom: '8px', fontSize: '16px', color:'#333' },
-  qText: { fontSize: '15px', lineHeight: '1.5', color: '#444', whiteSpace: 'pre-wrap' },
-  attachBox: { marginTop:'10px', backgroundColor:'white', padding:'8px', borderRadius:'6px', border:'1px solid #eee', display:'inline-block' },
-  fileLink: { display:'block', color:'#003675', fontWeight:'bold', textDecoration:'underline', fontSize:'13px' },
-  eventBox: { marginTop:'10px', padding:'8px', backgroundColor:'#e8f5e9', borderRadius:'8px', color:'#2e7d32', fontSize:'13px', fontWeight:'bold' },
-  section: { marginBottom: '15px' },
-  answerBox: { backgroundColor: '#f1f8e9', padding: '15px', borderRadius: '12px', marginBottom: '10px', border: '1px solid #c5e1a5' },
-  studentMsgBox: { backgroundColor: '#fff8e1', padding: '15px', borderRadius: '12px', marginBottom: '10px', border: '1px solid #ffe0b2' },
-  msgSenderLabel: { fontSize: '11px', fontWeight: 'bold', color: '#888', marginBottom: '6px' },
-  editTextarea: { width: '100%', minHeight: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', boxSizing: 'border-box', fontSize:'14px' },
-  saveBtn: { padding: '8px 16px', backgroundColor: '#2e7d32', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight:'bold' },
-  cancelBtn: { padding: '8px 16px', backgroundColor: '#e9ecef', color: '#495057', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight:'bold' }
-};
+// 처리 완료 화면의 강조색은 목록 카드와 같은 초록 계열로 맞춘다
+const modalStyles = makeInquiryModalStyles('#2e7d32');
 
 export default TACompleted;

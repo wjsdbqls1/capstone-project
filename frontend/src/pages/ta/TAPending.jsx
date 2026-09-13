@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdAttachFile, MdSmartToy } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import { API_BASE } from '../../config';
+import { makeInquiryModalStyles } from './inquiryModalStyles';
 
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
@@ -157,81 +158,120 @@ function TAPending() {
               return (
             <>
             <div style={modalStyles.header}>
-              <h3 style={{margin:0, color:'#003675'}}>{isFollowup ? '추가 질문 답변' : '답변 작성'}</h3><button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
-            </div>
-            <div style={modalStyles.content}>
-              <div style={modalStyles.questionBox}>
-                {/* 모달 내 학생 정보 복구 */}
-                <div style={modalStyles.infoRow}>
-                    <span style={{fontWeight:'bold', marginRight:'5px', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><MdPerson size={13} /> 학생 정보: </span>
-                    {inq.author_info ? (
-                        <span>{inq.author_info.department} / {inq.author_info.grade}학년 / <span style={{fontWeight:'bold', color:'#333'}}>{inq.author_info.name}</span> ({inq.author_info.student_no})</span>
-                    ) : (
-                        <span>ID: {inq.user_id}</span>
-                    )}
+              <div style={modalStyles.headerTop}>
+                <div style={{minWidth: 0}}>
+                  <div style={modalStyles.kicker}>{isFollowup ? '추가 질문 답변' : '답변 작성'}</div>
+                  <h3 style={modalStyles.headerTitle}>{inq.title}</h3>
                 </div>
-                <div style={modalStyles.qTitle}>{inq.title}</div>
+                <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={18} /></button>
+              </div>
+              <div style={modalStyles.metaRow}>
+                {inq.author_info ? (
+                  <>
+                    <span style={modalStyles.chip}>{inq.author_info.department} · {inq.author_info.grade}학년</span>
+                    <span style={modalStyles.chip}><MdPerson size={12} /> {inq.author_info.name} ({inq.author_info.student_no})</span>
+                  </>
+                ) : (
+                  <span style={modalStyles.chip}><MdPerson size={12} /> ID: {inq.user_id}</span>
+                )}
+                {inq.academic_event_id && academicEvents[inq.academic_event_id] && (
+                  <span style={modalStyles.chipAccent}>
+                    <MdCalendarToday size={12} /> {academicEvents[inq.academic_event_id].title}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div style={modalStyles.content}>
+              <div style={modalStyles.section}>
+                <div style={modalStyles.sectionHead}>문의 내용<span style={modalStyles.sectionLine} /></div>
                 <div style={modalStyles.qText}>
                   {isFollowup ? inq.content : renderHighlighted(inq.content, aiKeywords)}
                 </div>
-                {inq.attachment && <div style={modalStyles.attachBox}><a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={{...modalStyles.fileLink, display: 'flex', alignItems: 'center', gap: '5px'}}><MdAttachFile size={13} /> 첨부파일 보기</a></div>}
-                {inq.academic_event_id && academicEvents[inq.academic_event_id] && <div style={{...modalStyles.eventBox, display: 'flex', alignItems: 'center', gap: '5px'}}><MdCalendarToday size={13} /> 관련 일정: {academicEvents[inq.academic_event_id].title}</div>}
+                {inq.attachment && (
+                  <a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>
+                    <MdAttachFile size={14} /> 첨부파일 보기
+                  </a>
+                )}
               </div>
 
-              {/* 대화 스레드 (조교 답변 / 학생 추가 질문) */}
+              {/* 대화 스레드 — 학생은 왼쪽, 조교는 오른쪽 */}
               {threadReplies.length > 0 && (
-                <div style={modalStyles.threadArea}>
-                  {threadReplies.map((msg) => {
-                    const isStudent = msg.sender_role === 'student';
-                    const isLast = msg.id === lastMsg.id;
-                    return (
-                      <div key={msg.id} style={isStudent ? modalStyles.studentMsgBox : modalStyles.assistantMsgBox}>
-                        <div style={modalStyles.msgSenderLabel}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
-                        <div style={{whiteSpace: 'pre-wrap'}}>
-                          {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : msg.content}
+                <div style={modalStyles.section}>
+                  <div style={modalStyles.sectionHead}>대화<span style={modalStyles.sectionLine} /></div>
+                  <div style={modalStyles.thread}>
+                    {threadReplies.map((msg) => {
+                      const isStudent = msg.sender_role === 'student';
+                      const isLast = msg.id === lastMsg.id;
+                      return (
+                        <div key={msg.id} style={isStudent ? modalStyles.bubbleWrapStudent : modalStyles.bubbleWrapTA}>
+                          <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
+                          <div style={isStudent ? modalStyles.bubbleStudent : modalStyles.bubbleTA}>
+                            {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : msg.content}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
               {/* AI 답변 후보 */}
-              {aiLoading && (
-                <div style={modalStyles.aiBox}>
-                  <div style={{...modalStyles.aiTitle, display: 'flex', alignItems: 'center', gap: '5px'}}><MdSmartToy size={15} /> AI 답변 후보 분석 중...</div>
-                </div>
-              )}
-              {!aiLoading && aiCandidates.length > 0 && (
-                <div style={modalStyles.aiBox}>
-                  <div style={{...modalStyles.aiTitle, display: 'flex', alignItems: 'center', gap: '5px'}}><MdSmartToy size={15} /> AI 추천 답변 후보</div>
-                  {aiCandidates.map((c, i) => {
-                    const plainText = c.answer_html
-                      ? c.answer_html.replace(/<[^>]+>/g, '').trim()
-                      : '';
-                    return (
-                      <div key={i} style={modalStyles.candidateRow}>
-                        <div style={modalStyles.candidateText}>
-                          {plainText}
+              {(aiLoading || aiCandidates.length > 0) && (
+                <div style={modalStyles.section}>
+                  <div style={modalStyles.sectionHead}>AI 추천 답변<span style={modalStyles.sectionLine} /></div>
+                  <div style={modalStyles.aiCard}>
+                    <div style={modalStyles.aiHead}>
+                      <MdSmartToy size={15} /> {aiLoading ? '유사 문의를 찾는 중...' : '유사 문의에서 찾은 답변 후보'}
+                    </div>
+                    {!aiLoading && aiCandidates.map((c, i) => {
+                      const plainText = c.answer_html
+                        ? c.answer_html.replace(/<[^>]+>/g, '').trim()
+                        : '';
+                      return (
+                        <div key={i} style={modalStyles.aiRow}>
+                          <div style={modalStyles.aiRank}>{i + 1}</div>
+                          <div style={modalStyles.aiText}>{plainText}</div>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            style={modalStyles.aiUseBtn}
+                            onClick={() => setReplyContent(plainText)}
+                          >사용</motion.button>
                         </div>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          style={modalStyles.useBtn}
-                          onClick={() => setReplyContent(plainText)}
-                        >사용</motion.button>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
-              <div style={modalStyles.answerArea}>
-                <div style={{fontWeight:'bold', marginBottom:'8px'}}>답변 입력</div>
-                <textarea style={modalStyles.textarea} placeholder="내용 입력..." value={replyContent} onChange={(e) => setReplyContent(e.target.value)}/>
-                <input type="file" onChange={(e) => setReplyFile(e.target.files[0])} style={modalStyles.fileInput}/>
+              <div style={modalStyles.sectionLast}>
+                <div style={modalStyles.sectionHead}>답변 작성<span style={modalStyles.sectionLine} /></div>
+                <textarea
+                  style={modalStyles.textarea}
+                  placeholder="학생에게 전달할 답변을 입력하세요"
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                />
+                <div style={modalStyles.charCount}>{replyContent.length}자</div>
+                <div style={modalStyles.footRow}>
+                  {/* 브라우저 기본 파일 위젯 대신 label로 감싼 숨은 input */}
+                  <label style={replyFile ? modalStyles.attachBtnActive : modalStyles.attachBtn}>
+                    <MdAttachFile size={15} />
+                    {replyFile ? replyFile.name : '파일 첨부'}
+                    <input
+                      type="file"
+                      onChange={(e) => setReplyFile(e.target.files[0])}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <motion.button
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                    style={modalStyles.submitBtn}
+                    onClick={handleSubmitReply}
+                  >답변 등록</motion.button>
+                </div>
               </div>
-              <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.submitBtn} onClick={handleSubmitReply}>등록</motion.button>
             </div>
             </>
               );
@@ -258,32 +298,7 @@ const styles = {
   writerInfo: { fontSize: '12px', color: '#495057', marginTop: '6px', backgroundColor: 'rgba(255,255,255,0.6)', padding: '4px 8px', borderRadius: '6px', display: 'inline-block' }
 };
 
-const modalStyles = {
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 },
-  modal: { width: '90%', maxWidth:'600px', maxHeight: '85%', backgroundColor: 'white', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  header: { padding: '15px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9' },
-  closeBtn: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#666' },
-  content: { padding: '20px', overflowY: 'auto', flex: 1, backgroundColor:'#fff' },
-  questionBox: { marginBottom: '20px', padding: '15px', backgroundColor: '#fff8e1', borderRadius: '12px', border:'1px solid #ffe0b2' },
-  infoRow: { fontSize:'13px', color:'#555', marginBottom:'10px', borderBottom:'1px dashed #e6cba8', paddingBottom:'8px' },
-  qTitle: { fontWeight: 'bold', marginBottom: '8px', fontSize: '16px', color:'#333' },
-  qText: { fontSize: '15px', lineHeight: '1.5', whiteSpace: 'pre-wrap', color:'#444' },
-  attachBox: { marginTop:'10px', backgroundColor:'white', padding:'8px', borderRadius:'6px', border:'1px solid #eee', display:'inline-block' },
-  fileLink: { display:'block', color:'#003675', fontWeight:'bold', textDecoration:'underline', fontSize:'13px' },
-  eventBox: { marginTop:'10px', padding:'8px', backgroundColor:'#fff3e0', borderRadius:'8px', color:'#e65100', fontSize:'13px', fontWeight:'bold' },
-  threadArea: { display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' },
-  assistantMsgBox: { backgroundColor: '#e3f2fd', border: '1px solid #bbdefb', borderRadius: '10px', padding: '12px', color: '#003675', fontSize: '14px', lineHeight: '1.5' },
-  studentMsgBox: { backgroundColor: '#fff8e1', border: '1px solid #ffe0b2', borderRadius: '10px', padding: '12px', color: '#5d4037', fontSize: '14px', lineHeight: '1.5' },
-  msgSenderLabel: { fontSize: '11px', fontWeight: 'bold', opacity: 0.75, marginBottom: '4px' },
-  aiBox: { backgroundColor:'#f0f4ff', border:'1px solid #c5d5f5', borderRadius:'10px', padding:'12px', marginBottom:'15px' },
-  aiTitle: { fontWeight:'bold', color:'#003675', fontSize:'13px', marginBottom:'8px' },
-  candidateRow: { display:'flex', alignItems:'flex-start', gap:'8px', marginBottom:'8px', backgroundColor:'white', borderRadius:'8px', padding:'8px', border:'1px solid #e0e8ff' },
-  candidateText: { flex:1, fontSize:'13px', color:'#333', lineHeight:'1.5' },
-  useBtn: { flexShrink:0, padding:'4px 10px', backgroundColor:'#003675', color:'white', border:'none', borderRadius:'6px', fontSize:'12px', cursor:'pointer', fontWeight:'bold' },
-  answerArea: { marginBottom:'15px' },
-  textarea: { width: '100%', minHeight: '120px', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', fontSize: '15px', resize: 'none', boxSizing: 'border-box' },
-  fileInput: { width: '100%', marginTop:'10px', fontSize:'13px' },
-  submitBtn: { width: '100%', padding: '12px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', marginTop:'10px' }
-};
+// 대기중 화면의 강조색은 목록 카드와 같은 주황 계열로 맞춘다
+const modalStyles = makeInquiryModalStyles('#ff9800');
 
 export default TAPending;
