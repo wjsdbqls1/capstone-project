@@ -156,6 +156,31 @@ export function makeInquiryModalStyles(theme, { maxWidth = '620px' } = {}) {
       fontSize: '13px', fontWeight: 700, color: NAVY, textDecoration: 'none', backgroundColor: '#fff',
     },
 
+    // 학생 화면(세로로 긴 휴대폰)은 조교 화면처럼 좌우 2단으로 쪼갤 수 없다.
+    // 대신 대화 영역이 남는 높이를 먹게 해서 아래쪽 빈 공간을 없앤다.
+    // 최소 높이를 함께 줘야 내용이 길 때는 모달 전체가 스크롤된다.
+    sectionFill: {
+      marginBottom: '22px', flex: 1, minHeight: '180px',
+      display: 'flex', flexDirection: 'column',
+    },
+    // 늘어난 영역이 그냥 흰 여백으로 보이지 않도록 채팅창처럼 바탕을 깐다
+    threadPanel: {
+      flex: 1, minHeight: 0, overflowY: 'auto',
+      display: 'flex', flexDirection: 'column',
+      padding: '14px', backgroundColor: '#f8fafc',
+      border: `1px solid ${LINE}`, borderRadius: '12px',
+    },
+    // 대화가 적을 때 위에 붙지 않고 입력창 바로 위로 내려오게 한다.
+    // justify-content:flex-end는 넘칠 때 위쪽이 잘려 스크롤로도 못 보므로 margin-top:auto를 쓴다.
+    threadInner: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' },
+    // 패널 바탕과 색이 겹치지 않도록 패널 안 말풍선은 흰 바탕에 테두리를 준다
+    bubbleOnPanel: {
+      maxWidth: '84%', padding: '12px 15px', borderRadius: '14px', borderBottomLeftRadius: '4px',
+      backgroundColor: '#fff', border: `1px solid ${LINE}`,
+      color: INK, fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
+      overflowWrap: 'anywhere',
+    },
+
     // 대화 — 색이 아니라 좌우 위치로도 구분되게
     thread: { display: 'flex', flexDirection: 'column', gap: '12px' },
     bubbleWrapLeft: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' },

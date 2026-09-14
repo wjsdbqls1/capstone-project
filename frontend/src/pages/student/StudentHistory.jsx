@@ -264,9 +264,11 @@ function StudentHistory() {
                     )}
                   </div>
 
-                  <div style={modalStyles.section}>
+                  {/* 모달 최소 높이가 남기는 아래쪽 여백을 대화창이 채우도록 flex:1 */}
+                  <div style={modalStyles.sectionFill}>
                     <div style={modalStyles.sectionHead}>대화<span style={modalStyles.sectionLine} /></div>
-                    <div style={modalStyles.thread}>
+                    <div style={modalStyles.threadPanel}>
+                     <div style={modalStyles.threadInner}>
                       {detailData.replies && detailData.replies.length > 0 ? (
                         detailData.replies.map(reply => {
                           // 학생 화면이므로 '나'가 오른쪽, 조교가 왼쪽
@@ -277,7 +279,7 @@ function StudentHistory() {
                                 {isMine ? '나의 추가 질문' : '조교 답변'} · {reply.created_at.split('T')[0]}
                                 {reply.updated_at && !isMine && ' · 수정됨'}
                               </div>
-                              <div style={isMine ? modalStyles.bubbleAccent : modalStyles.bubbleMuted}>
+                              <div style={isMine ? modalStyles.bubbleAccent : modalStyles.bubbleOnPanel}>
                                 {linkify(reply.content, { color: isMine ? '#fff' : '#003675' })}
                                 {reply.attachment && (
                                   <div>
@@ -307,6 +309,7 @@ function StudentHistory() {
                           아직 답변이 등록되지 않았습니다. 조금만 기다려주세요.
                         </div>
                       )}
+                     </div>
                     </div>
                   </div>
 
