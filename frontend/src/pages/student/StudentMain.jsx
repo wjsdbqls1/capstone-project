@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdEdit, MdAssignment, MdHelp, MdCampaign, MdCalendarToday, MdLogout, MdHome, MdPerson, MdChevronRight } from 'react-icons/md';
+import { MdEdit, MdCampaign, MdCalendarToday, MdPerson, MdChevronRight } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
@@ -85,10 +85,6 @@ function StudentMain() {
       .catch(() => setEvents([]));
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
-  };
 
   const today = todayStr();
   const latestNotice = notices.find(n => {
@@ -115,9 +111,13 @@ function StudentMain() {
              {userName ? `${userName}님, 환영합니다!` : '학생용 대시보드'}
           </h3>
         </div>
-        <div style={styles.avatar}>
+        <button
+          style={styles.avatar}
+          onClick={() => navigate('/student/mypage')}
+          aria-label="마이페이지"
+        >
           {userName ? userName.charAt(0) : <MdPerson size={20} />}
-        </div>
+        </button>
       </div>
 
       {/* 3. 유리 박스 — 다른 페이지(FAQ/공지사항 등)와 동일한 크기·투명도 규칙 적용 */}
@@ -170,18 +170,6 @@ function StudentMain() {
         </div>
       </div>
 
-      {/* 4. 하단 네비게이션 */}
-      <nav style={styles.bottomNav}>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <span style={styles.navIconWrap}><MdPerson size={25} /></span> 마이페이지
-        </motion.button>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <span style={styles.navIconWrap}><MdHome size={25} /></span> 홈
-        </motion.button>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <span style={styles.navIconWrap}><MdLogout size={25} /></span> 로그아웃
-        </motion.button>
-      </nav>
     </div>
   );
 }
@@ -424,39 +412,10 @@ const styles = {
 
   // 버튼 글자 길이(마이페이지/홈/로그아웃)가 서로 달라서 flex+space-around로는
   // 가운데 버튼이 정확히 중앙에 오지 않았음. 3등분 grid로 바꿔 항상 정중앙에 오도록 함
-  bottomNav: {
-    height: '70px',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderTop: '1px solid rgba(0,0,0,0.1)',
-    flexShrink: 0
-  },
 
-  navBtn: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '4px',
-    background: 'none',
-    border: 'none',
-    fontSize: 'clamp(17px, 4.5vw, 21px)', // 하단 버튼 폰트 반응형
-    fontWeight: 'bold',
-    color: '#003675',
-    cursor: 'pointer',
-    padding: '10px'
-  },
 
   // 아이콘마다 시각적 크기/여백이 조금씩 달라 보이는 것을 방지하기 위해
   // 항상 같은 크기의 박스 정중앙에 아이콘을 배치
-  navIconWrap: {
-    width: '27px',
-    height: '27px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
 };
 
 export default StudentMain;

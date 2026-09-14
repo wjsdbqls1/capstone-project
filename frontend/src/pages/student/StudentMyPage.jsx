@@ -7,7 +7,7 @@ import '../../App.css';
 import NotificationToggle from '../../components/NotificationToggle';
 import AnimatedModal from '../../components/AnimatedModal';
 import { unsubscribeFromPush } from '../../pushNotifications';
-import { MdChevronLeft, MdPerson, MdClose, MdLogout, MdHome } from 'react-icons/md';
+import { MdChevronLeft, MdPerson, MdClose } from 'react-icons/md';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -215,18 +215,6 @@ function StudentMyPage() {
         </div>
       </AnimatedModal>
 
-      {/* 하단 네비게이션 */}
-      <nav style={styles.bottomNav}>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <span style={styles.navIconWrap}><MdPerson size={25} /></span> 마이페이지
-        </motion.button>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <span style={styles.navIconWrap}><MdHome size={25} /></span> 홈
-        </motion.button>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <span style={styles.navIconWrap}><MdLogout size={25} /></span> 로그아웃
-        </motion.button>
-      </nav>
     </div>
   );
 }
@@ -436,35 +424,6 @@ const styles = {
   },
   // 버튼 글자 길이(마이페이지/홈/로그아웃)가 서로 달라서 flex+space-around로는
   // 가운데 버튼이 정확히 중앙에 오지 않았음. 3등분 grid로 바꿔 항상 정중앙에 오도록 함
-  bottomNav: {
-    height: '70px',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderTop: '1px solid rgba(0,0,0,0.1)',
-    flexShrink: 0
-  },
-  navBtn: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '4px',
-    background: 'none',
-    border: 'none',
-    fontSize: 'clamp(17px, 4.5vw, 21px)',
-    fontWeight: 'bold',
-    color: '#003675',
-    cursor: 'pointer',
-    padding: '10px'
-  },
-  navIconWrap: {
-    width: '27px',
-    height: '27px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
 };
 
 export default StudentMyPage;

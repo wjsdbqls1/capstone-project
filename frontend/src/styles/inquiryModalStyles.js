@@ -67,7 +67,12 @@ export function makeInquiryModalStyles(theme) {
       fontSize: '11px', letterSpacing: '0.14em', opacity: 0.7,
       fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase',
     },
-    headerTitle: { margin: 0, fontSize: 'clamp(17px, 4.4vw, 19px)', fontWeight: 800, lineHeight: 1.35, wordBreak: 'keep-all' },
+    headerTitle: {
+      margin: 0, fontSize: 'clamp(17px, 4.4vw, 19px)', fontWeight: 800, lineHeight: 1.35,
+      // keep-all은 한글 단어를 안 끊어 읽기 좋지만, 공백 없는 긴 문자열은 그대로 넘친다.
+      // overflowWrap: anywhere를 같이 줘야 그런 경우에만 강제로 줄바꿈된다.
+      wordBreak: 'keep-all', overflowWrap: 'anywhere',
+    },
     closeBtn: {
       background: 'rgba(255,255,255,0.14)', border: 'none', color: '#fff',
       width: '30px', height: '30px', borderRadius: '9px', cursor: 'pointer',
@@ -101,7 +106,7 @@ export function makeInquiryModalStyles(theme) {
     },
     sectionLine: { flex: 1, height: '1px', backgroundColor: LINE },
 
-    qText: { fontSize: '15px', lineHeight: 1.75, color: INK, whiteSpace: 'pre-wrap' },
+    qText: { fontSize: '15px', lineHeight: 1.75, color: INK, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' },
     fileLink: {
       display: 'inline-flex', alignItems: 'center', gap: '7px', marginTop: '13px',
       padding: '8px 13px', border: `1px solid ${LINE}`, borderRadius: '9px',
@@ -116,11 +121,13 @@ export function makeInquiryModalStyles(theme) {
     bubbleMuted: {
       maxWidth: '84%', padding: '12px 15px', borderRadius: '14px', borderBottomLeftRadius: '4px',
       backgroundColor: '#f1f3f6', color: INK, fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
+      overflowWrap: 'anywhere',
     },
     // 조교 말풍선·주요 버튼은 화면 색을 따른다. g1은 흰 글자를 올리기엔 밝아서 중간 단계(g2)를 쓴다.
     bubbleAccent: {
       maxWidth: '84%', padding: '12px 15px', borderRadius: '14px', borderBottomRightRadius: '4px',
       backgroundColor: g2, color: '#fff', fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
+      overflowWrap: 'anywhere',
     },
     bubbleFile: {
       display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '8px',

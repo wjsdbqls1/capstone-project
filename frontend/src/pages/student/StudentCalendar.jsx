@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdChevronLeft, MdChevronRight, MdClose, MdLogout, MdHome, MdPerson } from 'react-icons/md';
+import { MdChevronLeft, MdChevronRight, MdClose, MdPerson } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 
@@ -200,10 +200,6 @@ function StudentCalendar() {
     return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
-  };
 
   return (
     <div style={styles.pageContainer}>
@@ -224,6 +220,13 @@ function StudentCalendar() {
         </button>
 
         <h2 style={styles.headerTitle}>학사 일정</h2>
+        <button
+          style={styles.myPageBtn}
+          onClick={() => navigate('/student/mypage')}
+          aria-label="마이페이지"
+        >
+          <MdPerson size={22} />
+        </button>
       </div>
 
       {/* 유리 박스 컨테이너 */}
@@ -309,23 +312,22 @@ function StudentCalendar() {
           </div>
       </AnimatedModal>
 
-      {/* 하단 네비게이션 */}
-      <nav style={styles.bottomNav}>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/mypage')}>
-          <span style={styles.navIconWrap}><MdPerson size={25} /></span> 마이페이지
-        </motion.button>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={() => navigate('/student/main')}>
-          <span style={styles.navIconWrap}><MdHome size={25} /></span> 홈
-        </motion.button>
-        <motion.button whileTap={{ scale: 0.94 }} style={styles.navBtn} onClick={handleLogout}>
-          <span style={styles.navIconWrap}><MdLogout size={25} /></span> 로그아웃
-        </motion.button>
-      </nav>
     </div>
   );
 }
 
 const styles = {
+  // 하단 네비를 없애고 마이페이지 진입점을 헤더 오른쪽으로 옮김
+  myPageBtn: {
+    marginLeft: 'auto',
+    width: '38px', height: '38px', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '50%',
+    color: 'white', cursor: 'pointer', outline: 'none',
+    position: 'relative', zIndex: 1,
+  },
   pageContainer: {
     backgroundImage: `url(${bgImage})`,
     backgroundSize: 'cover',
@@ -400,63 +402,10 @@ const styles = {
   },
   // 버튼 글자 길이(마이페이지/홈/로그아웃)가 서로 달라서 flex+space-around로는
   // 가운데 버튼이 정확히 중앙에 오지 않았음. 3등분 grid로 바꿔 항상 정중앙에 오도록 함
-  bottomNav: {
-    height: '70px',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderTop: '1px solid rgba(0,0,0,0.1)',
-    flexShrink: 0
-  },
-  navBtn: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '4px',
-    background: 'none',
-    border: 'none',
-    fontSize: 'clamp(17px, 4.5vw, 21px)',
-    fontWeight: 'bold',
-    color: '#003675',
-    cursor: 'pointer',
-    padding: '10px'
-  },
-  navIconWrap: {
-    width: '27px',
-    height: '27px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
-};
-
-const calStyles = {
-  controls: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '10px',
-    flexWrap: 'wrap', 
-    gap: '5px',
-    flexShrink: 0
-  },
   monthNav: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px'
-  },
-  navBtn: {
-    background:'white',
-    border:'1px solid #ddd',
-    borderRadius:'8px',
-    cursor:'pointer',
-    padding:'6px 8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#003675',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
   },
   legend: {
     display: 'flex',
