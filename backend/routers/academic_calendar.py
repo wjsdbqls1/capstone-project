@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from deps import get_db
-from auth import require_assistant
+from auth import get_current_user, require_assistant
 from models import AcademicEvent, User
 from push_service import send_push_to_users
 
@@ -19,6 +19,7 @@ class AcademicEventCreate(BaseModel):
 
 @r.get("")
 def list_events(
+    _=Depends(get_current_user),   # 학사일정은 로그인한 사용자에게만 보여준다
     db: Session = Depends(get_db),
     year: int | None = None,
     month: int | None = None,

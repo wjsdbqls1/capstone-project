@@ -2,10 +2,17 @@
 from fastapi import APIRouter, Depends, HTTPException # ★ HTTPException 추가됨
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from auth import get_current_user
 from deps import get_db
 from models import Notice
 
-r = APIRouter(prefix="/notices", tags=["notices"])
+# 공지는 학년별 대상이 정해진 것도 있어 로그인한 사용자에게만 내려준다.
+# 이 라우터의 모든 엔드포인트에 한 번에 건다.
+r = APIRouter(
+    prefix="/notices",
+    tags=["notices"],
+    dependencies=[Depends(get_current_user)],
+)
 
 # 목록 카드에 본문 앞부분을 보여주지만, 전체 본문(평균 700바이트 이상)을 다 실어오면
 # 공지가 쌓일수록 전송량만 커진다. DB에서 잘라서 필요한 만큼만 가져온다.

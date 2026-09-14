@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-# from auth import get_current_user  <-- 제거
+from auth import get_current_user
 from deps import get_db
 from models import Notice, ExternalNotice, ExternalNoticeFile
 
@@ -13,7 +13,11 @@ load_dotenv()
 # 파일 저장 경로 (실제 경로에 맞게 환경변수나 기본값 설정)
 EXT_NOTICE_DIR = os.getenv("EXT_NOTICE_DIR", r"C:\uploads\external_notices")
 
-r = APIRouter(prefix="/notices", tags=["notices-detail"])
+r = APIRouter(
+    prefix="/notices",
+    tags=["notices-detail"],
+    dependencies=[Depends(get_current_user)],
+)
 
 # 1. 내부 공지 상세 조회 (잠금 해제)
 @r.get("/internal/{notice_id}")

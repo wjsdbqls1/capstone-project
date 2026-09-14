@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from deps import get_db
-from auth import require_assistant
+from auth import get_current_user, require_assistant
 from models import FAQ, User
 from push_service import send_push_to_users
 from upload_utils import save_upload
@@ -18,7 +18,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # 1. 목록 조회
 @r.get("")
-def list_faqs(db: Session = Depends(get_db)):
+def list_faqs(_=Depends(get_current_user), db: Session = Depends(get_db)):
     # 등록일(created_at) 내림차순 정렬, 동일 등록일은 최신 등록 순(id)으로
     return db.query(FAQ).order_by(FAQ.created_at.desc(), FAQ.id.desc()).all()
 
