@@ -44,8 +44,8 @@ export function makeInquiryModalStyles(theme, { maxWidth = '620px' } = {}) {
     modal: {
       width: `min(94%, ${maxWidth})`,
       // 내용이 적으면 모달이 납작해져 보기 불편하므로 최소 높이를 준다.
-      // 화면이 낮은 기기에서는 72%가 먼저 걸려 화면을 넘지 않는다.
-      minHeight: 'min(520px, 72%)',
+      // 화면이 낮은 기기에서는 비율이 먼저 걸려 화면을 넘지 않는다.
+      minHeight: 'min(780px, 80%)',
       maxHeight: '85%',
       backgroundColor: '#fff',
       borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -104,6 +104,36 @@ export function makeInquiryModalStyles(theme, { maxWidth = '620px' } = {}) {
     },
 
     content: { padding: 'clamp(16px, 4.5vw, 22px)', overflowY: 'auto', flex: 1, backgroundColor: '#fff' },
+
+    // 넓고 높은 모달에서 한 줄짜리 내용이 위에만 붙어 아래가 텅 비는 걸 막기 위한 2단 구성.
+    // 본문은 왼쪽에서 남는 높이를 채우고, 정보·관리는 오른쪽에 모은다.
+    // 좁은 화면에서는 flexWrap으로 자연스럽게 위아래로 쌓인다.
+    splitRow: { display: 'flex', flexWrap: 'wrap', gap: '22px', alignItems: 'stretch', height: '100%' },
+    splitMain: { flex: '3 1 340px', display: 'flex', flexDirection: 'column', minWidth: 0 },
+    splitSide: { flex: '1 1 240px', display: 'flex', flexDirection: 'column', gap: '18px', minWidth: 0 },
+    // 본문 상자 — 남는 세로 공간을 채워 아래쪽 여백을 없앤다
+    bodyFill: {
+      flex: 1, minHeight: '160px', padding: '16px 18px',
+      backgroundColor: '#f8fafc', border: `1px solid ${LINE}`, borderRadius: '12px',
+      fontSize: '15px', lineHeight: 1.8, color: INK,
+      whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', overflowY: 'auto',
+    },
+    // 오른쪽 정보 목록
+    infoList: { display: 'flex', flexDirection: 'column', gap: '10px' },
+    infoItem: { display: 'flex', flexDirection: 'column', gap: '3px' },
+    infoLabel: { fontSize: '11px', fontWeight: 800, color: '#9aa3af', letterSpacing: '0.06em' },
+    infoValue: { fontSize: '14px', fontWeight: 700, color: INK, overflowWrap: 'anywhere' },
+    infoBadgeRow: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
+    // 관리 버튼은 가로로 늘어지지 않게 오른쪽 칼럼에서 세로로 쌓는다
+    sideActions: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' },
+    sideEditBtn: {
+      padding: '12px', backgroundColor: NAVY, color: '#fff', border: 'none',
+      borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '14px', fontFamily: 'inherit',
+    },
+    sideDeleteBtn: {
+      padding: '12px', backgroundColor: '#fff', color: '#c62828', border: '1px solid #c62828',
+      borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '14px', fontFamily: 'inherit',
+    },
 
     // 섹션 라벨 + 가로선으로 위계 만들기
     section: { marginBottom: '22px' },

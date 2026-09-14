@@ -262,34 +262,67 @@ function TANoticeManage() {
                     ? <span style={m.chipAccent}>전체 공지</span>
                     : grades.map(g => <span key={g} style={m.chipAccent}>{g}학년</span>);
                 })()}
-                {detail && <span style={m.chip}>등록 {detail.posted_date}</span>}
-                {detail && detail.updated_at && <span style={m.chip}>수정 {formatDate(detail.updated_at)}</span>}
               </div>
             </div>
             <div style={m.content}>
               {!detail ? (
                 <div style={{textAlign:'center', padding:'30px', color:'#888'}}>불러오는 중...</div>
               ) : (
-                <>
-                  <div style={m.section}>
+                /* 넓은 모달에서 본문만 위에 붙고 아래가 비는 걸 막기 위해 좌우로 나눔 */
+                <div style={m.splitRow}>
+                  <div style={m.splitMain}>
                     <div style={m.sectionHead}>내용<span style={m.sectionLine} /></div>
-                    <div style={m.qText}>{detail.content_html}</div>
-                    {detail.file_path && (
-                      <a href={`${API_BASE}/uploads/notices/${detail.file_path}`} target="_blank" rel="noreferrer" style={m.fileLink}>
-                        <MdAttachFile size={14} /> {detail.original_filename || '첨부파일'}
-                      </a>
-                    )}
+                    <div style={m.bodyFill}>{detail.content_html}</div>
                   </div>
-                  <div style={m.sectionLast}>
-                    <div style={m.sectionHead}>관리<span style={m.sectionLine} /></div>
-                    <div style={styles.detailActions}>
-                      <motion.button whileTap={{ scale: 0.97 }} style={styles.detailEditBtn}
+
+                  <div style={m.splitSide}>
+                    <div>
+                      <div style={m.sectionHead}>정보<span style={m.sectionLine} /></div>
+                      <div style={m.infoList}>
+                        <div style={m.infoItem}>
+                          <span style={m.infoLabel}>대상</span>
+                          <div style={m.infoBadgeRow}>
+                            {(() => {
+                              const grades = parseTargetGrades(detail.target_grades);
+                              return grades.length === 0
+                                ? <span style={allGradeBadgeStyle}>전체</span>
+                                : grades.map(g => <span key={g} style={gradeBadgeStyle(g)}>{g}학년</span>);
+                            })()}
+                          </div>
+                        </div>
+                        <div style={m.infoItem}>
+                          <span style={m.infoLabel}>등록</span>
+                          <span style={m.infoValue}>{detail.posted_date}</span>
+                        </div>
+                        {detail.updated_at && (
+                          <div style={m.infoItem}>
+                            <span style={m.infoLabel}>수정</span>
+                            <span style={m.infoValue}>{formatDate(detail.updated_at)}</span>
+                          </div>
+                        )}
+                        <div style={m.infoItem}>
+                          <span style={m.infoLabel}>첨부</span>
+                          {detail.file_path ? (
+                            <a href={`${API_BASE}/uploads/notices/${detail.file_path}`} target="_blank" rel="noreferrer"
+                               style={{...m.fileLink, marginTop: '4px'}}>
+                              <MdAttachFile size={14} /> {detail.original_filename || '첨부파일'}
+                            </a>
+                          ) : (
+                            <span style={{...m.infoValue, color: '#9aa3af', fontWeight: 500}}>없음</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={m.sideActions}>
+                      <div style={m.sectionHead}>관리<span style={m.sectionLine} /></div>
+                      <motion.button whileTap={{ scale: 0.97 }} style={m.sideEditBtn}
                         onClick={() => { setShowDetail(false); handleOpenEdit(detail.id); }}>수정</motion.button>
-                      <motion.button whileTap={{ scale: 0.97 }} style={styles.detailDeleteBtn}
+                      <motion.button whileTap={{ scale: 0.97 }} style={m.sideDeleteBtn}
                         onClick={() => { handleDelete(detail.id); setShowDetail(false); }}>삭제</motion.button>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
       </AnimatedModal>
@@ -306,42 +339,51 @@ function TANoticeManage() {
               </div>
             </div>
             <div style={m.content}>
-              <div style={m.section}>
-                <div style={m.sectionHead}>대상 학년<span style={m.sectionLine} /></div>
-                <div style={styles.gradeChipRow}>
-                  {[{ value: 0, label: '전체' }, { value: 1, label: '1학년' }, { value: 2, label: '2학년' }, { value: 3, label: '3학년' }, { value: 4, label: '4학년' }].map((opt) => {
-                    const active = formData.targetGrades.includes(opt.value);
-                    return (
-                      <button type="button" key={opt.value} onClick={() => toggleGrade(opt.value)}
-                        style={active ? styles.gradeChipActive : styles.gradeChip}>
-                        {opt.label}
-                      </button>
-                    );
-                  })}
+              <div style={m.splitRow}>
+                {/* 왼쪽: 제목 + 내용(남는 높이를 채움) */}
+                <div style={m.splitMain}>
+                  <div style={m.sectionHead}>제목<span style={m.sectionLine} /></div>
+                  <input type="text" style={styles.modalInput} value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="제목을 입력하세요"/>
+
+                  <div style={{...m.sectionHead, marginTop: '20px'}}>내용<span style={m.sectionLine} /></div>
+                  <textarea style={{...m.textarea, flex: 1, minHeight: '200px'}} placeholder="공지 내용을 입력하세요."
+                    value={formData.content_html} onChange={(e) => setFormData({...formData, content_html: e.target.value})}/>
+                  <div style={m.charCount}>{formData.content_html.length}자</div>
                 </div>
-                <div style={styles.hint}>여러 학년을 함께 선택할 수 있습니다.</div>
-              </div>
 
-              <div style={m.section}>
-                <div style={m.sectionHead}>제목<span style={m.sectionLine} /></div>
-                <input type="text" style={styles.modalInput} value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="제목을 입력하세요"/>
-              </div>
+                {/* 오른쪽: 대상 학년 · 첨부 · 저장 */}
+                <div style={m.splitSide}>
+                  <div>
+                    <div style={m.sectionHead}>대상 학년<span style={m.sectionLine} /></div>
+                    <div style={styles.gradeChipRow}>
+                      {[{ value: 0, label: '전체' }, { value: 1, label: '1학년' }, { value: 2, label: '2학년' }, { value: 3, label: '3학년' }, { value: 4, label: '4학년' }].map((opt) => {
+                        const active = formData.targetGrades.includes(opt.value);
+                        return (
+                          <button type="button" key={opt.value} onClick={() => toggleGrade(opt.value)}
+                            style={active ? styles.gradeChipActive : styles.gradeChip}>
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div style={styles.hint}>여러 학년을 함께 선택할 수 있습니다.</div>
+                  </div>
 
-              <div style={m.sectionLast}>
-                <div style={m.sectionHead}>내용<span style={m.sectionLine} /></div>
-                <textarea style={m.textarea} placeholder="공지 내용을 입력하세요."
-                  value={formData.content_html} onChange={(e) => setFormData({...formData, content_html: e.target.value})}/>
-                <div style={m.charCount}>{formData.content_html.length}자</div>
-                <div style={m.footRow}>
-                  <label style={file ? m.attachBtnActive : m.attachBtn}>
-                    <MdAttachFile size={15} />
-                    {file ? file.name : '파일 첨부'}
-                    <input type="file" style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
-                  </label>
-                  <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={m.submitBtn} onClick={handleSave}>
-                    {isEditMode ? "수정 완료" : "등록하기"}
-                  </motion.button>
+                  <div>
+                    <div style={m.sectionHead}>첨부파일<span style={m.sectionLine} /></div>
+                    <label style={{...(file ? m.attachBtnActive : m.attachBtn), width: '100%', justifyContent: 'center'}}>
+                      <MdAttachFile size={15} />
+                      {file ? file.name : '파일 선택'}
+                      <input type="file" style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
+                    </label>
+                  </div>
+
+                  <div style={m.sideActions}>
+                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={m.submitBtn} onClick={handleSave}>
+                      {isEditMode ? "수정 완료" : "등록하기"}
+                    </motion.button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -359,12 +401,6 @@ const styles = {
   dateRow: { display: 'flex', alignItems: 'baseline', gap: '8px', whiteSpace: 'nowrap' },
   dateLabel: { fontSize: '12px', fontWeight: 800, color: '#6b7280' },
   dateValue: { fontSize: '15px', fontWeight: 700, color: '#1f2937' },
-  detailActions: { display: 'flex', gap: '10px' },
-  detailEditBtn: { flex: 1, padding: '12px', backgroundColor: '#003675', color: '#fff', border: 'none',
-                   borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '14px' },
-  detailDeleteBtn: { flex: 1, padding: '12px', backgroundColor: '#fff', color: '#c62828',
-                     border: '1px solid #c62828', borderRadius: '10px', cursor: 'pointer',
-                     fontWeight: 800, fontSize: '14px' },
   modalInput: { width: '100%', padding: '12px 14px', border: '1px solid #e5e8ec', borderRadius: '10px',
                 fontSize: '14.5px', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
   hint: { fontSize: '12px', color: '#9aa3af', marginTop: '8px' },

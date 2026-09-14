@@ -199,27 +199,57 @@ function TAFaqManage() {
               </div>
               <div style={m.metaRow}>
                 {d.category && <span style={m.chipAccent}>{d.category}</span>}
-                <span style={m.chip}>등록 {formatDate(d.created_at) || d.posted_date}</span>
-                {d.updated_at && <span style={m.chip}>수정 {formatDate(d.updated_at)}</span>}
               </div>
             </div>
             <div style={m.content}>
-              <div style={m.section}>
-                <div style={m.sectionHead}>답변<span style={m.sectionLine} /></div>
-                <div style={m.qText}>{d.answer_html}</div>
-                {d.file_path && (
-                  <a href={`${API_BASE}/uploads/faqs/${d.file_path}`} target="_blank" rel="noreferrer" style={m.fileLink}>
-                    <MdAttachFile size={14} /> {d.original_filename || '첨부파일'}
-                  </a>
-                )}
-              </div>
-              <div style={m.sectionLast}>
-                <div style={m.sectionHead}>관리<span style={m.sectionLine} /></div>
-                <div style={styles.detailActions}>
-                  <motion.button whileTap={{ scale: 0.97 }} style={styles.detailEditBtn}
-                    onClick={() => { const t = detail; setDetail(null); handleOpenEdit(t); }}>수정</motion.button>
-                  <motion.button whileTap={{ scale: 0.97 }} style={styles.detailDeleteBtn}
-                    onClick={() => { handleDelete(d.id); setDetail(null); }}>삭제</motion.button>
+              {/* 넓은 모달에서 답변만 위에 붙고 아래가 비는 걸 막기 위해 좌우로 나눔 */}
+              <div style={m.splitRow}>
+                <div style={m.splitMain}>
+                  <div style={m.sectionHead}>답변<span style={m.sectionLine} /></div>
+                  <div style={m.bodyFill}>{d.answer_html}</div>
+                </div>
+
+                <div style={m.splitSide}>
+                  <div>
+                    <div style={m.sectionHead}>정보<span style={m.sectionLine} /></div>
+                    <div style={m.infoList}>
+                      {d.category && (
+                        <div style={m.infoItem}>
+                          <span style={m.infoLabel}>분류</span>
+                          <span style={m.infoValue}>{d.category}</span>
+                        </div>
+                      )}
+                      <div style={m.infoItem}>
+                        <span style={m.infoLabel}>등록</span>
+                        <span style={m.infoValue}>{formatDate(d.created_at) || d.posted_date}</span>
+                      </div>
+                      {d.updated_at && (
+                        <div style={m.infoItem}>
+                          <span style={m.infoLabel}>수정</span>
+                          <span style={m.infoValue}>{formatDate(d.updated_at)}</span>
+                        </div>
+                      )}
+                      <div style={m.infoItem}>
+                        <span style={m.infoLabel}>첨부</span>
+                        {d.file_path ? (
+                          <a href={`${API_BASE}/uploads/faqs/${d.file_path}`} target="_blank" rel="noreferrer"
+                             style={{...m.fileLink, marginTop: '4px'}}>
+                            <MdAttachFile size={14} /> {d.original_filename || '첨부파일'}
+                          </a>
+                        ) : (
+                          <span style={{...m.infoValue, color: '#9aa3af', fontWeight: 500}}>없음</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={m.sideActions}>
+                    <div style={m.sectionHead}>관리<span style={m.sectionLine} /></div>
+                    <motion.button whileTap={{ scale: 0.97 }} style={m.sideEditBtn}
+                      onClick={() => { const t = detail; setDetail(null); handleOpenEdit(t); }}>수정</motion.button>
+                    <motion.button whileTap={{ scale: 0.97 }} style={m.sideDeleteBtn}
+                      onClick={() => { handleDelete(d.id); setDetail(null); }}>삭제</motion.button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -239,25 +269,35 @@ function TAFaqManage() {
               </div>
             </div>
             <div style={m.content}>
-              <div style={m.section}>
-                <div style={m.sectionHead}>질문<span style={m.sectionLine} /></div>
-                <input type="text" style={styles.modalInput} placeholder="질문 내용을 입력하세요"
-                  value={formData.question} onChange={(e) => setFormData({...formData, question: e.target.value})}/>
-              </div>
-              <div style={m.sectionLast}>
-                <div style={m.sectionHead}>답변<span style={m.sectionLine} /></div>
-                <textarea style={m.textarea} placeholder="답변 내용을 입력하세요."
-                  value={formData.answer_html} onChange={(e) => setFormData({...formData, answer_html: e.target.value})}/>
-                <div style={m.charCount}>{formData.answer_html.length}자</div>
-                <div style={m.footRow}>
-                  <label style={file ? m.attachBtnActive : m.attachBtn}>
-                    <MdAttachFile size={15} />
-                    {file ? file.name : '파일 첨부'}
-                    <input type="file" style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
-                  </label>
-                  <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={m.submitBtn} onClick={handleSave}>
-                    {isEditMode ? "수정 완료" : "등록하기"}
-                  </motion.button>
+              <div style={m.splitRow}>
+                {/* 왼쪽: 질문 + 답변(남는 높이를 채움) */}
+                <div style={m.splitMain}>
+                  <div style={m.sectionHead}>질문<span style={m.sectionLine} /></div>
+                  <input type="text" style={styles.modalInput} placeholder="질문 내용을 입력하세요"
+                    value={formData.question} onChange={(e) => setFormData({...formData, question: e.target.value})}/>
+
+                  <div style={{...m.sectionHead, marginTop: '20px'}}>답변<span style={m.sectionLine} /></div>
+                  <textarea style={{...m.textarea, flex: 1, minHeight: '200px'}} placeholder="답변 내용을 입력하세요."
+                    value={formData.answer_html} onChange={(e) => setFormData({...formData, answer_html: e.target.value})}/>
+                  <div style={m.charCount}>{formData.answer_html.length}자</div>
+                </div>
+
+                {/* 오른쪽: 첨부 · 저장 */}
+                <div style={m.splitSide}>
+                  <div>
+                    <div style={m.sectionHead}>첨부파일<span style={m.sectionLine} /></div>
+                    <label style={{...(file ? m.attachBtnActive : m.attachBtn), width: '100%', justifyContent: 'center'}}>
+                      <MdAttachFile size={15} />
+                      {file ? file.name : '파일 선택'}
+                      <input type="file" style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
+                    </label>
+                  </div>
+
+                  <div style={m.sideActions}>
+                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={m.submitBtn} onClick={handleSave}>
+                      {isEditMode ? "수정 완료" : "등록하기"}
+                    </motion.button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -273,12 +313,6 @@ const styles = {
   dateRow: { display: 'flex', alignItems: 'baseline', gap: '8px', whiteSpace: 'nowrap' },
   dateLabel: { fontSize: '12px', fontWeight: 800, color: '#6b7280' },
   dateValue: { fontSize: '15px', fontWeight: 700, color: '#1f2937' },
-  detailActions: { display: 'flex', gap: '10px' },
-  detailEditBtn: { flex: 1, padding: '12px', backgroundColor: '#003675', color: '#fff', border: 'none',
-                   borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '14px' },
-  detailDeleteBtn: { flex: 1, padding: '12px', backgroundColor: '#fff', color: '#c62828',
-                     border: '1px solid #c62828', borderRadius: '10px', cursor: 'pointer',
-                     fontWeight: 800, fontSize: '14px' },
   modalInput: { width: '100%', padding: '12px 14px', border: '1px solid #e5e8ec', borderRadius: '10px',
                 fontSize: '14.5px', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675', marginBottom: '20px' },
