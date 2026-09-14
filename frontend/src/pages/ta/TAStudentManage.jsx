@@ -6,6 +6,7 @@ import { MdSearch, MdClose, MdAdd, MdLightbulb } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 import { API_BASE } from '../../config';
+import { gradeColor } from '../../styles/gradeBadge';
 
 const API = API_BASE;
 
@@ -35,13 +36,7 @@ const statusColor = (s) => {
   if (s.status === '휴학') return { bg: '#e0e0e0', fg: '#212121' }; // 검은색
   if (s.status === '졸업') return { bg: '#f5f5f5', fg: '#9e9e9e' }; // 회색
   // 재학: 학년별 색상
-  switch (s.grade) {
-    case 1: return { bg: '#e8f5e9', fg: '#2e7d32' }; // 1학년 초록
-    case 2: return { bg: '#e3f2fd', fg: '#1565c0' }; // 2학년 파랑
-    case 3: return { bg: '#fff3e0', fg: '#e65100' }; // 3학년 주황
-    case 4: return { bg: '#ffebee', fg: '#c62828' }; // 4학년 빨강
-    default: return { bg: '#eceff1', fg: '#455a64' };
-  }
+  return gradeColor(s.grade);
 };
 
 function TAStudentManage() {

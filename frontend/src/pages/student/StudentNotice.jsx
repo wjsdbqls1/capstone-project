@@ -9,6 +9,7 @@ import '../../App.css';
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg'; 
 import { API_BASE } from '../../config';
+import { parseTargetGrades, gradeBadgeStyle } from '../../styles/gradeBadge';
 
 function StudentNotice() {
   const navigate = useNavigate();
@@ -109,11 +110,13 @@ function StudentNotice() {
     if (item.source === 'external') {
         return <span style={styles.extBadge}>학과홈페이지</span>;
     }
-    const grades = (item.target_grades || "0").split(",").map(Number);
-    if (grades.includes(0)) {
+    const grades = parseTargetGrades(item.target_grades);
+    if (grades.length === 0) {
         return <span style={styles.badgeCommon}>전체</span>;
     }
-    return <span style={styles.badgeMyGrade}>{grades.join(', ')}학년</span>;
+    // 여러 학년이 대상이어도 학생에게는 자기 학년만 보여준다(목록에 이미 내 학년 것만 뜨므로)
+    const mine = userGrade !== null && grades.includes(userGrade) ? userGrade : grades[0];
+    return <span style={gradeBadgeStyle(mine)}>{mine}학년</span>;
   };
 
   return (
@@ -359,7 +362,6 @@ const styles = {
   cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems:'center' },
   date: { fontSize: '13px', color: '#888' },
   badgeCommon: { fontSize: '12px', backgroundColor: '#546e7a', color: 'white', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold' },
-  badgeMyGrade: { fontSize: '12px', backgroundColor: '#c62828', color: 'white', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold' },
   extBadge: { fontSize: '12px', backgroundColor: '#ef6c00', color: 'white', padding: '3px 6px', borderRadius: '5px', fontWeight:'bold' },
   
   // ★ 제목 스타일 수정: 줄바꿈 허용

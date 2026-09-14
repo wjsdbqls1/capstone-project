@@ -6,6 +6,7 @@ import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 import { API_BASE } from '../../config';
+import { parseTargetGrades, gradeBadgeStyle, allGradeBadgeStyle } from '../../styles/gradeBadge';
 
 function TANoticeManage() {
   const [notices, setNotices] = useState([]);
@@ -145,25 +146,6 @@ function TANoticeManage() {
     }
   };
 
-  // target_grades: "0"(전체) 또는 "1,3"처럼 콤마로 구분된 학년 문자열
-  const getGradeText = (targetGrades) => {
-    const grades = (targetGrades || "0").split(",").map((g) => g.trim());
-    if (grades.includes("0")) return "전체 공지";
-    return grades.map((g) => `${g}학년`).join(", ");
-  };
-  const getGradeBadgeStyle = (targetGrades) => {
-    const grades = (targetGrades || "0").split(",").map((g) => g.trim());
-    if (grades.includes("0")) return { backgroundColor: '#37474f', color: 'white' };
-    if (grades.length > 1) return { backgroundColor: '#ede7f6', color: '#5e35b1' }; // 여러 학년 동시 대상
-    switch (grades[0]) {
-        case '1': return { backgroundColor: '#e8f5e9', color: '#2e7d32' };
-        case '2': return { backgroundColor: '#e3f2fd', color: '#1565c0' };
-        case '3': return { backgroundColor: '#fff3e0', color: '#ef6c00' };
-        case '4': return { backgroundColor: '#ffebee', color: '#c62828' };
-        default: return { backgroundColor: '#eee', color: '#333' };
-    }
-  };
-
   return (
     <>
         <div style={styles.pageTitle}>공지사항 관리</div>
@@ -206,9 +188,16 @@ function TANoticeManage() {
                     >
                         <div style={styles.cardContent}>
                             <div style={styles.metaRow}>
-                                <span style={{...styles.gradeBadge, ...getGradeBadgeStyle(item.target_grades)}}>
-                                    {getGradeText(item.target_grades)}
-                                </span>
+                                {/* 대상 학년을 하나로 묶지 않고 학년마다 고유 색 배지로 표시 */}
+                                {(() => {
+                                  const grades = parseTargetGrades(item.target_grades);
+                                  if (grades.length === 0) {
+                                    return <span style={allGradeBadgeStyle}>전체 공지</span>;
+                                  }
+                                  return grades.map((g) => (
+                                    <span key={g} style={gradeBadgeStyle(g)}>{g}학년</span>
+                                  ));
+                                })()}
                                 <span style={styles.date}>{item.posted_date}</span>
                                 {item.original_filename && <MdAttachFile size={12} color="#888" />}
                             </div>
@@ -295,8 +284,7 @@ const styles = {
     transition: 'all 0.2s ease'
   },
   cardContent: { flex: 1, minWidth: 0 }, 
-  metaRow: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '5px' },
-  gradeBadge: { fontSize: '11px', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  metaRow: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '5px' },
   date: { fontSize: '12px', color: '#888' },
   fileIcon: { fontSize: '12px' },
   title: { fontSize: '16px', fontWeight: 'bold', color: '#212529', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },

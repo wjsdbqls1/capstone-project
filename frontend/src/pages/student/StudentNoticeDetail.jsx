@@ -7,8 +7,9 @@ import { MdChevronLeft, MdFileDownload, MdLogout, MdHome, MdPerson } from 'react
 import { motion } from 'framer-motion';
 import '../../App.css';
 
-import bgImage from '../../assets/로그인 이미지.jpg'; 
+import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import { parseTargetGrades, gradeBadgeStyle } from '../../styles/gradeBadge';
 
 function StudentNoticeDetail() {
   const { id } = useParams();
@@ -17,6 +18,8 @@ function StudentNoticeDetail() {
   const navigate = useNavigate();
 
   const [notice, setNotice] = useState(null);
+  // 대상 학년이 여러 개여도 본인 학년만 배지로 보여주기 위해 필요
+  const [myGrade, setMyGrade] = useState(null);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -29,7 +32,18 @@ function StudentNoticeDetail() {
         navigate(-1);
       }
     };
+    const fetchMyGrade = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const res = await axios.get(`${API_BASE}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
+        setMyGrade(res.data.grade);
+      } catch (error) {
+        // 학년을 못 불러와도 공지 자체는 보여준다 (배지만 대상 학년 중 첫 번째로 표시)
+      }
+    };
     fetchDetail();
+    fetchMyGrade();
   }, [id, navigate]);
 
   const handleLogout = () => {
@@ -72,12 +86,13 @@ function StudentNoticeDetail() {
         {/* 제목 영역 */}
         <div style={styles.titleSection}>
           <div style={styles.badgeWrapper}>
-              <span style={styles.badge}>
-                {(() => {
-                  const grades = (notice.target_grades || "0").split(",").map(Number);
-                  return grades.includes(0) ? '전체' : `${grades.join(', ')}학년`;
-                })()}
-              </span>
+              {(() => {
+                const grades = parseTargetGrades(notice.target_grades);
+                if (grades.length === 0) return <span style={styles.badge}>전체</span>;
+                // 목록과 마찬가지로 학생에게는 자기 학년만 표시
+                const mine = myGrade !== null && grades.includes(myGrade) ? myGrade : grades[0];
+                return <span style={gradeBadgeStyle(mine)}>{mine}학년</span>;
+              })()}
               {source === 'external' && <span style={styles.extBadge}>학과홈페이지</span>}
           </div>
           <h1 style={styles.title}>{notice.title}</h1>
