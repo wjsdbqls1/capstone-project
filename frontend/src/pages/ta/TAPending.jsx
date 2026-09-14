@@ -4,6 +4,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdAttachFile, MdSmartToy } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
+import AttachmentPreview, { attachmentKind } from '../../components/AttachmentPreview';
 import { API_BASE } from '../../config';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
@@ -189,9 +190,9 @@ function TAPending() {
                   {isFollowup ? inq.content : renderHighlighted(inq.content, aiKeywords)}
                 </div>
                 {inq.attachment && (
-                  <a href={`${API_BASE}${inq.attachment}`} target="_blank" rel="noreferrer" style={modalStyles.fileLink}>
-                    <MdAttachFile size={14} /> 첨부파일 보기
-                  </a>
+                  <div style={{marginTop: '13px', maxWidth: '420px'}}>
+                    <AttachmentPreview url={`${API_BASE}${inq.attachment}`} name={inq.attachment} maxHeight={260} />
+                  </div>
                 )}
               </div>
 
@@ -210,12 +211,21 @@ function TAPending() {
                             {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : msg.content}
                             {msg.attachment && (
                               <div>
-                                <a
-                                  href={`${API_BASE}${msg.attachment}`} target="_blank" rel="noreferrer"
-                                  style={{...modalStyles.bubbleFile, color: isStudent ? '#003675' : '#fff'}}
-                                >
-                                  <MdAttachFile size={12} /> 첨부파일
-                                </a>
+                                {attachmentKind(msg.attachment) === 'image' ? (
+                                  // 채팅처럼 이미지는 말풍선 안에서 바로 보여준다
+                                  <a href={`${API_BASE}${msg.attachment}`} target="_blank" rel="noreferrer">
+                                    <img src={`${API_BASE}${msg.attachment}`} alt="첨부 이미지"
+                                         style={{display:'block', marginTop:'8px', maxWidth:'100%', maxHeight:'200px',
+                                                 borderRadius:'10px', cursor:'zoom-in'}} />
+                                  </a>
+                                ) : (
+                                  <a
+                                    href={`${API_BASE}${msg.attachment}`} target="_blank" rel="noreferrer"
+                                    style={{...modalStyles.bubbleFile, color: isStudent ? '#003675' : '#fff'}}
+                                  >
+                                    <MdAttachFile size={12} /> 첨부파일
+                                  </a>
+                                )}
                               </div>
                             )}
                           </div>

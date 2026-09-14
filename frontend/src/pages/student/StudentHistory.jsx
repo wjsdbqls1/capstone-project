@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdChevronLeft, MdClose, MdCalendarToday, MdAttachFile, MdDownload, MdPerson, MdSend } from 'react-icons/md';
+import { MdChevronLeft, MdClose, MdCalendarToday, MdAttachFile, MdPerson, MdSend } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
+import AttachmentPreview, { attachmentKind } from '../../components/AttachmentPreview';
 import '../../App.css';
 
 // 배경 이미지
@@ -252,9 +253,9 @@ function StudentHistory() {
                     <div style={modalStyles.sectionHead}>문의 내용<span style={modalStyles.sectionLine} /></div>
                     <div style={modalStyles.qText}>{detailData.content}</div>
                     {detailData.attachment && (
-                      <a href={`${API_BASE}${detailData.attachment}`} target="_blank" rel="noopener noreferrer" style={modalStyles.fileLink}>
-                        <MdDownload size={14} /> 내 첨부파일
-                      </a>
+                      <div style={{marginTop: '13px'}}>
+                        <AttachmentPreview url={`${API_BASE}${detailData.attachment}`} name={detailData.attachment} maxHeight={260} />
+                      </div>
                     )}
                   </div>
 
@@ -275,12 +276,21 @@ function StudentHistory() {
                                 {reply.content}
                                 {reply.attachment && (
                                   <div>
-                                    <a
-                                      href={`${API_BASE}${reply.attachment}`} target="_blank" rel="noopener noreferrer"
-                                      style={{...modalStyles.bubbleFile, color: isMine ? '#fff' : '#003675'}}
-                                    >
-                                      <MdAttachFile size={12} /> 첨부파일
-                                    </a>
+                                    {attachmentKind(reply.attachment) === 'image' ? (
+                                  // 채팅처럼 이미지는 말풍선 안에서 바로 보여준다
+                                  <a href={`${API_BASE}${reply.attachment}`} target="_blank" rel="noreferrer">
+                                    <img src={`${API_BASE}${reply.attachment}`} alt="첨부 이미지"
+                                         style={{display:'block', marginTop:'8px', maxWidth:'100%', maxHeight:'200px',
+                                                 borderRadius:'10px', cursor:'zoom-in'}} />
+                                  </a>
+                                ) : (
+                                  <a
+                                    href={`${API_BASE}${reply.attachment}`} target="_blank" rel="noreferrer"
+                                    style={{...modalStyles.bubbleFile, color: isMine ? '#fff' : '#003675'}}
+                                  >
+                                    <MdAttachFile size={12} /> 첨부파일
+                                  </a>
+                                )}
                                   </div>
                                 )}
                               </div>

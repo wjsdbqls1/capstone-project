@@ -4,6 +4,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
+import AttachmentPreview from '../../components/AttachmentPreview';
 import '../../App.css';
 import { API_BASE } from '../../config';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
@@ -232,10 +233,13 @@ function TAFaqManage() {
                       <div style={m.infoItem}>
                         <span style={m.infoLabel}>첨부</span>
                         {d.file_path ? (
-                          <a href={`${API_BASE}/uploads/faqs/${d.file_path}`} target="_blank" rel="noreferrer"
-                             style={{...m.fileLink, marginTop: '4px'}}>
-                            <MdAttachFile size={14} /> {d.original_filename || '첨부파일'}
-                          </a>
+                          <div style={{marginTop: '4px'}}>
+                            <AttachmentPreview
+                              url={`${API_BASE}/uploads/faqs/${d.file_path}`}
+                              name={d.original_filename}
+                              maxHeight={200}
+                            />
+                          </div>
                         ) : (
                           <span style={{...m.infoValue, color: '#9aa3af', fontWeight: 500}}>없음</span>
                         )}

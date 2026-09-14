@@ -4,6 +4,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
+import AttachmentPreview from '../../components/AttachmentPreview';
 import '../../App.css';
 import { API_BASE } from '../../config';
 import { parseTargetGrades, gradeBadgeStyle, allGradeBadgeStyle } from '../../styles/gradeBadge';
@@ -303,10 +304,13 @@ function TANoticeManage() {
                         <div style={m.infoItem}>
                           <span style={m.infoLabel}>첨부</span>
                           {detail.file_path ? (
-                            <a href={`${API_BASE}/uploads/notices/${detail.file_path}`} target="_blank" rel="noreferrer"
-                               style={{...m.fileLink, marginTop: '4px'}}>
-                              <MdAttachFile size={14} /> {detail.original_filename || '첨부파일'}
-                            </a>
+                            <div style={{marginTop: '4px'}}>
+                              <AttachmentPreview
+                                url={`${API_BASE}/uploads/notices/${detail.file_path}`}
+                                name={detail.original_filename}
+                                maxHeight={200}
+                              />
+                            </div>
                           ) : (
                             <span style={{...m.infoValue, color: '#9aa3af', fontWeight: 500}}>없음</span>
                           )}
