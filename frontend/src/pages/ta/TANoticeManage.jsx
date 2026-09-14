@@ -229,13 +229,15 @@ function TANoticeManage() {
                         </div>
                         {/* 수정·삭제는 상세 모달로 옮기고, 그 자리에 등록/수정 날짜를 둔다 */}
                         <div style={styles.dateColumn}>
-                            <span style={styles.dateLabel}>등록</span>
-                            <span style={styles.dateValue}>{item.posted_date}</span>
+                            <div style={styles.dateRow}>
+                              <span style={styles.dateLabel}>등록</span>
+                              <span style={styles.dateValue}>{item.posted_date}</span>
+                            </div>
                             {item.updated_at && (
-                              <>
-                                <span style={{...styles.dateLabel, marginTop: '8px'}}>수정</span>
+                              <div style={styles.dateRow}>
+                                <span style={styles.dateLabel}>수정</span>
                                 <span style={styles.dateValue}>{formatDate(item.updated_at)}</span>
-                              </>
+                              </div>
                             )}
                         </div>
                     </motion.div>
@@ -352,7 +354,9 @@ const styles = {
   preview: { fontSize: '13px', color: '#6b7280', lineHeight: 1.6, marginTop: '6px',
              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
   dateColumn: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-                flexShrink: 0, marginLeft: '16px', minWidth: '104px', gap: '1px' },
+                flexShrink: 0, marginLeft: '16px', gap: '4px' },
+  // 라벨과 날짜를 한 줄로 묶어야 어느 라벨의 날짜인지 바로 읽힌다
+  dateRow: { display: 'flex', alignItems: 'baseline', gap: '8px', whiteSpace: 'nowrap' },
   dateLabel: { fontSize: '12px', fontWeight: 800, color: '#6b7280' },
   dateValue: { fontSize: '15px', fontWeight: 700, color: '#1f2937' },
   detailActions: { display: 'flex', gap: '10px' },
