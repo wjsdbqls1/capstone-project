@@ -91,7 +91,7 @@ function TALayout() {
             </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <NotificationBell />
+          <NotificationBell placement="dropdown" />
           <NotificationToggle style={layoutStyles.notifyBtn} activeStyle={layoutStyles.notifyBtnActive} />
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }} style={layoutStyles.logoutBtn} onClick={handleLogout}>
             <MdLogout size={15} /> 로그아웃

@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from py_vapid import Vapid01
 from pywebpush import webpush, WebPushException
+from sqlalchemy import bindparam, text
 from sqlalchemy.orm import Session
 
 from db import SessionLocal
@@ -47,8 +48,25 @@ def _send_to_subscriptions(db: Session, subs: list[PushSubscription], title: str
             print(f"⚠️ [push] 알림 발송 실패: {e}")
 
 
+# 사용자당 보관할 알림 수. 공지 하나가 학생 수만큼 행을 만들기 때문에
+# 상한이 없으면 계속 쌓이기만 한다(주 3회 공지 기준 연 4만 행).
+KEEP_PER_USER = 100
+
+_PRUNE_SQL = text("""
+    DELETE FROM notifications
+    WHERE id IN (
+        SELECT id FROM (
+            SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY id DESC) AS rn
+            FROM notifications
+            WHERE user_id IN :ids
+        ) ranked
+        WHERE ranked.rn > :keep
+    )
+""").bindparams(bindparam("ids", expanding=True))
+
+
 def _save_notifications(db: Session, user_ids, title: str, body: str, url: str):
-    """알림 기록을 남긴다.
+    """알림 기록을 남기고, 사용자당 최근 KEEP_PER_USER건만 남긴다.
 
     브라우저 푸시는 닫으면 사라져서 놓친 알림을 다시 볼 수 없다.
     VAPID 설정 여부와 무관하게 기록은 항상 남겨야 하므로 발송보다 먼저 처리한다.
@@ -59,6 +77,10 @@ def _save_notifications(db: Session, user_ids, title: str, body: str, url: str):
         Notification(user_id=uid, title=title[:100], message=body[:255], url=url)
         for uid in user_ids
     ])
+    db.commit()
+
+    # 방금 알림을 받은 사용자만 정리하면 되므로 전체 테이블을 훑지 않는다
+    db.execute(_PRUNE_SQL, {"ids": list(user_ids), "keep": KEEP_PER_USER})
     db.commit()
 
 
