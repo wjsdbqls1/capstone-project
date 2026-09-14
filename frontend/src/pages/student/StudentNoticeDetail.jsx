@@ -2,14 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import DOMPurify from 'dompurify';
 import { MdChevronLeft, MdPerson } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import '../../App.css';
 
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
-import { linkify } from '../../utils/linkify';
+import { linkify, htmlToText } from '../../utils/linkify';
 import { parseTargetGrades, gradeBadgeStyle } from '../../styles/gradeBadge';
 import AttachmentPreview from '../../components/AttachmentPreview';
 
@@ -115,21 +114,22 @@ function StudentNoticeDetail() {
         {/* 본문 내용 - 가독성 개선 스타일 적용 */}
         <div style={styles.bodySection}>
           {source === 'external' ? (
-            // 학과 홈페이지 크롤링 공지는 실제 HTML 서식(줄바꿈 등)이 있어서
-            // 안전하게 정화(sanitize)한 뒤 HTML로 렌더링
+            // 학과 홈페이지 크롤링 공지. 실제 내용은 <br/>과 바깥 <div> 한 겹뿐이라
+            // HTML로 심을 이유가 없다. 텍스트로 바꿔야 본문 속 주소도 링크가 된다.
             <div
                className="notice-content"
                style={{
+                   whiteSpace: 'pre-wrap',
                    minHeight: '200px',
                    wordBreak: 'break-word',
                    overflowX: 'auto',
-                   textAlign: 'justify',
                    letterSpacing: '-0.3px'
                }}
-               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(notice.content_html) }}
-            />
+            >
+              {linkify(htmlToText(notice.content_html))}
+            </div>
           ) : (
-            // 조교가 직접 입력하는 내부 공지는 일반 텍스트라 그대로 표시 (XSS 방지)
+            // 조교가 직접 입력하는 내부 공지는 일반 텍스트
             <div
                className="notice-content"
                style={{
