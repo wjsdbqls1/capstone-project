@@ -8,6 +8,7 @@ import AnimatedModal from '../../components/AnimatedModal';
 import AttachmentPreview, { attachmentKind } from '../../components/AttachmentPreview';
 import '../../App.css';
 import { API_BASE } from '../../config';
+import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
 function TACompleted() {
@@ -167,7 +168,7 @@ function TACompleted() {
             <div style={modalStyles.content}>
               <div style={modalStyles.section}>
                 <div style={modalStyles.sectionHead}>문의 내용<span style={modalStyles.sectionLine} /></div>
-                <div style={modalStyles.qText}>{inq.content}</div>
+                <div style={modalStyles.qText}>{linkify(inq.content)}</div>
                 {inq.attachment && (
                   <div style={{marginTop: '13px', maxWidth: '420px'}}>
                     <AttachmentPreview url={`${API_BASE}${inq.attachment}`} name={inq.attachment} maxHeight={260} />
@@ -202,7 +203,7 @@ function TACompleted() {
                       <div key={r.id} style={isStudent ? modalStyles.bubbleWrapLeft : modalStyles.bubbleWrapRight}>
                         <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
                         <div style={isStudent ? modalStyles.bubbleMuted : modalStyles.bubbleAccent}>
-                          {r.content}
+                          {linkify(r.content, { color: isStudent ? '#003675' : '#fff' })}
                           {r.attachment && (
                             <div>
                               {attachmentKind(r.attachment) === 'image' ? (

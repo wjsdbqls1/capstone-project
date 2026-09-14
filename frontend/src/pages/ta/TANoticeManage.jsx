@@ -7,6 +7,7 @@ import AnimatedModal from '../../components/AnimatedModal';
 import AttachmentPreview from '../../components/AttachmentPreview';
 import '../../App.css';
 import { API_BASE } from '../../config';
+import { linkify } from '../../utils/linkify';
 import { parseTargetGrades, gradeBadgeStyle, allGradeBadgeStyle } from '../../styles/gradeBadge';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
@@ -273,7 +274,7 @@ function TANoticeManage() {
                 <div style={m.splitRow}>
                   <div style={m.splitMain}>
                     <div style={m.sectionHead}>내용<span style={m.sectionLine} /></div>
-                    <div style={m.bodyFill}>{detail.content_html}</div>
+                    <div style={m.bodyFill}>{linkify(detail.content_html)}</div>
                   </div>
 
                   <div style={m.splitSide}>

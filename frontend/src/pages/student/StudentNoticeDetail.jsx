@@ -9,6 +9,7 @@ import '../../App.css';
 
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import { linkify } from '../../utils/linkify';
 import { parseTargetGrades, gradeBadgeStyle } from '../../styles/gradeBadge';
 import AttachmentPreview from '../../components/AttachmentPreview';
 
@@ -140,7 +141,7 @@ function StudentNoticeDetail() {
                    letterSpacing: '-0.3px'
                }}
             >
-              {notice.content_html}
+              {linkify(notice.content_html)}
             </div>
           )}
         </div>

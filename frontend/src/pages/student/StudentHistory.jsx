@@ -11,6 +11,7 @@ import '../../App.css';
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
 // 조교 화면과 같은 모달 구조를 쓰되, 색은 그 문의의 상태를 따른다(답변 대기=주황, 완료=초록)
@@ -251,7 +252,7 @@ function StudentHistory() {
                 <>
                   <div style={modalStyles.section}>
                     <div style={modalStyles.sectionHead}>문의 내용<span style={modalStyles.sectionLine} /></div>
-                    <div style={modalStyles.qText}>{detailData.content}</div>
+                    <div style={modalStyles.qText}>{linkify(detailData.content)}</div>
                     {detailData.attachment && (
                       <div style={{marginTop: '13px'}}>
                         <AttachmentPreview url={`${API_BASE}${detailData.attachment}`} name={detailData.attachment} maxHeight={260} />
@@ -273,7 +274,7 @@ function StudentHistory() {
                                 {reply.updated_at && !isMine && ' · 수정됨'}
                               </div>
                               <div style={isMine ? modalStyles.bubbleAccent : modalStyles.bubbleMuted}>
-                                {reply.content}
+                                {linkify(reply.content, { color: isMine ? '#fff' : '#003675' })}
                                 {reply.attachment && (
                                   <div>
                                     {attachmentKind(reply.attachment) === 'image' ? (

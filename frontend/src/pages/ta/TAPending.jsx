@@ -6,6 +6,7 @@ import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushP
 import AnimatedModal from '../../components/AnimatedModal';
 import AttachmentPreview, { attachmentKind } from '../../components/AttachmentPreview';
 import { API_BASE } from '../../config';
+import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
@@ -94,14 +95,16 @@ function TAPending() {
     // 모달이 닫히는 애니메이션 도중 selectedInquiry가 null이 되면서
     // text가 undefined로 들어와 .split()에서 크래시 나는 걸 방지
     if (!text) return null;
-    if (!keywords || keywords.length === 0) return <span>{text}</span>;
+    // 하이라이팅할 키워드가 없으면 링크 변환만 적용
+    if (!keywords || keywords.length === 0) return <span>{linkify(text)}</span>;
     const escaped = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
     const parts = text.split(regex);
     return parts.map((part, i) =>
       regex.test(part)
         ? <mark key={i} style={{ backgroundColor: '#fff176', borderRadius: '3px', padding: '0 2px' }}>{part}</mark>
-        : <span key={i}>{part}</span>
+        // 키워드가 아닌 구간에서만 URL을 링크로 바꾼다 (하이라이트와 겹치지 않게)
+        : <span key={i}>{linkify(part)}</span>
     );
   };
 
@@ -208,7 +211,7 @@ function TAPending() {
                         <div key={msg.id} style={isStudent ? modalStyles.bubbleWrapLeft : modalStyles.bubbleWrapRight}>
                           <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
                           <div style={isStudent ? modalStyles.bubbleMuted : modalStyles.bubbleAccent}>
-                            {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : msg.content}
+                            {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : linkify(msg.content, { color: isStudent ? '#003675' : '#fff' })}
                             {msg.attachment && (
                               <div>
                                 {attachmentKind(msg.attachment) === 'image' ? (

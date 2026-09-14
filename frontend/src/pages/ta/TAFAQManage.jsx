@@ -7,6 +7,7 @@ import AnimatedModal from '../../components/AnimatedModal';
 import AttachmentPreview from '../../components/AttachmentPreview';
 import '../../App.css';
 import { API_BASE } from '../../config';
+import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
 const m = makeInquiryModalStyles(ACCENTS.navy, { maxWidth: '1240px' });
@@ -207,7 +208,7 @@ function TAFaqManage() {
               <div style={m.splitRow}>
                 <div style={m.splitMain}>
                   <div style={m.sectionHead}>답변<span style={m.sectionLine} /></div>
-                  <div style={m.bodyFill}>{d.answer_html}</div>
+                  <div style={m.bodyFill}>{linkify(d.answer_html)}</div>
                 </div>
 
                 <div style={m.splitSide}>

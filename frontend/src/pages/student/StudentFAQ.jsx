@@ -9,6 +9,7 @@ import '../../App.css';
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import { linkify } from '../../utils/linkify';
 import AttachmentPreview from '../../components/AttachmentPreview';
 
 function StudentFaq() {
@@ -123,7 +124,7 @@ function StudentFaq() {
                     <div style={styles.answerContent}>
                       <span style={styles.aMark}>A.</span>
                       <div style={{flex: 1, minWidth: 0}}> {/* minWidth:0 은 텍스트 넘침 방지용 */}
-                          <div style={styles.aText}>{item.answer_html}</div>
+                          <div style={styles.aText}>{linkify(item.answer_html)}</div>
 
                           {/* 파일 다운로드 */}
                           {item.file_path && (
