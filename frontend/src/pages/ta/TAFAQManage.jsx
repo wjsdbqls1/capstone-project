@@ -173,7 +173,7 @@ function TAFaqManage() {
                             <span style={styles.dateValue}>{formatDate(item.created_at) || item.posted_date}</span>
                             {item.updated_at && (
                               <>
-                                <span style={{...styles.dateLabel, marginTop: '6px'}}>수정</span>
+                                <span style={{...styles.dateLabel, marginTop: '8px'}}>수정</span>
                                 <span style={styles.dateValue}>{formatDate(item.updated_at)}</span>
                               </>
                             )}
@@ -266,9 +266,9 @@ function TAFaqManage() {
 
 const styles = {
   dateColumn: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-                flexShrink: 0, marginLeft: '14px', minWidth: '84px' },
-  dateLabel: { fontSize: '10px', fontWeight: 800, color: '#9aa3af', letterSpacing: '0.06em' },
-  dateValue: { fontSize: '12px', fontWeight: 700, color: '#4b5563' },
+                flexShrink: 0, marginLeft: '16px', minWidth: '104px', gap: '1px' },
+  dateLabel: { fontSize: '12px', fontWeight: 800, color: '#6b7280' },
+  dateValue: { fontSize: '15px', fontWeight: 700, color: '#1f2937' },
   detailActions: { display: 'flex', gap: '10px' },
   detailEditBtn: { flex: 1, padding: '12px', backgroundColor: '#003675', color: '#fff', border: 'none',
                    borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '14px' },
