@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdEdit, MdCampaign, MdCalendarToday, MdPerson, MdChevronRight } from 'react-icons/md';
+import { MdAssignment, MdCalendarToday, MdCampaign, MdChevronRight, MdEdit, MdHelp, MdPerson } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
