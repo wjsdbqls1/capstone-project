@@ -103,12 +103,17 @@ export function makeInquiryModalStyles(theme, { maxWidth = '620px' } = {}) {
       color: theme.chipText, display: 'inline-flex', alignItems: 'center', gap: '4px',
     },
 
-    content: { padding: 'clamp(16px, 4.5vw, 22px)', overflowY: 'auto', flex: 1, backgroundColor: '#fff' },
+    // flex 컬럼으로 둬야 안쪽 splitRow가 flex:1로 남는 높이를 가져갈 수 있다.
+    // (height:100% 는 이 자리에서 기준 높이가 안 잡혀 동작하지 않았음)
+    content: {
+      padding: 'clamp(16px, 4.5vw, 22px)', overflowY: 'auto', flex: 1,
+      backgroundColor: '#fff', display: 'flex', flexDirection: 'column', minHeight: 0,
+    },
 
     // 넓고 높은 모달에서 한 줄짜리 내용이 위에만 붙어 아래가 텅 비는 걸 막기 위한 2단 구성.
     // 본문은 왼쪽에서 남는 높이를 채우고, 정보·관리는 오른쪽에 모은다.
     // 좁은 화면에서는 flexWrap으로 자연스럽게 위아래로 쌓인다.
-    splitRow: { display: 'flex', flexWrap: 'wrap', gap: '22px', alignItems: 'stretch', height: '100%' },
+    splitRow: { display: 'flex', flexWrap: 'wrap', gap: '22px', alignItems: 'stretch', flex: 1, minHeight: 0 },
     splitMain: { flex: '3 1 340px', display: 'flex', flexDirection: 'column', minWidth: 0 },
     splitSide: { flex: '1 1 240px', display: 'flex', flexDirection: 'column', gap: '18px', minWidth: 0 },
     // 본문 상자 — 남는 세로 공간을 채워 아래쪽 여백을 없앤다
