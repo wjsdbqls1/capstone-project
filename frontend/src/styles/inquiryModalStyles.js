@@ -115,7 +115,7 @@ export function makeInquiryModalStyles(theme, { maxWidth = '620px' } = {}) {
     // 좁은 화면에서는 flexWrap으로 자연스럽게 위아래로 쌓인다.
     splitRow: { display: 'flex', flexWrap: 'wrap', gap: '22px', alignItems: 'stretch', flex: 1, minHeight: 0 },
     splitMain: { flex: '3 1 340px', display: 'flex', flexDirection: 'column', minWidth: 0 },
-    splitSide: { flex: '1 1 240px', display: 'flex', flexDirection: 'column', gap: '18px', minWidth: 0 },
+    splitSide: { flex: '1 1 240px', display: 'flex', flexDirection: 'column', gap: '18px', minWidth: 0, overflow: 'hidden' },
     // 본문 상자 — 남는 세로 공간을 채워 아래쪽 여백을 없앤다
     bodyFill: {
       flex: 1, minHeight: '160px', padding: '16px 18px',
@@ -213,13 +213,15 @@ export function makeInquiryModalStyles(theme, { maxWidth = '620px' } = {}) {
       display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '11px 15px',
       border: '1px dashed #c6ccd5', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
       color: GRAY, cursor: 'pointer', backgroundColor: '#fff', whiteSpace: 'nowrap',
-      flexShrink: 0,
+      flexShrink: 0, boxSizing: 'border-box', maxWidth: '100%', overflow: 'hidden',
+      fontFamily: 'inherit',
     },
     attachBtnActive: {
       display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '11px 15px',
       border: `1px solid ${accent}`, borderRadius: '10px', fontSize: '13px', fontWeight: 700,
       color: accent, cursor: 'pointer', backgroundColor: '#fff', whiteSpace: 'nowrap',
       maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0,
+      boxSizing: 'border-box', fontFamily: 'inherit',
     },
     submitBtn: {
       flex: 1, minWidth: '140px', padding: '13px', backgroundColor: g2, color: '#fff',

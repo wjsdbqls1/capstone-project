@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdChevronLeft, MdSearch, MdExpandMore, MdExpandLess, MdDownload, MdPerson } from 'react-icons/md';
+import { MdChevronLeft, MdSearch, MdExpandMore, MdExpandLess, MdPerson } from 'react-icons/md';
 import '../../App.css';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import AttachmentPreview from '../../components/AttachmentPreview';
 
 function StudentFaq() {
   const navigate = useNavigate();
@@ -127,13 +128,11 @@ function StudentFaq() {
                           {/* 파일 다운로드 */}
                           {item.file_path && (
                             <div style={styles.fileBox}>
-                              <a
-                                href={`${API_BASE}/uploads/faqs/${item.file_path}`}
-                                download={item.original_filename}
-                                style={{ ...styles.downloadLink, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                              >
-                                <MdDownload size={14} /> {item.original_filename}
-                              </a>
+                              <AttachmentPreview
+                                url={`${API_BASE}/uploads/faqs/${item.file_path}`}
+                                name={item.original_filename}
+                                maxHeight={280}
+                              />
                             </div>
                           )}
                       </div>

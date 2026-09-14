@@ -3,13 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
-import { MdChevronLeft, MdFileDownload, MdPerson } from 'react-icons/md';
+import { MdChevronLeft, MdPerson } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import '../../App.css';
 
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
 import { parseTargetGrades, gradeBadgeStyle } from '../../styles/gradeBadge';
+import AttachmentPreview from '../../components/AttachmentPreview';
 
 function StudentNoticeDetail() {
   const { id } = useParams();
@@ -102,29 +103,11 @@ function StudentNoticeDetail() {
           <div style={styles.date}>작성일: {notice.posted_date}</div>
         </div>
 
-        {/* 파일 다운로드 영역 */}
+        {/* 첨부파일 — 이미지·PDF는 다운로드 전에 미리보기 */}
         {notice.file_path && (
           <div style={styles.fileCard}>
-            <div style={styles.fileInfo}>
-                <MdFileDownload size={24} color="#003675" />
-                <div style={{minWidth: 0}}>
-                    <div style={{fontSize:'12px', color:'#666', marginBottom:'2px'}}>첨부파일</div>
-                    <a 
-                      href={getFileUrl()} 
-                      download={notice.original_filename} 
-                      style={styles.downloadLink}
-                    >
-                      {notice.original_filename}
-                    </a>
-                </div>
-            </div>
-            <a 
-              href={getFileUrl()} 
-              download={notice.original_filename} 
-              style={styles.downloadBtn}
-            >
-              다운로드
-            </a>
+            <div style={{fontSize:'12px', color:'#666', marginBottom:'8px', fontWeight:'bold'}}>첨부파일</div>
+            <AttachmentPreview url={getFileUrl()} name={notice.original_filename} maxHeight={320} />
           </div>
         )}
 
