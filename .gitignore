@@ -6,6 +6,12 @@ backend/.env
 backend/.env.*
 .env.local
 
+# 학생 개인정보(학번·이름)가 들어 있는 파일. 한 번 커밋되면 히스토리에 남으므로
+# 실수로도 올라가지 않게 확장자 단위로 막는다.
+*.xlsx
+*.xls
+backup_*.json
+
 __pycache__/
 *.pyc
 *.pt
