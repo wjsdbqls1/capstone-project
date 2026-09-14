@@ -2,8 +2,78 @@
 // 이미지는 바로 보여주고, PDF는 누르면 펼친다.
 // (PDF를 iframe으로 자동 로드하면, 브라우저가 "PDF를 항상 다운로드" 설정인 경우
 //  화면을 열자마자 저장 창이 떠버린다. 그래서 사용자가 누를 때만 펼친다.)
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MdAttachFile, MdOpenInNew, MdDownload, MdPictureAsPdf, MdExpandMore, MdExpandLess } from 'react-icons/md';
+
+const MAX_PDF_PAGES = 10;
+
+/**
+ * PDF를 캔버스에 직접 그린다.
+ * iframe으로 띄우면 브라우저가 "PDF는 항상 다운로드"로 설정된 경우
+ * 미리보기 대신 저장 창이 떠버리기 때문에, 내장 뷰어를 아예 거치지 않는다.
+ * 라이브러리는 실제로 PDF를 열 때만 동적으로 불러와 초기 로딩을 늘리지 않는다.
+ */
+function PdfCanvas({ url, maxHeight }) {
+  const holderRef = useRef(null);
+  const [status, setStatus] = useState('loading');
+  const [pageInfo, setPageInfo] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+          'pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url
+        ).toString();
+
+        const doc = await pdfjs.getDocument({ url }).promise;
+        if (cancelled) return;
+
+        const holder = holderRef.current;
+        if (!holder) return;
+        holder.innerHTML = '';
+
+        const total = Math.min(doc.numPages, MAX_PDF_PAGES);
+        for (let i = 1; i <= total; i++) {
+          const page = await doc.getPage(i);
+          if (cancelled) return;
+          const base = page.getViewport({ scale: 1 });
+          const width = holder.clientWidth || 600;
+          const viewport = page.getViewport({ scale: Math.min(2, width / base.width) });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.style.width = '100%';
+          canvas.style.display = 'block';
+          canvas.style.marginBottom = '6px';
+          holder.appendChild(canvas);
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        }
+        if (cancelled) return;
+        setPageInfo(doc.numPages > total ? `${total}/${doc.numPages}쪽까지 표시` : `${doc.numPages}쪽`);
+        setStatus('ok');
+      } catch (e) {
+        if (!cancelled) setStatus('error');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [url]);
+
+  if (status === 'error') {
+    return <div style={styles.hint}>미리보기를 불러오지 못했습니다. 새 탭에서 열어보세요.</div>;
+  }
+  return (
+    <>
+      <div style={{ ...styles.frame, maxHeight, overflowY: 'auto', display: 'block' }}>
+        <div ref={holderRef} />
+        {status === 'loading' && <div style={styles.loading}>미리보기를 불러오는 중...</div>}
+      </div>
+      {pageInfo && <div style={styles.hint}>{pageInfo}</div>}
+    </>
+  );
+}
 
 const IMAGE_EXT = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
 
@@ -52,11 +122,7 @@ function AttachmentPreview({ url, name, maxHeight = 260 }) {
           <span style={styles.fileName}>{label}</span>
           {open ? <MdExpandLess size={18} style={{ flexShrink: 0 }} /> : <MdExpandMore size={18} style={{ flexShrink: 0 }} />}
         </button>
-        {open && (
-          <div style={styles.frame}>
-            <iframe src={url} title={label} style={{ ...styles.pdf, height: maxHeight }} />
-          </div>
-        )}
+        {open && <PdfCanvas url={url} maxHeight={maxHeight} />}
         <a href={url} target="_blank" rel="noreferrer" style={styles.openRow}>
           <MdOpenInNew size={14} /> 새 탭에서 열기
         </a>
@@ -83,7 +149,7 @@ const styles = {
     backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   image: { display: 'block', maxWidth: '100%', objectFit: 'contain', cursor: 'zoom-in' },
-  pdf: { width: '100%', border: 'none', display: 'block', backgroundColor: '#fff' },
+  loading: { padding: '20px', fontSize: '13px', color: '#9aa3af', textAlign: 'center' },
   toggleBtn: {
     display: 'flex', alignItems: 'center', gap: '8px', width: '100%', boxSizing: 'border-box',
     padding: '10px 13px', border: '1px solid #e5e8ec', borderRadius: '9px',
