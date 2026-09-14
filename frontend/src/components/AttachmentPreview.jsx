@@ -3,9 +3,48 @@
 // (PDF를 iframe으로 자동 로드하면, 브라우저가 "PDF를 항상 다운로드" 설정인 경우
 //  화면을 열자마자 저장 창이 떠버린다. 그래서 사용자가 누를 때만 펼친다.)
 import React, { useState, useEffect, useRef } from 'react';
-import { MdAttachFile, MdOpenInNew, MdDownload, MdPictureAsPdf, MdExpandMore, MdExpandLess } from 'react-icons/md';
+import { MdAttachFile, MdDownload, MdPictureAsPdf, MdExpandMore, MdExpandLess } from 'react-icons/md';
 
 const MAX_PDF_PAGES = 10;
+
+/**
+ * 원본 파일명으로 내려받는다.
+ * <a download>는 같은 출처에서만 동작해서, 다른 도메인(Supabase)에 있는 파일에는
+ * 무시된다. 그대로 두면 UUID 파일명으로 저장되므로, 내용을 받아 blob으로 바꾼 뒤
+ * 내려받아야 원본 이름이 유지된다.
+ */
+async function downloadFile(url, name) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('download failed');
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = name || '첨부파일';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(blobUrl);
+}
+
+function DownloadButton({ url, name }) {
+  const [state, setState] = useState('idle');
+  const onClick = async () => {
+    setState('loading');
+    try {
+      await downloadFile(url, name);
+      setState('idle');
+    } catch (e) {
+      setState('error');
+    }
+  };
+  return (
+    <button type="button" onClick={onClick} disabled={state === 'loading'} style={styles.downloadRow}>
+      <MdDownload size={14} />
+      {state === 'loading' ? '내려받는 중...' : state === 'error' ? '다시 시도' : '다운로드'}
+    </button>
+  );
+}
 
 /**
  * PDF를 캔버스에 직접 그린다.
@@ -62,7 +101,7 @@ function PdfCanvas({ url, maxHeight }) {
   }, [url]);
 
   if (status === 'error') {
-    return <div style={styles.hint}>미리보기를 불러오지 못했습니다. 새 탭에서 열어보세요.</div>;
+    return <div style={styles.hint}>미리보기를 불러오지 못했습니다. 다운로드해 확인해 주세요.</div>;
   }
   return (
     <>
@@ -106,10 +145,7 @@ function AttachmentPreview({ url, name, maxHeight = 260 }) {
             <img src={url} alt={label} style={{ ...styles.image, maxHeight }} />
           </a>
         </div>
-        <a href={url} target="_blank" rel="noreferrer" style={styles.openRow}>
-          <MdOpenInNew size={14} />
-          <span style={styles.fileName}>{label}</span>
-        </a>
+        <DownloadButton url={url} name={label} />
       </div>
     );
   }
@@ -123,20 +159,18 @@ function AttachmentPreview({ url, name, maxHeight = 260 }) {
           {open ? <MdExpandLess size={18} style={{ flexShrink: 0 }} /> : <MdExpandMore size={18} style={{ flexShrink: 0 }} />}
         </button>
         {open && <PdfCanvas url={url} maxHeight={maxHeight} />}
-        <a href={url} target="_blank" rel="noreferrer" style={styles.openRow}>
-          <MdOpenInNew size={14} /> 새 탭에서 열기
-        </a>
+        <DownloadButton url={url} name={label} />
       </div>
     );
   }
 
   return (
     <div style={styles.wrap}>
-      <a href={url} target="_blank" rel="noreferrer" style={styles.fileRow}>
-        <MdAttachFile size={15} />
+      <div style={styles.fileRow}>
+        <MdAttachFile size={15} style={{ flexShrink: 0 }} />
         <span style={styles.fileName}>{label}</span>
-        <MdDownload size={15} style={{ flexShrink: 0 }} />
-      </a>
+      </div>
+      <DownloadButton url={url} name={label} />
       <div style={styles.hint}>이 형식은 미리보기를 지원하지 않습니다.</div>
     </div>
   );
@@ -156,9 +190,11 @@ const styles = {
     backgroundColor: '#fff', color: '#003675', fontSize: '13px', fontWeight: 700,
     fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
   },
-  openRow: {
-    display: 'inline-flex', alignItems: 'center', gap: '6px', minWidth: 0,
-    fontSize: '12.5px', fontWeight: 700, color: '#003675', textDecoration: 'none',
+  downloadRow: {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+    alignSelf: 'flex-start', padding: '8px 14px', borderRadius: '9px',
+    border: '1px solid #003675', backgroundColor: '#fff', color: '#003675',
+    fontSize: '12.5px', fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer',
   },
   fileRow: {
     display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, boxSizing: 'border-box',
