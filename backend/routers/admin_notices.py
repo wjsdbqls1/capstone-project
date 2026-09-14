@@ -186,5 +186,6 @@ def sync_external_notices_endpoint(reset: bool = False, max_pages: int = 5, curr
 
 
 @r.get("/sync-external/status")
-def sync_external_status():
+def sync_external_status(_=Depends(require_assistant)):
+    # 크롤링 진행 상황은 조교만 보면 되는 운영 정보라 열어둘 이유가 없다
     return _crawl_state

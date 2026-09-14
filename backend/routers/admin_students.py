@@ -7,7 +7,15 @@ from passlib.context import CryptContext
 
 from auth import require_admin, require_assistant
 from deps import get_db
-from models import User
+from models import (
+    AbsenceRequest,
+    CalendarMemo,
+    Inquiry,
+    InquiryReply,
+    Notification,
+    PushSubscription,
+    User,
+)
 
 r = APIRouter(prefix="/admin/students", tags=["admin-students"])
 pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -154,6 +162,29 @@ def delete_student(
     u = db.query(User).filter(User.id == student_id, User.role == "student").first()
     if not u:
         raise HTTPException(status_code=404, detail="학생을 찾을 수 없습니다.")
+
+    # 문의·공결은 남아 있어야 할 기록이라 계정만 조용히 지우면 안 된다.
+    # 이런 학생은 삭제가 아니라 '졸업'으로 상태를 바꾸는 게 맞다.
+    blockers = []
+    if db.query(Inquiry).filter(Inquiry.user_id == u.id).first():
+        blockers.append("문의")
+    if db.query(InquiryReply).filter(InquiryReply.assistant_id == u.id).first():
+        blockers.append("추가 질문")
+    if db.query(AbsenceRequest).filter(AbsenceRequest.student_id == u.id).first():
+        blockers.append("공결 신청")
+    if blockers:
+        raise HTTPException(
+            status_code=409,
+            detail=f"{', '.join(blockers)} 기록이 있어 삭제할 수 없습니다. 상태를 '졸업'으로 변경해 주세요.",
+        )
+
+    # 그 학생에게만 딸린 부수 데이터는 같이 지운다.
+    # 남겨두면 외래키 제약에 걸려 삭제 자체가 실패한다(공지 하나만 올라가도
+    # 전교생에게 알림이 생기므로, 정리하지 않으면 사실상 아무도 못 지운다).
+    db.query(Notification).filter(Notification.user_id == u.id).delete(synchronize_session=False)
+    db.query(PushSubscription).filter(PushSubscription.user_id == u.id).delete(synchronize_session=False)
+    db.query(CalendarMemo).filter(CalendarMemo.user_id == u.id).delete(synchronize_session=False)
+
     db.delete(u)
     db.commit()
     return {"ok": True, "id": student_id}
