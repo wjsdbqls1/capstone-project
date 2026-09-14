@@ -6,6 +6,11 @@ import { MdSearch, MdClose, MdAttachFile, MdAdd } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 import { API_BASE } from '../../config';
+import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
+
+const m = makeInquiryModalStyles(ACCENTS.navy);
+
+const formatDate = (v) => (v ? String(v).split('T')[0] : '');
 
 function TAFaqManage() {
   const [faqs, setFaqs] = useState([]);
@@ -19,6 +24,8 @@ function TAFaqManage() {
   const [targetId, setTargetId] = useState(null);
   const [formData, setFormData] = useState({ question: "", answer_html: "" });
   const [file, setFile] = useState(null);
+  // 카드를 누르면 뜨는 상세 모달 (목록 항목을 그대로 사용)
+  const [detail, setDetail] = useState(null);
 
   const fetchFaqs = async () => {
     try {
@@ -147,43 +154,110 @@ function TAFaqManage() {
                     <motion.div
                       key={item.id}
                       style={styles.card}
+                      onClick={() => setDetail(item)}
                       whileHover={{ y: -2, boxShadow: '0 6px 12px rgba(0,0,0,0.1)' }}
+                      whileTap={{ scale: 0.995 }}
                     >
                         <div style={styles.cardContent}>
-                            {item.created_at && (
-                                <div style={{fontSize:'12px', color:'#999', marginBottom:'5px'}}>{item.created_at.split('T')[0]}</div>
-                            )}
-                            <div style={styles.question}><span style={{color:'#003675', marginRight:'5px'}}>Q.</span>{item.question}{item.original_filename && <MdAttachFile size={13} style={{marginLeft: '5px', verticalAlign: 'middle'}} />}</div>
-                            <div style={styles.answer}><span style={{color:'#666', marginRight:'5px', fontWeight:'bold'}}>A.</span>{item.answer_html}</div>
+                            <div style={styles.question}>
+                              <span style={{color:'#003675', marginRight:'5px'}}>Q.</span>{item.question}
+                              {item.original_filename && <MdAttachFile size={13} style={{marginLeft: '5px', verticalAlign: 'middle'}} />}
+                            </div>
+                            <div style={styles.answer}>
+                              <span style={{color:'#666', marginRight:'5px', fontWeight:'bold'}}>A.</span>{item.answer_html}
+                            </div>
                         </div>
-                        <div style={styles.actionButtons}>
-                            <motion.button whileTap={{ scale: 0.95 }} style={styles.editBtn} onClick={() => handleOpenEdit(item)}>수정</motion.button>
-                            <motion.button whileTap={{ scale: 0.95 }} style={styles.deleteBtn} onClick={() => handleDelete(item.id)}>삭제</motion.button>
+                        {/* 수정·삭제는 상세 모달로 옮기고, 그 자리에 등록/수정 날짜를 둔다 */}
+                        <div style={styles.dateColumn}>
+                            <span style={styles.dateLabel}>등록</span>
+                            <span style={styles.dateValue}>{formatDate(item.created_at) || item.posted_date}</span>
+                            {item.updated_at && (
+                              <>
+                                <span style={{...styles.dateLabel, marginTop: '6px'}}>수정</span>
+                                <span style={styles.dateValue}>{formatDate(item.updated_at)}</span>
+                              </>
+                            )}
                         </div>
                     </motion.div>
                 ))
             )}
         </div>
 
-      <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
-            <div style={modalStyles.header}>
-              <h3 style={{margin:0, color:'#003675'}}>{isEditMode ? "질문 수정" : "새 질문 등록"}</h3>
-              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
+      {/* 상세 보기 — 카드를 누르면 전체 내용과 수정·삭제 */}
+      <AnimatedModal isOpen={!!detail} onClose={() => setDetail(null)} overlayStyle={m.overlay} modalStyle={m.modal}>
+            {(() => { const d = detail || {}; return (
+            <>
+            <div style={m.header}>
+              <div style={m.headerTop}>
+                <div style={{minWidth: 0}}>
+                  <div style={m.kicker}>자주 묻는 질문</div>
+                  <h3 style={m.headerTitle}>{d.question}</h3>
+                </div>
+                <button onClick={() => setDetail(null)} style={m.closeBtn}><MdClose size={18} /></button>
+              </div>
+              <div style={m.metaRow}>
+                {d.category && <span style={m.chipAccent}>{d.category}</span>}
+                <span style={m.chip}>등록 {formatDate(d.created_at) || d.posted_date}</span>
+                {d.updated_at && <span style={m.chip}>수정 {formatDate(d.updated_at)}</span>}
+              </div>
             </div>
-            <div style={modalStyles.content}>
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>질문 (Q)</label>
-                <input type="text" style={modalStyles.input} placeholder="질문 내용을 입력하세요" value={formData.question} onChange={(e) => setFormData({...formData, question: e.target.value})}/>
+            <div style={m.content}>
+              <div style={m.section}>
+                <div style={m.sectionHead}>답변<span style={m.sectionLine} /></div>
+                <div style={m.qText}>{d.answer_html}</div>
+                {d.file_path && (
+                  <a href={`${API_BASE}/uploads/faqs/${d.file_path}`} target="_blank" rel="noreferrer" style={m.fileLink}>
+                    <MdAttachFile size={14} /> {d.original_filename || '첨부파일'}
+                  </a>
+                )}
               </div>
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>첨부파일</label>
-                <input type="file" style={modalStyles.fileInput} onChange={(e) => setFile(e.target.files[0])}/>
+              <div style={m.sectionLast}>
+                <div style={m.sectionHead}>관리<span style={m.sectionLine} /></div>
+                <div style={styles.detailActions}>
+                  <motion.button whileTap={{ scale: 0.97 }} style={styles.detailEditBtn}
+                    onClick={() => { const t = detail; setDetail(null); handleOpenEdit(t); }}>수정</motion.button>
+                  <motion.button whileTap={{ scale: 0.97 }} style={styles.detailDeleteBtn}
+                    onClick={() => { handleDelete(d.id); setDetail(null); }}>삭제</motion.button>
+                </div>
               </div>
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>답변 (A)</label>
-                <textarea style={modalStyles.textarea} placeholder="답변 내용을 입력하세요." value={formData.answer_html} onChange={(e) => setFormData({...formData, answer_html: e.target.value})}/>
+            </div>
+            </>
+            ); })()}
+      </AnimatedModal>
+
+      {/* 등록 / 수정 */}
+      <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={m.overlay} modalStyle={m.modal}>
+            <div style={m.header}>
+              <div style={m.headerTop}>
+                <div style={{minWidth: 0}}>
+                  <div style={m.kicker}>자주 묻는 질문</div>
+                  <h3 style={m.headerTitle}>{isEditMode ? "질문 수정" : "새 질문 등록"}</h3>
+                </div>
+                <button onClick={() => setShowModal(false)} style={m.closeBtn}><MdClose size={18} /></button>
               </div>
-              <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.saveBtn} onClick={handleSave}>{isEditMode ? "수정 완료" : "등록하기"}</motion.button>
+            </div>
+            <div style={m.content}>
+              <div style={m.section}>
+                <div style={m.sectionHead}>질문<span style={m.sectionLine} /></div>
+                <input type="text" style={styles.modalInput} placeholder="질문 내용을 입력하세요"
+                  value={formData.question} onChange={(e) => setFormData({...formData, question: e.target.value})}/>
+              </div>
+              <div style={m.sectionLast}>
+                <div style={m.sectionHead}>답변<span style={m.sectionLine} /></div>
+                <textarea style={m.textarea} placeholder="답변 내용을 입력하세요."
+                  value={formData.answer_html} onChange={(e) => setFormData({...formData, answer_html: e.target.value})}/>
+                <div style={m.charCount}>{formData.answer_html.length}자</div>
+                <div style={m.footRow}>
+                  <label style={file ? m.attachBtnActive : m.attachBtn}>
+                    <MdAttachFile size={15} />
+                    {file ? file.name : '파일 첨부'}
+                    <input type="file" style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
+                  </label>
+                  <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={m.submitBtn} onClick={handleSave}>
+                    {isEditMode ? "수정 완료" : "등록하기"}
+                  </motion.button>
+                </div>
+              </div>
             </div>
       </AnimatedModal>
     </>
@@ -191,6 +265,18 @@ function TAFaqManage() {
 }
 
 const styles = {
+  dateColumn: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+                flexShrink: 0, marginLeft: '14px', minWidth: '84px' },
+  dateLabel: { fontSize: '10px', fontWeight: 800, color: '#9aa3af', letterSpacing: '0.06em' },
+  dateValue: { fontSize: '12px', fontWeight: 700, color: '#4b5563' },
+  detailActions: { display: 'flex', gap: '10px' },
+  detailEditBtn: { flex: 1, padding: '12px', backgroundColor: '#003675', color: '#fff', border: 'none',
+                   borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '14px' },
+  detailDeleteBtn: { flex: 1, padding: '12px', backgroundColor: '#fff', color: '#c62828',
+                     border: '1px solid #c62828', borderRadius: '10px', cursor: 'pointer',
+                     fontWeight: 800, fontSize: '14px' },
+  modalInput: { width: '100%', padding: '12px 14px', border: '1px solid #e5e8ec', borderRadius: '10px',
+                fontSize: '14.5px', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675', marginBottom: '20px' },
   
   // 필터 바 (통일된 디자인)
@@ -205,7 +291,7 @@ const styles = {
   emptyMessage: { textAlign: 'center', marginTop: '50px', color: '#868e96', fontWeight: '500' },
   
   // 카드 (흰색 + 테두리 + 그림자)
-  card: { backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: '1px solid #dee2e6', transition: 'all 0.2s ease' },
+  card: { cursor: 'pointer', backgroundColor: 'white', padding: '20px', borderRadius: '16px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: '1px solid #dee2e6', transition: 'all 0.2s ease' },
   cardContent: { flex: 1, minWidth: 0 },
   question: { fontWeight: 'bold', fontSize: '16px', marginBottom: '8px', color: '#333' },
   answer: { fontSize: '14px', color: '#555', whiteSpace: 'pre-wrap', lineHeight: '1.5' },
@@ -214,20 +300,6 @@ const styles = {
   actionButtons: { display: 'flex', flexDirection: 'column', gap: '6px', marginLeft: '5px', flexShrink: 0 },
   editBtn: { padding: '6px 12px', backgroundColor: '#e3f2fd', color: '#003675', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight:'bold' },
   deleteBtn: { padding: '6px 12px', backgroundColor: '#ffebee', color: '#c62828', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight:'bold' },
-};
-
-const modalStyles = {
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 },
-  modal: { width: '500px', backgroundColor: 'white', borderRadius: '16px', padding: '0', display:'flex', flexDirection:'column', overflow:'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' },
-  header: { padding:'18px 25px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems: 'center', backgroundColor: '#f9f9f9' },
-  closeBtn: { border:'none', background:'transparent', fontSize:'24px', cursor:'pointer', color:'#666' },
-  content: { padding:'25px', display:'flex', flexDirection:'column', gap:'15px' },
-  inputGroup: { marginBottom: '10px' },
-  label: { fontSize: '14px', color: '#333', fontWeight: 'bold', marginBottom: '6px', display: 'block' },
-  input: { width: '100%', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', boxSizing: 'border-box', fontSize: '15px' },
-  fileInput: { width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fafafa' },
-  textarea: { width: '100%', minHeight: '180px', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', boxSizing: 'border-box', resize: 'none', fontSize: '15px', lineHeight: '1.5' },
-  saveBtn: { width: '100%', padding: '15px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }
 };
 
 export default TAFaqManage;

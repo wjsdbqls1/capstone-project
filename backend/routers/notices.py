@@ -1,17 +1,32 @@
 # backend/routers/notices.py
 from fastapi import APIRouter, Depends, HTTPException # ★ HTTPException 추가됨
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 from deps import get_db
 from models import Notice
 
 r = APIRouter(prefix="/notices", tags=["notices"])
 
-# 목록에 실제로 쓰는 컬럼만. 본문(content_html)은 평균 700바이트가 넘는데
-# 목록 응답에는 들어가지 않으므로, 공지가 쌓일수록 DB에서 헛되이 실어 오는 양만 커진다.
-_LIST_COLS = load_only(
-    Notice.id, Notice.title, Notice.posted_date,
-    Notice.target_grades, Notice.original_filename, Notice.file_path,
+# 목록 카드에 본문 앞부분을 보여주지만, 전체 본문(평균 700바이트 이상)을 다 실어오면
+# 공지가 쌓일수록 전송량만 커진다. DB에서 잘라서 필요한 만큼만 가져온다.
+PREVIEW_LEN = 200
+
+_LIST_COLUMNS = (
+    Notice.id, Notice.title, Notice.posted_date, Notice.target_grades,
+    Notice.original_filename, Notice.file_path, Notice.updated_at,
+    func.left(Notice.content_html, PREVIEW_LEN).label("preview"),
 )
+
+
+def _list_rows(db: Session, source: str, limit: int):
+    return (
+        db.query(*_LIST_COLUMNS)
+        .filter(Notice.source == source)
+        .order_by(Notice.posted_date.desc(), Notice.id.desc())
+        .limit(limit)
+        .all()
+    )
+
 
 # 1. 공지사항 목록 조회 (내부 + 외부 통합)
 @r.get("")
@@ -21,8 +36,7 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
 
     # 1) 내부 공지 or 전체
     if source in ("all", "internal"):
-        rows = db.query(Notice).options(_LIST_COLS).filter(Notice.source == "internal").order_by(Notice.posted_date.desc(), Notice.id.desc()).limit(limit).all()
-        for n in rows:
+        for n in _list_rows(db, "internal", limit):
             out.append({
                 "source": "internal",
                 "id": n.id,
@@ -30,13 +44,14 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
                 "posted_date": str(n.posted_date),
                 "target_grades": n.target_grades,
                 "original_filename": n.original_filename,
-                "file_path": n.file_path
+                "file_path": n.file_path,
+                "updated_at": n.updated_at,
+                "content_preview": n.preview,
             })
 
     # 2) 외부 공지 or 전체
     if source in ("all", "external"):
-        rows = db.query(Notice).options(_LIST_COLS).filter(Notice.source == "external").order_by(Notice.posted_date.desc(), Notice.id.desc()).limit(limit).all()
-        for n in rows:
+        for n in _list_rows(db, "external", limit):
             out.append({
                 "source": "external",
                 "id": n.id, # ★ 중요: 외부 공지도 DB ID를 사용
@@ -44,7 +59,9 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
                 "posted_date": str(n.posted_date),
                 "target_grades": "0", # 외부 공지는 전체 대상
                 "original_filename": n.original_filename,
-                "file_path": n.file_path
+                "file_path": n.file_path,
+                "updated_at": n.updated_at,
+                "content_preview": n.preview,
             })
 
     # 날짜 최신순 정렬
@@ -68,5 +85,6 @@ def get_internal_notice_detail(notice_id: int, db: Session = Depends(get_db)):
         "target_grades": n.target_grades if n.source == "internal" else "0",
         "original_filename": n.original_filename,
         "file_path": n.file_path,
+        "updated_at": n.updated_at,
         "source": n.source # 소스 정보 추가 (프론트에서 파일 경로 분기용)
     }

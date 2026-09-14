@@ -7,6 +7,12 @@ import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 import { API_BASE } from '../../config';
 import { parseTargetGrades, gradeBadgeStyle, allGradeBadgeStyle } from '../../styles/gradeBadge';
+import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
+
+const m = makeInquiryModalStyles(ACCENTS.navy);
+
+// '2026-09-14T01:24:51+00:00' -> '2026-09-14'
+const formatDate = (v) => (v ? String(v).split('T')[0] : '');
 
 function TANoticeManage() {
   const [notices, setNotices] = useState([]);
@@ -22,6 +28,9 @@ function TANoticeManage() {
   // targetGrades: 선택된 학년 배열. [0]이면 전체 공지, 그 외엔 [1,3]처럼 중복 선택된 학년들
   const [formData, setFormData] = useState({ title: "", content_html: "", targetGrades: [0] });
   const [file, setFile] = useState(null);
+  // 목록에서 카드를 눌렀을 때 띄우는 상세 모달
+  const [showDetail, setShowDetail] = useState(false);
+  const [detail, setDetail] = useState(null);
 
   const fetchNotices = async () => {
     try {
@@ -69,6 +78,19 @@ function TANoticeManage() {
     }
     setFilteredList(result);
   }, [keyword, dateFilter, notices]);
+
+  // 목록의 카드를 누르면 전체 내용을 상세 모달로 보여준다(수정·삭제도 여기서)
+  const handleOpenDetail = async (id) => {
+    setDetail(null);
+    setShowDetail(true);
+    try {
+      const response = await axios.get(`${API_BASE}/notices/internal/${id}`);
+      setDetail(response.data);
+    } catch (error) {
+      setShowDetail(false);
+      alert("공지 정보를 불러오지 못했습니다.");
+    }
+  };
 
   const handleOpenCreate = () => {
     setIsEditMode(false);
@@ -184,7 +206,9 @@ function TANoticeManage() {
                     <motion.div
                       key={item.id}
                       style={styles.card}
+                      onClick={() => handleOpenDetail(item.id)}
                       whileHover={{ y: -2, boxShadow: '0 6px 12px rgba(0,0,0,0.1)' }}
+                      whileTap={{ scale: 0.995 }}
                     >
                         <div style={styles.cardContent}>
                             <div style={styles.metaRow}>
@@ -198,57 +222,126 @@ function TANoticeManage() {
                                     <span key={g} style={gradeBadgeStyle(g)}>{g}학년</span>
                                   ));
                                 })()}
-                                <span style={styles.date}>{item.posted_date}</span>
                                 {item.original_filename && <MdAttachFile size={12} color="#888" />}
                             </div>
                             <div style={styles.title}>{item.title}</div>
+                            <div style={styles.preview}>{item.content_preview}</div>
                         </div>
-                        <div style={styles.actionButtons}>
-                            <motion.button whileTap={{ scale: 0.95 }} style={styles.editBtn} onClick={() => handleOpenEdit(item.id)}>수정</motion.button>
-                            <motion.button whileTap={{ scale: 0.95 }} style={styles.deleteBtn} onClick={() => handleDelete(item.id)}>삭제</motion.button>
+                        {/* 수정·삭제는 상세 모달로 옮기고, 그 자리에 등록/수정 날짜를 둔다 */}
+                        <div style={styles.dateColumn}>
+                            <span style={styles.dateLabel}>등록</span>
+                            <span style={styles.dateValue}>{item.posted_date}</span>
+                            {item.updated_at && (
+                              <>
+                                <span style={{...styles.dateLabel, marginTop: '6px'}}>수정</span>
+                                <span style={styles.dateValue}>{formatDate(item.updated_at)}</span>
+                              </>
+                            )}
                         </div>
                     </motion.div>
                 ))
             )}
         </div>
 
-      <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
-            <div style={modalStyles.header}>
-              <h3 style={{margin:0, color:'#003675'}}>{isEditMode ? "공지사항 수정" : "새 공지사항 등록"}</h3>
-              <button onClick={() => setShowModal(false)} style={modalStyles.closeBtn}><MdClose size={20} /></button>
+      {/* 상세 보기 — 카드를 누르면 전체 내용과 수정·삭제 */}
+      <AnimatedModal isOpen={showDetail} onClose={() => setShowDetail(false)} overlayStyle={m.overlay} modalStyle={m.modal}>
+            <div style={m.header}>
+              <div style={m.headerTop}>
+                <div style={{minWidth: 0}}>
+                  <div style={m.kicker}>공지사항</div>
+                  <h3 style={m.headerTitle}>{detail ? detail.title : ''}</h3>
+                </div>
+                <button onClick={() => setShowDetail(false)} style={m.closeBtn}><MdClose size={18} /></button>
+              </div>
+              <div style={m.metaRow}>
+                {detail && (() => {
+                  const grades = parseTargetGrades(detail.target_grades);
+                  return grades.length === 0
+                    ? <span style={m.chipAccent}>전체 공지</span>
+                    : grades.map(g => <span key={g} style={m.chipAccent}>{g}학년</span>);
+                })()}
+                {detail && <span style={m.chip}>등록 {detail.posted_date}</span>}
+                {detail && detail.updated_at && <span style={m.chip}>수정 {formatDate(detail.updated_at)}</span>}
+              </div>
             </div>
-            <div style={modalStyles.content}>
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>대상 학년 <span style={{fontWeight:'normal', color:'#888', fontSize:'12px'}}>(여러 학년 중복 선택 가능)</span></label>
-                <div style={modalStyles.gradeChipRow}>
+            <div style={m.content}>
+              {!detail ? (
+                <div style={{textAlign:'center', padding:'30px', color:'#888'}}>불러오는 중...</div>
+              ) : (
+                <>
+                  <div style={m.section}>
+                    <div style={m.sectionHead}>내용<span style={m.sectionLine} /></div>
+                    <div style={m.qText}>{detail.content_html}</div>
+                    {detail.file_path && (
+                      <a href={`${API_BASE}/uploads/notices/${detail.file_path}`} target="_blank" rel="noreferrer" style={m.fileLink}>
+                        <MdAttachFile size={14} /> {detail.original_filename || '첨부파일'}
+                      </a>
+                    )}
+                  </div>
+                  <div style={m.sectionLast}>
+                    <div style={m.sectionHead}>관리<span style={m.sectionLine} /></div>
+                    <div style={styles.detailActions}>
+                      <motion.button whileTap={{ scale: 0.97 }} style={styles.detailEditBtn}
+                        onClick={() => { setShowDetail(false); handleOpenEdit(detail.id); }}>수정</motion.button>
+                      <motion.button whileTap={{ scale: 0.97 }} style={styles.detailDeleteBtn}
+                        onClick={() => { handleDelete(detail.id); setShowDetail(false); }}>삭제</motion.button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+      </AnimatedModal>
+
+      {/* 등록 / 수정 */}
+      <AnimatedModal isOpen={showModal} onClose={() => setShowModal(false)} overlayStyle={m.overlay} modalStyle={m.modal}>
+            <div style={m.header}>
+              <div style={m.headerTop}>
+                <div style={{minWidth: 0}}>
+                  <div style={m.kicker}>공지사항</div>
+                  <h3 style={m.headerTitle}>{isEditMode ? "공지사항 수정" : "새 공지사항 등록"}</h3>
+                </div>
+                <button onClick={() => setShowModal(false)} style={m.closeBtn}><MdClose size={18} /></button>
+              </div>
+            </div>
+            <div style={m.content}>
+              <div style={m.section}>
+                <div style={m.sectionHead}>대상 학년<span style={m.sectionLine} /></div>
+                <div style={styles.gradeChipRow}>
                   {[{ value: 0, label: '전체' }, { value: 1, label: '1학년' }, { value: 2, label: '2학년' }, { value: 3, label: '3학년' }, { value: 4, label: '4학년' }].map((opt) => {
                     const active = formData.targetGrades.includes(opt.value);
                     return (
-                      <button
-                        type="button"
-                        key={opt.value}
-                        onClick={() => toggleGrade(opt.value)}
-                        style={active ? modalStyles.gradeChipActive : modalStyles.gradeChip}
-                      >
+                      <button type="button" key={opt.value} onClick={() => toggleGrade(opt.value)}
+                        style={active ? styles.gradeChipActive : styles.gradeChip}>
                         {opt.label}
                       </button>
                     );
                   })}
                 </div>
+                <div style={styles.hint}>여러 학년을 함께 선택할 수 있습니다.</div>
               </div>
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>제목</label>
-                <input type="text" style={modalStyles.input} value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="제목을 입력하세요"/>
+
+              <div style={m.section}>
+                <div style={m.sectionHead}>제목<span style={m.sectionLine} /></div>
+                <input type="text" style={styles.modalInput} value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="제목을 입력하세요"/>
               </div>
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>첨부파일</label>
-                <input type="file" style={modalStyles.fileInput} onChange={(e) => setFile(e.target.files[0])}/>
+
+              <div style={m.sectionLast}>
+                <div style={m.sectionHead}>내용<span style={m.sectionLine} /></div>
+                <textarea style={m.textarea} placeholder="공지 내용을 입력하세요."
+                  value={formData.content_html} onChange={(e) => setFormData({...formData, content_html: e.target.value})}/>
+                <div style={m.charCount}>{formData.content_html.length}자</div>
+                <div style={m.footRow}>
+                  <label style={file ? m.attachBtnActive : m.attachBtn}>
+                    <MdAttachFile size={15} />
+                    {file ? file.name : '파일 첨부'}
+                    <input type="file" style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
+                  </label>
+                  <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={m.submitBtn} onClick={handleSave}>
+                    {isEditMode ? "수정 완료" : "등록하기"}
+                  </motion.button>
+                </div>
               </div>
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>내용</label>
-                <textarea style={modalStyles.textarea} placeholder="공지 내용을 입력하세요." value={formData.content_html} onChange={(e) => setFormData({...formData, content_html: e.target.value})}/>
-              </div>
-              <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={modalStyles.saveBtn} onClick={handleSave}>{isEditMode ? "수정 완료" : "등록하기"}</motion.button>
             </div>
       </AnimatedModal>
     </>
@@ -256,6 +349,26 @@ function TANoticeManage() {
 }
 
 const styles = {
+  preview: { fontSize: '13px', color: '#6b7280', lineHeight: 1.6, marginTop: '6px',
+             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  dateColumn: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+                flexShrink: 0, marginLeft: '14px', minWidth: '84px' },
+  dateLabel: { fontSize: '10px', fontWeight: 800, color: '#9aa3af', letterSpacing: '0.06em' },
+  dateValue: { fontSize: '12px', fontWeight: 700, color: '#4b5563' },
+  detailActions: { display: 'flex', gap: '10px' },
+  detailEditBtn: { flex: 1, padding: '12px', backgroundColor: '#003675', color: '#fff', border: 'none',
+                   borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '14px' },
+  detailDeleteBtn: { flex: 1, padding: '12px', backgroundColor: '#fff', color: '#c62828',
+                     border: '1px solid #c62828', borderRadius: '10px', cursor: 'pointer',
+                     fontWeight: 800, fontSize: '14px' },
+  modalInput: { width: '100%', padding: '12px 14px', border: '1px solid #e5e8ec', borderRadius: '10px',
+                fontSize: '14.5px', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
+  hint: { fontSize: '12px', color: '#9aa3af', marginTop: '8px' },
+  gradeChipRow: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
+  gradeChip: { padding: '8px 14px', borderRadius: '999px', border: '1px solid #d7dbe0',
+               backgroundColor: '#fff', color: '#5b6572', fontSize: '13px', fontWeight: 700, cursor: 'pointer' },
+  gradeChipActive: { padding: '8px 14px', borderRadius: '999px', border: '1px solid #003675',
+                     backgroundColor: '#003675', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' },
   pageTitle: { fontSize: '24px', fontWeight: '800', color: '#003675', marginBottom: '20px' },
   
   // 필터 바 디자인 (흰색 배경 컨테이너와 구분되도록)
@@ -292,24 +405,6 @@ const styles = {
   actionButtons: { display: 'flex', gap: '8px', flexShrink: 0 },
   editBtn: { padding: '6px 12px', backgroundColor: '#e3f2fd', color: '#003675', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight:'bold' },
   deleteBtn: { padding: '6px 12px', backgroundColor: '#ffebee', color: '#c62828', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight:'bold' },
-};
-
-const modalStyles = {
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 },
-  modal: { width: '500px', backgroundColor: 'white', borderRadius: '16px', padding: '0', display:'flex', flexDirection:'column', overflow:'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' },
-  header: { padding:'20px', backgroundColor:'#f8f9fa', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems: 'center' },
-  closeBtn: { border:'none', background:'transparent', fontSize:'24px', cursor:'pointer', color:'#666' },
-  content: { padding:'25px', display:'flex', flexDirection:'column', gap:'15px' },
-  inputGroup: { marginBottom: '10px' },
-  label: { fontSize: '14px', color: '#333', fontWeight: 'bold', marginBottom: '6px', display: 'block' },
-  input: { width: '100%', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', boxSizing: 'border-box', fontSize: '15px' },
-  selectInput: { width: '100%', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', fontSize: '15px', backgroundColor: 'white' },
-  gradeChipRow: { display: 'flex', flexWrap: 'wrap', gap: '8px' },
-  gradeChip: { padding: '8px 14px', borderRadius: '20px', border: '1px solid #ced4da', backgroundColor: 'white', color: '#495057', fontSize: '14px', fontWeight: '500', cursor: 'pointer' },
-  gradeChipActive: { padding: '8px 14px', borderRadius: '20px', border: '1px solid #003675', backgroundColor: '#003675', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
-  fileInput: { width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#f8f9fa' },
-  textarea: { width: '100%', minHeight: '180px', padding: '12px', border: '1px solid #ced4da', borderRadius: '8px', boxSizing: 'border-box', resize: 'none', fontSize: '15px', lineHeight: '1.5' },
-  saveBtn: { width: '100%', padding: '15px', backgroundColor: '#003675', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }
 };
 
 export default TANoticeManage;

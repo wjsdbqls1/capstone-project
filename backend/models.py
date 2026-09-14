@@ -125,6 +125,8 @@ class Notice(Base):
     file_path = Column(String(500), nullable=True)
     original_filename = Column(String(255), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    # 수정 시각. 목록/상세에서 '수정됨'을 표시하기 위해 사용
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     author = relationship("User", back_populates="notices")
 
@@ -142,6 +144,8 @@ class FAQ(Base):
     original_filename = Column(String(255), nullable=True)
     category = Column(String(50), nullable=False, default="기타")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    # 수정 시각. 목록/상세에서 '수정됨'을 표시하기 위해 사용
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 
 # --- 5. 공결 신청 모델 (Absence) ---

@@ -20,6 +20,12 @@ export const ACCENTS = {
     grad: ['#4caf50', '#2e7d32', '#14421a'],
     chipText: '#14421a',
   },
+  // 공지사항·FAQ 관리 화면용. 문의와 달리 상태 구분이 없어 기본 남색 계열을 쓴다.
+  navy: {
+    accent: NAVY,
+    grad: ['#4d8fd6', NAVY, '#001b3d'],
+    chipText: '#001b3d',
+  },
 };
 
 export function makeInquiryModalStyles(theme) {
