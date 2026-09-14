@@ -39,7 +39,7 @@ export function makeInquiryModalStyles(theme) {
       display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100,
     },
     modal: {
-      width: '90%', maxWidth: '620px', maxHeight: '85%', backgroundColor: '#fff',
+      width: 'min(94%, 620px)', maxHeight: '85%', backgroundColor: '#fff',
       borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden',
       boxShadow: '0 24px 60px rgba(0,0,0,0.35)',
     },
@@ -52,7 +52,7 @@ export function makeInquiryModalStyles(theme) {
       position: 'relative',
       overflow: 'hidden',
       color: '#fff',
-      padding: '20px 22px',
+      padding: 'clamp(16px, 4vw, 20px) clamp(16px, 4.5vw, 22px)',
       flexShrink: 0,
       // 225deg = 밝은 색이 오른쪽 위, 어두운 색이 왼쪽 아래.
       // 빛 반사도 같은 쪽에서 들어오도록 좌우를 뒤집었다(118 -> 242).
@@ -67,7 +67,7 @@ export function makeInquiryModalStyles(theme) {
       fontSize: '11px', letterSpacing: '0.14em', opacity: 0.7,
       fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase',
     },
-    headerTitle: { margin: 0, fontSize: '19px', fontWeight: 800, lineHeight: 1.35, wordBreak: 'keep-all' },
+    headerTitle: { margin: 0, fontSize: 'clamp(17px, 4.4vw, 19px)', fontWeight: 800, lineHeight: 1.35, wordBreak: 'keep-all' },
     closeBtn: {
       background: 'rgba(255,255,255,0.14)', border: 'none', color: '#fff',
       width: '30px', height: '30px', borderRadius: '9px', cursor: 'pointer',
@@ -90,7 +90,7 @@ export function makeInquiryModalStyles(theme) {
       color: theme.chipText, display: 'inline-flex', alignItems: 'center', gap: '4px',
     },
 
-    content: { padding: '22px', overflowY: 'auto', flex: 1, backgroundColor: '#fff' },
+    content: { padding: 'clamp(16px, 4.5vw, 22px)', overflowY: 'auto', flex: 1, backgroundColor: '#fff' },
 
     // 섹션 라벨 + 가로선으로 위계 만들기
     section: { marginBottom: '22px' },
@@ -156,21 +156,24 @@ export function makeInquiryModalStyles(theme) {
       boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit',
     },
     charCount: { fontSize: '11.5px', color: '#9aa3af', textAlign: 'right', marginTop: '6px' },
-    footRow: { display: 'flex', gap: '10px', alignItems: 'center', marginTop: '12px' },
+    // 좁은 화면(모바일 학생 화면)에서 첨부 버튼과 등록 버튼이 한 줄에 안 들어가면
+    // 등록 버튼 글자가 잘리므로, 눌리는 대신 줄을 바꾸도록 한다.
+    footRow: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginTop: '12px' },
     attachBtn: {
       display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '11px 15px',
       border: '1px dashed #c6ccd5', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
       color: GRAY, cursor: 'pointer', backgroundColor: '#fff', whiteSpace: 'nowrap',
+      flexShrink: 0,
     },
     attachBtnActive: {
       display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '11px 15px',
       border: `1px solid ${accent}`, borderRadius: '10px', fontSize: '13px', fontWeight: 700,
       color: accent, cursor: 'pointer', backgroundColor: '#fff', whiteSpace: 'nowrap',
-      maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis',
+      maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0,
     },
     submitBtn: {
-      flex: 1, padding: '13px', backgroundColor: g2, color: '#fff', border: 'none',
-      borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
+      flex: 1, minWidth: '140px', padding: '13px', backgroundColor: g2, color: '#fff',
+      border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
     },
 
     // 답변 수정(완료 화면)
