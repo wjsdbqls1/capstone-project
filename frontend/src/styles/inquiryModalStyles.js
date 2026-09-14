@@ -42,7 +42,12 @@ export function makeInquiryModalStyles(theme, { maxWidth = '620px' } = {}) {
       display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100,
     },
     modal: {
-      width: `min(94%, ${maxWidth})`, maxHeight: '85%', backgroundColor: '#fff',
+      width: `min(94%, ${maxWidth})`,
+      // 내용이 적으면 모달이 납작해져 보기 불편하므로 최소 높이를 준다.
+      // 화면이 낮은 기기에서는 72%가 먼저 걸려 화면을 넘지 않는다.
+      minHeight: 'min(520px, 72%)',
+      maxHeight: '85%',
+      backgroundColor: '#fff',
       borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden',
       boxShadow: '0 24px 60px rgba(0,0,0,0.35)',
     },
