@@ -18,7 +18,12 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 BUCKET = os.getenv("SUPABASE_BUCKET", "attachments")
 
-MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
+# ★ Supabase 버킷(attachments)의 file_size_limit과 같은 값이어야 한다.
+#   여기만 올리면 버킷에서 거부되고, 버킷만 올리면 여기서 먼저 잘린다.
+#   (스캔 PDF 여러 장이 10MB를 넘는 일이 실제로 있어 30MB로 정함)
+MAX_UPLOAD_MB = 30
+MAX_UPLOAD_SIZE = MAX_UPLOAD_MB * 1024 * 1024
+SIZE_LIMIT_MESSAGE = f"파일 크기는 {MAX_UPLOAD_MB}MB를 초과할 수 없습니다."
 
 # 키가 없으면(로컬 개발 등) 예전처럼 디스크에 저장하도록 물러선다.
 enabled = bool(SUPABASE_URL and SUPABASE_SERVICE_KEY)
@@ -54,7 +59,7 @@ def upload_bytes(object_path: str, data: bytes, content_type: str | None) -> Non
 
 
 def read_capped(file: UploadFile) -> bytes:
-    """10MB를 넘으면 즉시 중단해 메모리/용량 소진을 막는다."""
+    """상한을 넘으면 즉시 중단해 메모리/용량 소진을 막는다."""
     chunks = []
     size = 0
     while True:
@@ -63,6 +68,6 @@ def read_capped(file: UploadFile) -> bytes:
             break
         size += len(chunk)
         if size > MAX_UPLOAD_SIZE:
-            raise HTTPException(status_code=413, detail="파일 크기는 10MB를 초과할 수 없습니다.")
+            raise HTTPException(status_code=413, detail=SIZE_LIMIT_MESSAGE)
         chunks.append(chunk)
     return b"".join(chunks)
