@@ -391,7 +391,11 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
+    // 내용에 맡기면 약 104px. 높이를 직접 지정해 1.5배로 키운다
+    // (여백을 늘리면 가로 균형까지 흐트러져서)
+    minHeight: '156px',
     padding: '18px 10px',
+    boxSizing: 'border-box',
     backgroundColor: 'rgba(255, 255, 255, 0.55)',
     border: '1px solid rgba(0,0,0,0.05)',
     borderRadius: '14px',
