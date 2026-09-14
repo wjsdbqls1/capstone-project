@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import bgImage from '../assets/로그인 이미지.jpg';
 import { API_BASE } from '../config';
+import { landingPath } from '../utils/landing';
 
 const API = API_BASE;
 const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
@@ -17,8 +18,7 @@ function ForcePasswordChange() {
   const [submitting, setSubmitting] = useState(false);
 
   const goToMain = () => {
-    const role = localStorage.getItem('role');
-    navigate(role === 'assistant' || role === 'admin' ? '/ta/main' : '/student/main', { replace: true });
+    navigate(landingPath(localStorage.getItem('role')), { replace: true });
   };
 
   const handleSubmit = async () => {

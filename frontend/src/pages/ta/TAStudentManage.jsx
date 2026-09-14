@@ -116,16 +116,7 @@ function TAStudentManage() {
     }
   };
 
-  // 비밀번호 초기화
-  const handleResetPassword = async (student) => {
-    if (!window.confirm(`${student.name} 학생의 비밀번호를 초기화하시겠습니까?`)) return;
-    try {
-      const res = await axios.post(`${API}/admin/students/${student.id}/reset-password`, {}, authConfig());
-      alert(`비밀번호가 초기화되었습니다.\n초기 비밀번호: ${res.data.init_password}`);
-    } catch (e) {
-      alert(e.response?.data?.detail || '초기화 실패');
-    }
-  };
+  // 비밀번호 초기화는 개발자(admin) 전용 화면(/dev)으로 옮겼다.
 
   // 삭제
   const handleDelete = async (student) => {
@@ -214,7 +205,6 @@ function TAStudentManage() {
                       </select>
                     </td>
                     <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
-                      <motion.button whileTap={{ scale: 0.95 }} style={styles.resetBtn} onClick={() => handleResetPassword(s)}>PW 초기화</motion.button>
                       <motion.button whileTap={{ scale: 0.95 }} style={styles.deleteBtn} onClick={() => handleDelete(s)}>삭제</motion.button>
                     </td>
                   </tr>
@@ -303,7 +293,6 @@ const styles = {
   badge: { display: 'inline-block', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold', marginRight: '10px', minWidth: '48px', textAlign: 'center' },
   statusSelect: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #ced4da', fontSize: '13px', cursor: 'pointer', outline: 'none' },
 
-  resetBtn: { padding: '6px 12px', backgroundColor: '#fff8e1', color: '#f57f17', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', marginRight: '6px' },
   deleteBtn: { padding: '6px 12px', backgroundColor: '#ffebee', color: '#c62828', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' },
   pwNotice: { backgroundColor: '#f1f8ff', border: '1px solid #cce5ff', borderRadius: '8px', padding: '12px', fontSize: '13px', color: '#0b5394', lineHeight: '1.5' },
 };

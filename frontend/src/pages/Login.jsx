@@ -2,9 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { MdChatBubbleOutline } from 'react-icons/md';
 import '../App.css';
 import bgImage from '../assets/로그인 이미지.jpg';
 import { API_BASE } from '../config';
+import { landingPath } from '../utils/landing';
 
 const API = API_BASE;
 
@@ -30,7 +32,7 @@ function Login() {
           navigate('/change-password', { replace: true });
           return;
         }
-        navigate(role === 'assistant' || role === 'admin' ? '/ta/main' : '/student/main', { replace: true });
+        navigate(landingPath(res.data.role || role), { replace: true });
       })
       .catch(() => {
         localStorage.clear();
@@ -60,10 +62,8 @@ function Login() {
 
       if (must_change_password) {
         navigate('/change-password');
-      } else if (role === 'assistant' || role === 'admin') {
-        navigate('/ta/main');
       } else {
-        navigate('/student/main');
+        navigate(landingPath(role));
       }
 
     } catch (error) {
@@ -135,11 +135,17 @@ function Login() {
           </button>
         </div>
         
-        {/* 하단 안내 영역 */}
+        {/* 하단 안내 영역 — 로그인이 안 되면 여기서 바로 문의할 수 있게 */}
         <div style={styles.footerLink}>
-          <span style={{fontSize:'14px', color:'#555', textAlign:'center', lineHeight:'1.5'}}>
-            계정이 없으신가요? 학과 사무실에 문의하세요.<br/>010-0000-0000
-          </span>
+          <a
+            href="https://open.kakao.com/o/sozeuvNi"
+            target="_blank"
+            rel="noreferrer"
+            style={styles.inquiryBtn}
+          >
+            <MdChatBubbleOutline size={17} />
+            로그인 및 시스템 문의
+          </a>
         </div>
       </div>
     </div>
@@ -243,15 +249,24 @@ const styles = {
     alignItems: 'center',
     gap: '8px'
   },
-  registerBtn: {
-    background: 'none', 
-    border: 'none', 
-    color: '#003675', 
-    fontWeight: 'bold', 
-    cursor: 'pointer', 
-    fontSize: '14px',
-    textDecoration: 'underline',
-    padding: 0
+  // 로그인 버튼(남색 채움)과 역할이 다르므로 테두리만 있는 보조 버튼으로 둔다.
+  // <a>는 기본 밑줄·보라색이 붙으므로 색과 장식을 직접 지정해야 한다.
+  inquiryBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '7px',
+    width: '100%',
+    padding: '13px',
+    boxSizing: 'border-box',
+    borderRadius: '12px',
+    border: '1px solid rgba(0, 54, 117, 0.35)',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    color: '#003675',
+    fontSize: '15px',
+    fontWeight: 700,
+    textDecoration: 'none',
+    cursor: 'pointer'
   }
 };
 

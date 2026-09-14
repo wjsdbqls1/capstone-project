@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from passlib.context import CryptContext
 
-from auth import require_assistant
+from auth import require_admin, require_assistant
 from deps import get_db
 from models import User
 
@@ -130,7 +130,7 @@ def update_student(
 @r.post("/{student_id}/reset-password")
 def reset_password(
     student_id: int,
-    _=Depends(require_assistant),
+    _=Depends(require_admin),   # 조교가 아니라 개발자(admin)만 초기화할 수 있다
     db: Session = Depends(get_db),
 ):
     u = db.query(User).filter(User.id == student_id, User.role == "student").first()

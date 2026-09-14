@@ -37,3 +37,13 @@ def require_assistant(u=Depends(get_current_user)) -> User:
     if u.role not in ("assistant", "admin"):
         raise HTTPException(status_code=403, detail="assistant only")
     return u
+
+
+def require_admin(u=Depends(get_current_user)) -> User:
+    """개발자(admin) 전용. 조교(assistant)는 통과하지 못한다.
+
+    비밀번호 초기화처럼 계정을 직접 건드리는 기능은 조교에게 열어두지 않는다.
+    """
+    if u.role != "admin":
+        raise HTTPException(status_code=403, detail="admin only")
+    return u

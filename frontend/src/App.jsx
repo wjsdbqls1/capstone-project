@@ -4,6 +4,7 @@ import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Login from './pages/Login';
 import ForcePasswordChange from './pages/ForcePasswordChange';
+import DevPage from './pages/DevPage';
 import PageTransition from './components/PageTransition';
 import TALayout from './pages/ta/TALayout';
 
@@ -45,6 +46,9 @@ function AnimatedRoutes() {
       <Routes location={location} key={transitionKey}>
         <Route path="/" element={withTransition(<Login />)} />
         <Route path="/change-password" element={withTransition(<ForcePasswordChange />)} />
+
+        {/* 개발자 전용. 어느 화면에도 링크가 없고 admin이 아니면 로그인 화면으로 되돌린다 */}
+        <Route path="/dev" element={withTransition(<DevPage />)} />
 
         {/* 1. 학생 화면 라우팅 */}
         <Route path="/student/main" element={withTransition(<StudentMain />)} />
