@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import '../../App.css';
+import NotificationBell from '../../components/NotificationBell';
 import NotificationToggle from '../../components/NotificationToggle';
 import AnimatedModal from '../../components/AnimatedModal';
 import { unsubscribeFromPush } from '../../pushNotifications';
@@ -109,6 +110,7 @@ function StudentMyPage() {
         </button>
 
         <h2 style={styles.headerTitle}>마이페이지</h2>
+        <div style={styles.headerActions}><NotificationBell /></div>
       </div>
 
       {/* 유리 박스 컨테이너 */}
@@ -230,6 +232,8 @@ const pwStyles = {
 };
 
 const styles = {
+  // 헤더 오른쪽 아이콘 묶음(알림 + 마이페이지)
+  headerActions: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, position: 'relative', zIndex: 1 },
   pageContainer: {
     backgroundImage: `url(${bgImage})`,
     backgroundSize: 'cover',

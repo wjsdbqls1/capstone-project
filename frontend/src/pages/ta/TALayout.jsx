@@ -9,6 +9,7 @@ import bgImage from '../../assets/로그인 이미지.jpg';
 import NotificationToggle from '../../components/NotificationToggle';
 import { unsubscribeFromPush } from '../../pushNotifications';
 import { API_BASE } from '../../config';
+import NotificationBell from '../../components/NotificationBell';
 
 const API = API_BASE;
 
@@ -90,6 +91,7 @@ function TALayout() {
             </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <NotificationBell />
           <NotificationToggle style={layoutStyles.notifyBtn} activeStyle={layoutStyles.notifyBtnActive} />
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }} style={layoutStyles.logoutBtn} onClick={handleLogout}>
             <MdLogout size={15} /> 로그아웃

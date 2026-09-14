@@ -5,6 +5,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MdChevronLeft, MdSearch, MdExpandMore, MdExpandLess, MdPerson } from 'react-icons/md';
 import '../../App.css';
+import NotificationBell from '../../components/NotificationBell';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -64,13 +65,16 @@ function StudentFaq() {
         </button>
 
         <h2 style={styles.headerTitle}>자주 묻는 질문</h2>
+        <div style={styles.headerActions}>
+        <NotificationBell />
         <button
-          style={styles.myPageBtn}
+          style={{...styles.myPageBtn, marginLeft: 0}}
           onClick={() => navigate('/student/mypage')}
           aria-label="마이페이지"
         >
           <MdPerson size={22} />
         </button>
+        </div>
       </div>
 
       {/* 유리 박스 컨테이너 */}
@@ -152,6 +156,8 @@ function StudentFaq() {
 }
 
 const styles = {
+  // 헤더 오른쪽 아이콘 묶음(알림 + 마이페이지)
+  headerActions: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, position: 'relative', zIndex: 1 },
   // 하단 네비를 없애고 마이페이지 진입점을 헤더 오른쪽으로 옮김
   myPageBtn: {
     marginLeft: 'auto',

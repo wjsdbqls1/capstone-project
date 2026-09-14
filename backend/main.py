@@ -24,7 +24,7 @@ from rate_limit import limiter
 from routers import (
     users, auth, academic_calendar, inquiries,
     notices, notices_detail, faqs, absence, admin_notices, admin_absence, memos,
-    admin_students, push
+    admin_students, push, notifications
 )
 
 # 테이블 자동 생성
@@ -99,6 +99,7 @@ app.include_router(admin_absence.router)
 app.include_router(admin_students.r)
 app.include_router(memos.router)
 app.include_router(push.r)
+app.include_router(notifications.r)
 
 
 # -----------------------------------------------------------

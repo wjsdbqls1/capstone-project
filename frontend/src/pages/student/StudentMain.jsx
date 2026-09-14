@@ -5,6 +5,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { MdAssignment, MdCalendarToday, MdCampaign, MdChevronRight, MdEdit, MdHelp, MdPerson } from 'react-icons/md';
 import '../../App.css';
+import NotificationBell from '../../components/NotificationBell';
 
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
@@ -111,6 +112,8 @@ function StudentMain() {
              {userName ? `${userName}님, 환영합니다!` : '학생용 대시보드'}
           </h3>
         </div>
+        <div style={styles.headerActions}>
+        <NotificationBell />
         <button
           style={styles.avatar}
           onClick={() => navigate('/student/mypage')}
@@ -118,6 +121,7 @@ function StudentMain() {
         >
           {userName ? userName.charAt(0) : <MdPerson size={20} />}
         </button>
+        </div>
       </div>
 
       {/* 3. 유리 박스 — 다른 페이지(FAQ/공지사항 등)와 동일한 크기·투명도 규칙 적용 */}
@@ -208,6 +212,8 @@ function MenuTile({ onClick, icon, text, index }) {
 }
 
 const styles = {
+  // 헤더 오른쪽 아이콘 묶음(알림 + 마이페이지)
+  headerActions: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, position: 'relative', zIndex: 1 },
   pageContainer: {
     backgroundImage: `url(${bgImage})`,
     backgroundSize: 'cover',
