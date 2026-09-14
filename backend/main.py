@@ -46,7 +46,10 @@ origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
+    # 예전 주소 — 새 주소(sch-assistant)로 옮긴 뒤에도 예전 주소로 접속한
+    # 사람(설치해 둔 PWA 등)이 바로 깨지지 않도록 당분간 함께 허용한다.
     "https://capstone-project-1-q2nw.onrender.com",
+    "https://sch-assistant.onrender.com",
 ]
 
 app.add_middleware(
