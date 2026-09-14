@@ -8,7 +8,7 @@ import '../../App.css';
 import { API_BASE } from '../../config';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
-const m = makeInquiryModalStyles(ACCENTS.navy);
+const m = makeInquiryModalStyles(ACCENTS.navy, { maxWidth: '1240px' });
 
 const formatDate = (v) => (v ? String(v).split('T')[0] : '');
 

@@ -28,7 +28,10 @@ export const ACCENTS = {
   },
 };
 
-export function makeInquiryModalStyles(theme) {
+// maxWidth: 조교 화면은 넓은 모니터에서 보므로 더 크게 쓰고,
+// 휴대폰으로 보는 학생 화면은 기본값(620px)을 유지한다.
+// 어느 쪽이든 좁은 화면에서는 94%가 먼저 걸려 넘치지 않는다.
+export function makeInquiryModalStyles(theme, { maxWidth = '620px' } = {}) {
   const accent = theme.accent;
   const [g1, g2, g3] = theme.grad;
   return {
@@ -39,7 +42,7 @@ export function makeInquiryModalStyles(theme) {
       display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100,
     },
     modal: {
-      width: 'min(94%, 620px)', maxHeight: '85%', backgroundColor: '#fff',
+      width: `min(94%, ${maxWidth})`, maxHeight: '85%', backgroundColor: '#fff',
       borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden',
       boxShadow: '0 24px 60px rgba(0,0,0,0.35)',
     },

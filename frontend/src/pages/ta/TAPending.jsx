@@ -309,6 +309,6 @@ const styles = {
 };
 
 // 대기중 화면은 목록 카드와 같은 주황 계열
-const modalStyles = makeInquiryModalStyles(ACCENTS.pending);
+const modalStyles = makeInquiryModalStyles(ACCENTS.pending, { maxWidth: '1240px' });
 
 export default TAPending;

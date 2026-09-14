@@ -9,7 +9,7 @@ import { API_BASE } from '../../config';
 import { parseTargetGrades, gradeBadgeStyle, allGradeBadgeStyle } from '../../styles/gradeBadge';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
-const m = makeInquiryModalStyles(ACCENTS.navy);
+const m = makeInquiryModalStyles(ACCENTS.navy, { maxWidth: '1240px' });
 
 // '2026-09-14T01:24:51+00:00' -> '2026-09-14'
 const formatDate = (v) => (v ? String(v).split('T')[0] : '');

@@ -254,6 +254,6 @@ const styles = {
 };
 
 // 처리 완료 화면은 목록 카드와 같은 초록 계열
-const modalStyles = makeInquiryModalStyles(ACCENTS.completed);
+const modalStyles = makeInquiryModalStyles(ACCENTS.completed, { maxWidth: '1240px' });
 
 export default TACompleted;
