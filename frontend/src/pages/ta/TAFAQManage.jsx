@@ -10,6 +10,7 @@ import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
+import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
 const m = makeInquiryModalStyles(ACCENTS.navy, { maxWidth: '1240px' });
 
 const formatDate = (v) => (v ? String(v).split('T')[0] : '');
@@ -102,7 +103,7 @@ function TAFaqManage() {
       }
       setShowModal(false);
       fetchFaqs();
-    } catch (error) { alert("저장 실패"); }
+    } catch (error) { alert(errorMessage(error, "저장 실패")); }
   };
 
   const handleDelete = async (id) => {
@@ -294,7 +295,7 @@ function TAFaqManage() {
                     <label style={{...(file ? m.attachBtnActive : m.attachBtn), width: '100%', justifyContent: 'center'}}>
                       <MdAttachFile size={15} />
                       {file ? file.name : '파일 선택'}
-                      <input type="file" style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
+                      <input type="file" accept={ACCEPT_ATTACHMENT} style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
                     </label>
                   </div>
 

@@ -11,6 +11,7 @@ import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
+import { errorMessage } from '../../utils/upload';
 function TACompleted() {
   const navigate = useNavigate();
   const [inquiries, setInquiries] = useState([]);
@@ -89,7 +90,7 @@ function TACompleted() {
     try {
       await axios.put(`${API_BASE}/inquiries/${inquiryId}/replies/${replyId}`, formData, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } });
       alert("수정되었습니다."); handleSelect(inquiryId);
-    } catch (error) { alert("수정 실패"); }
+    } catch (error) { alert(errorMessage(error, "수정 실패")); }
   };
 
   return (

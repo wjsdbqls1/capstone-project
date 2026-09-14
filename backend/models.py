@@ -34,7 +34,7 @@ class Inquiry(Base):
     title = Column(String(200), nullable=False)
     content = Column(Text, nullable=False)
     status = Column(String(20), nullable=False, default="OPEN", index=True)  # 목록을 상태별로 자주 필터링해서 인덱스 추가
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)  # 학생이 자기 문의만 조회
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     academic_event_id = Column(Integer, ForeignKey("academic_events.id"), nullable=True)
     attachment = Column(String(255), nullable=True)
@@ -45,7 +45,7 @@ class Inquiry(Base):
 class InquiryReply(Base):
     __tablename__ = "inquiry_replies"
     id = Column(Integer, primary_key=True)
-    inquiry_id = Column(Integer, ForeignKey("inquiries.id"), nullable=False)
+    inquiry_id = Column(Integer, ForeignKey("inquiries.id"), nullable=False, index=True)  # 상세를 열 때마다 이 조건으로 조회
     assistant_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # 작성자 id (조교 답변/학생 추가질문 공용)
     sender_role = Column(String(20), nullable=False, default="assistant", server_default="assistant")  # assistant/student
     content = Column(Text, nullable=False)

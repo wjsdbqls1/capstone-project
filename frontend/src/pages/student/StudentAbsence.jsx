@@ -11,6 +11,7 @@ import NotificationBell from '../../components/NotificationBell';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
 
+import { ACCEPT_ATTACHMENT } from '../../utils/upload';
 function StudentAbsence() {
   const navigate = useNavigate();
   const [absences, setAbsences] = useState([]);
@@ -253,7 +254,7 @@ function StudentAbsence() {
             <div style={styles.inputGroup}>
               <label style={styles.label}>증빙 서류 (필수)</label>
               <input 
-                type="file" 
+                type="file" accept={ACCEPT_ATTACHMENT} 
                 style={styles.fileInput}
                 onChange={handleFileChange}
               />

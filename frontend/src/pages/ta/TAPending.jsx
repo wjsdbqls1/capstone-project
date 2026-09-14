@@ -9,6 +9,7 @@ import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
+import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
 function TAPending() {
@@ -117,7 +118,7 @@ function TAPending() {
     try {
       await axios.post(`${API_BASE}/inquiries/${selectedInquiry.id}/replies`, formData, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
       alert("답변 완료"); setSelectedInquiry(null); fetchData(); 
-    } catch (error) { alert("등록 실패"); }
+    } catch (error) { alert(errorMessage(error, "등록 실패")); }
   };
 
   return (
@@ -283,7 +284,7 @@ function TAPending() {
                     <MdAttachFile size={15} />
                     {replyFile ? replyFile.name : '파일 첨부'}
                     <input
-                      type="file"
+                      type="file" accept={ACCEPT_ATTACHMENT}
                       onChange={(e) => setReplyFile(e.target.files[0])}
                       style={{ display: 'none' }}
                     />

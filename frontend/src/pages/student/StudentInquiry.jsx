@@ -11,6 +11,7 @@ import NotificationBell from '../../components/NotificationBell';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
 
+import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
 function StudentInquiry() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -94,7 +95,8 @@ function StudentInquiry() {
         localStorage.clear();
         navigate('/');
       } else {
-        alert("문의 등록에 실패했습니다.");
+        // 첨부 형식·용량 때문에 거부된 경우 그 이유를 그대로 보여준다
+        alert(errorMessage(error, "문의 등록에 실패했습니다."));
       }
     }
   };
@@ -205,7 +207,7 @@ function StudentInquiry() {
         {/* 하단 버튼 그룹 */}
         <div style={styles.buttonGroup}>
           <input 
-            type="file" 
+            type="file" accept={ACCEPT_ATTACHMENT} 
             ref={fileInputRef} 
             style={{display: 'none'}} 
             onChange={handleFileChange}

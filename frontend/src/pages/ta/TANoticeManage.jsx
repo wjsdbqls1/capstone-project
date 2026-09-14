@@ -11,6 +11,7 @@ import { linkify } from '../../utils/linkify';
 import { parseTargetGrades, gradeBadgeStyle, allGradeBadgeStyle } from '../../styles/gradeBadge';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
+import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
 const m = makeInquiryModalStyles(ACCENTS.navy, { maxWidth: '1240px' });
 
 // '2026-09-14T01:24:51+00:00' -> '2026-09-14'
@@ -157,7 +158,7 @@ function TANoticeManage() {
       }
       setShowModal(false);
       fetchNotices();
-    } catch (error) { alert("저장 중 오류가 발생했습니다."); }
+    } catch (error) { alert(errorMessage(error, "저장 중 오류가 발생했습니다.")); }
   };
 
   const handleDelete = async (id) => {
@@ -380,7 +381,7 @@ function TANoticeManage() {
                     <label style={{...(file ? m.attachBtnActive : m.attachBtn), width: '100%', justifyContent: 'center'}}>
                       <MdAttachFile size={15} />
                       {file ? file.name : '파일 선택'}
-                      <input type="file" style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
+                      <input type="file" accept={ACCEPT_ATTACHMENT} style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
                     </label>
                   </div>
 

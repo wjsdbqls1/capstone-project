@@ -15,6 +15,7 @@ import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
+import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
 // 조교 화면과 같은 모달 구조를 쓰되, 색은 그 문의의 상태를 따른다(답변 대기=주황, 완료=초록)
 const pendingModal = makeInquiryModalStyles(ACCENTS.pending);
 const completedModal = makeInquiryModalStyles(ACCENTS.completed);
@@ -113,7 +114,7 @@ function StudentHistory() {
       fetchInquiries(); // 목록의 상태 배지(대기중/완료)도 갱신
     } catch (error) {
       console.error("추가 질문 등록 실패:", error);
-      alert("추가 질문 등록에 실패했습니다.");
+      alert(errorMessage(error, "추가 질문 등록에 실패했습니다."));
     } finally {
       setSendingFollowup(false);
     }
@@ -327,7 +328,7 @@ function StudentHistory() {
                       <label style={followupFile ? modalStyles.attachBtnActive : modalStyles.attachBtn}>
                         <MdAttachFile size={15} />
                         {followupFile ? followupFile.name : '파일 첨부'}
-                        <input type="file" style={{display:'none'}} onChange={(e) => setFollowupFile(e.target.files[0])} />
+                        <input type="file" accept={ACCEPT_ATTACHMENT} style={{display:'none'}} onChange={(e) => setFollowupFile(e.target.files[0])} />
                       </label>
                       <motion.button
                         whileHover={{ scale: 1.01 }}
