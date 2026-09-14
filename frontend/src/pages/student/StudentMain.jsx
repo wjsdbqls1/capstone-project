@@ -251,6 +251,8 @@ const styles = {
     opacity: 0.9
   },
 
+  // 마이페이지 진입점(button). 헤더의 color:'white'는 버튼에 상속되지 않으므로
+  // 글자색·커서·여백·폰트를 직접 지정해야 브라우저 기본값이 끼어들지 않는다.
   avatar: {
     width: 'clamp(46px, 12vw, 60px)',
     height: 'clamp(46px, 12vw, 60px)',
@@ -262,7 +264,12 @@ const styles = {
     justifyContent: 'center',
     fontSize: 'clamp(19px, 5.5vw, 25px)',
     fontWeight: 'bold',
-    flexShrink: 0
+    flexShrink: 0,
+    color: 'white',
+    fontFamily: 'inherit',
+    padding: 0,
+    cursor: 'pointer',
+    outline: 'none'
   },
 
   // 다른 페이지(StudentNotice, StudentFAQ 등)의 glassContainer와 동일한 크기/투명도 규칙

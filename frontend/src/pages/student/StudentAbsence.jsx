@@ -287,6 +287,8 @@ const styles = {
     border: '1px solid rgba(255, 255, 255, 0.3)',
     borderRadius: '50%',
     color: 'white', cursor: 'pointer', outline: 'none',
+    // 버튼 기본 여백이 남으면 원이 38px보다 커진다
+    padding: 0, boxSizing: 'border-box',
     position: 'relative', zIndex: 1,
   },
   pageContainer: {
