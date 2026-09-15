@@ -42,6 +42,10 @@ function FilePicker({ files = [], onChange, style, activeStyle, label = '파일 
     ...(files.length ? { ...style, ...activeStyle } : style),
     ...(fullWidth ? { width: '100%', justifyContent: 'center' } : {}),
     display: 'inline-flex', alignItems: 'center', gap: '6px',
+    // width:100%에 안쪽 여백·테두리가 더해져 부모보다 넓어지지 않도록.
+    // 화면마다 넘겨주는 버튼 스타일에 이 값이 있기도 없기도 해서 여기서 고정한다.
+    boxSizing: 'border-box',
+    maxWidth: '100%',
   };
 
   return (

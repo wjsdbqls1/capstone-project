@@ -403,6 +403,7 @@ const styles = {
   },
   
   attachBtn: { 
+    boxSizing: 'border-box',  // width:100%로 쓰일 때 여백·테두리가 밖으로 넘치지 않게
     padding: '12px', 
     border: '1px dashed #003675', 
     borderRadius: '10px', 
