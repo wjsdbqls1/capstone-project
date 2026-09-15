@@ -7,6 +7,7 @@ import { MdChevronLeft, MdChevronRight, MdAdd, MdClose, MdDelete } from 'react-i
 import AnimatedModal from '../../components/AnimatedModal';
 import '../../App.css';
 import { API_BASE } from '../../config';
+import { dayNumberColor } from '../../utils/calendar';
 
 function TACalendarManage() {
   const navigate = useNavigate();
@@ -140,7 +141,7 @@ function TACalendarManage() {
 
       days.push(
         <div key={d} style={{...calStyles.dayCell, zIndex: 50 - d}} onClick={() => handleDateClick(dateStr, allItems)}>
-          <div style={calStyles.dayNum}>{d}</div>
+          <div style={{...calStyles.dayNum, color: dayNumberColor(currentDayOfWeek, dayEvents, calStyles.dayNum.color)}}>{d}</div>
           
           <div style={calStyles.eventList}>
             {isMobile ? (

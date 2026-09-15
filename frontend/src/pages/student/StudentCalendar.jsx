@@ -11,6 +11,7 @@ import NotificationBell from '../../components/NotificationBell';
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import { isHolidayTitle, dayNumberColor } from '../../utils/calendar';
 
 function StudentCalendar() {
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ function StudentCalendar() {
 
   // 대한민국 공휴일 여부 판별 (학교 사이트 크롤링 데이터 제목 기준)
   // 개교기념일은 학교 자체 휴일이라 "대체휴일"이 붙어도 국가 공휴일에서 제외
-  const isHoliday = (title) => !title.includes('개교기념일') && /휴일|현충일|추석/.test(title);
+  const isHoliday = isHolidayTitle;
 
   const formatDate = (dateObj) => {
     const y = dateObj.getFullYear();
@@ -143,7 +144,7 @@ function StudentCalendar() {
             }}
             onClick={() => handleDateClick(dateStr, dayEvents)}
         >
-          <div style={calStyles.dayNum}>{d}</div>
+          <div style={{...calStyles.dayNum, color: dayNumberColor(currentDayOfWeek, dayEvents, calStyles.dayNum.color)}}>{d}</div>
           <div style={calStyles.eventList}>
             {Array.from({ length: Math.min(maxLane + 1, MAX_VISIBLE) }, (_, lane) => {
               const ev = dayEvents.find(e => (laneOf.get(e.id) ?? 0) === lane);
