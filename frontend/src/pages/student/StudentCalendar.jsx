@@ -408,12 +408,35 @@ const styles = {
     flexDirection: 'column',
     overflow: 'hidden'
   },
-  // 버튼 글자 길이(마이페이지/홈/로그아웃)가 서로 달라서 flex+space-around로는
-  // 가운데 버튼이 정확히 중앙에 오지 않았음. 3등분 grid로 바꿔 항상 정중앙에 오도록 함
+};
+
+// 달력 영역 전용 스타일
+const calStyles = {
+  controls: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '10px',
+    flexWrap: 'wrap',
+    gap: '5px',
+    flexShrink: 0
+  },
   monthNav: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px'
+  },
+  navBtn: {
+    background:'white',
+    border:'1px solid #ddd',
+    borderRadius:'8px',
+    cursor:'pointer',
+    padding:'6px 8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#003675',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
   },
   legend: {
     display: 'flex',
