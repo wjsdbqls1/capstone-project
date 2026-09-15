@@ -85,7 +85,14 @@ function TACalendarManage() {
     } catch (error) { alert(error.response?.data?.detail || "실패"); }
   };
 
-  const openCreateModal = () => { setEditingEventId(null); setNewEvent({ title: '', start_date: '', end_date: '' }); setIsRegisterModalOpen(true); };
+  // dateStr을 넘기면 그 날짜로 시작·종료일을 미리 채운다(날짜 상세 창에서 바로 등록할 때).
+  // 버튼 onClick에 함수를 그대로 넘기면 클릭 이벤트 객체가 들어오므로 문자열일 때만 쓴다.
+  const openCreateModal = (dateStr) => {
+    const d = typeof dateStr === 'string' ? dateStr : '';
+    setEditingEventId(null);
+    setNewEvent({ title: '', start_date: d, end_date: d });
+    setIsRegisterModalOpen(true);
+  };
   const openEditModal = (ev) => {
     setEditingEventId(ev.id);
     setNewEvent({ title: ev.title, start_date: ev.start_date, end_date: ev.end_date });
@@ -210,7 +217,7 @@ function TACalendarManage() {
           <h3 style={{margin:0, fontSize:'20px', fontWeight:'800', color:'#333'}}>{currentDate.getFullYear()}. {String(currentDate.getMonth() + 1).padStart(2, '0')}</h3>
           <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }} onClick={nextMonth} style={calStyles.navBtn}><MdChevronRight size={16} /></motion.button>
         </div>
-        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={openCreateModal} style={{...calStyles.addBtn, display: 'flex', alignItems: 'center', gap: '4px'}}><MdAdd size={15} /> 일정 등록</motion.button>
+        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={() => openCreateModal()} style={{...calStyles.addBtn, display: 'flex', alignItems: 'center', gap: '4px'}}><MdAdd size={15} /> 일정 등록</motion.button>
       </div>
       
       {/* 캘린더 영역 */}
@@ -230,7 +237,14 @@ function TACalendarManage() {
       </div>
 
       <AnimatedModal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} overlayStyle={modalStyles.overlay} modalStyle={modalStyles.modal}>
-                <div style={modalStyles.header}><h3 style={{margin:0, color:'#003675'}}>{selectedDate} 일정</h3><button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}><MdClose size={18} /></button></div>
+                <div style={{...modalStyles.header, gap:'8px'}}>
+                  <h3 style={{margin:0, color:'#003675', minWidth:0}}>{selectedDate} 일정</h3>
+                  <div style={{display:'flex', alignItems:'center', gap:'6px', flexShrink:0}}>
+                    {/* 이 날짜가 채워진 등록 창을 연다. 상세 창은 뒤에 남아 등록 후 목록이 갱신된다 */}
+                    <motion.button whileTap={{ scale: 0.96 }} onClick={() => openCreateModal(selectedDate)} style={{...calStyles.addBtn, display:'flex', alignItems:'center', gap:'3px', padding:'6px 10px', fontSize:'13px', whiteSpace:'nowrap'}}><MdAdd size={14} /> 일정 등록</motion.button>
+                    <button onClick={() => setIsDetailModalOpen(false)} style={modalStyles.closeBtn}><MdClose size={18} /></button>
+                  </div>
+                </div>
                 <div style={modalStyles.list}>
                     <div style={{display:'flex', gap:'5px', marginBottom:'15px'}}>
                         <input value={memoInput} onChange={(e) => setMemoInput(e.target.value)} placeholder="메모 입력..." style={{flex:1, padding:'10px', borderRadius:'8px', border:'1px solid #ddd'}}/>
