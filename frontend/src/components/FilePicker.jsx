@@ -52,7 +52,10 @@ function FilePicker({ files = [], onChange, style, activeStyle, label = '파일 
     <div style={{ width: fullWidth ? '100%' : undefined, minWidth: 0 }}>
       <label style={btnStyle}>
         <MdAttachFile size={15} />
-        {files.length ? `파일 ${files.length}개 선택됨` : label}
+        {/* 누르기 전에도 여러 개가 된다는 걸 알 수 있게, 고른 뒤에는 더 추가할 수 있다는 걸 알 수 있게 */}
+        {files.length
+          ? (files.length < MAX_FILES ? `파일 ${files.length}개 선택됨 · 더 추가` : `파일 ${files.length}개 선택됨 (최대)`)
+          : `${label} (최대 ${MAX_FILES}개)`}
         <input
           ref={inputRef}
           type="file"
