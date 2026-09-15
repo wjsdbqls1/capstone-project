@@ -38,6 +38,7 @@ class Inquiry(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     academic_event_id = Column(Integer, ForeignKey("academic_events.id"), nullable=True)
     attachment = Column(String(255), nullable=True)
+    attachments = Column(Text, nullable=True)  # 여러 첨부: [{"url","name"}] JSON. attachment에는 첫 파일만(옛 앱 호환)
 
     user = relationship("User", back_populates="inquiries")
     academic_event = relationship("AcademicEvent")
@@ -52,6 +53,7 @@ class InquiryReply(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=True, onupdate=func.now())
     attachment = Column(String(255), nullable=True)
+    attachments = Column(Text, nullable=True)  # 여러 첨부: [{"url","name"}] JSON. attachment에는 첫 파일만(옛 앱 호환)
 
 class InquiryHistory(Base):
     __tablename__ = "inquiry_history"
@@ -127,6 +129,7 @@ class Notice(Base):
     source = Column(String(50), nullable=False, default="internal") 
     file_path = Column(String(500), nullable=True)
     original_filename = Column(String(255), nullable=True)
+    attachments = Column(Text, nullable=True)  # 여러 첨부: [{"url","name"}] JSON. file_path/original_filename에는 첫 파일만(옛 앱 호환)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     # 수정 시각. 목록/상세에서 '수정됨'을 표시하기 위해 사용
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -145,6 +148,7 @@ class FAQ(Base):
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     file_path = Column(String(500), nullable=True)
     original_filename = Column(String(255), nullable=True)
+    attachments = Column(Text, nullable=True)  # 여러 첨부: [{"url","name"}] JSON. file_path/original_filename에는 첫 파일만(옛 앱 호환)
     category = Column(String(50), nullable=False, default="기타")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     # 수정 시각. 목록/상세에서 '수정됨'을 표시하기 위해 사용

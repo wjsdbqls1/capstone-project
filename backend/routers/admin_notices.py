@@ -8,7 +8,7 @@ from deps import get_db
 from auth import require_assistant
 from models import Notice, User
 from push_service import send_push_to_students_by_grade
-from upload_utils import save_upload
+from upload_utils import attachments_json, collect_files, save_uploads
 
 r = APIRouter(prefix="/admin/notices", tags=["admin-notices"])
 
@@ -35,17 +35,15 @@ def create_notice(
     content_html: str = Form(...),
     target_grades: str = Form("0"),  # 콤마로 구분된 대상 학년, 예: "0"(전체) 또는 "1,3"
     file: Optional[UploadFile] = File(None), # 파일은 선택사항
+    files: list[UploadFile] = File([]),
     background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
-    saved_filename = None
-    original_filename = None
-
-    # 파일이 있으면 저장
-    if file:
-        saved_filename = save_upload(file, UPLOAD_DIR)
-        original_filename = file.filename
+    items = save_uploads(collect_files(file, files), UPLOAD_DIR)
+    # 옛 앱은 file_path/original_filename 하나만 읽으므로 첫 파일을 거기에도 넣어 둔다
+    saved_filename = items[0]["url"].rsplit("/", 1)[-1] if items else None
+    original_filename = items[0]["name"] if items else None
 
     normalized = _normalize_target_grades(target_grades)
     grades = _grade_list(normalized)
@@ -64,7 +62,8 @@ def create_notice(
         posted_date=posted,
         author_id=author_id,
         file_path=saved_filename,       # ★ 저장
-        original_filename=original_filename # ★ 저장
+        original_filename=original_filename, # ★ 저장
+        attachments=attachments_json(items),
     )
     db.add(new_notice)
     db.flush()  # id만 먼저 확보 (INSERT)
@@ -90,6 +89,7 @@ def create_notice(
         "author_id": author_id,
         "file_path": saved_filename,
         "original_filename": original_filename,
+        "attachments": items,
     }
 
 # 2. 수정 (간단하게 구현: 새 파일 올리면 교체, 안 올리면 유지)
@@ -100,6 +100,7 @@ def update_notice(
     content_html: str = Form(...),
     target_grades: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    files: list[UploadFile] = File([]),
     background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
@@ -117,9 +118,11 @@ def update_notice(
     notice.target_grade = grades[0] if len(grades) == 1 else 0  # 하위 호환용
 
     # 새 파일이 들어오면 기존 파일 정보 덮어쓰기 (기존 파일 삭제는 생략함)
-    if file:
-        notice.file_path = save_upload(file, UPLOAD_DIR)
-        notice.original_filename = file.filename
+    items = save_uploads(collect_files(file, files), UPLOAD_DIR)
+    if items:
+        notice.file_path = items[0]["url"].rsplit("/", 1)[-1]
+        notice.original_filename = items[0]["name"]
+        notice.attachments = attachments_json(items)
 
     db.commit()
 

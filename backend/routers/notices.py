@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from auth import get_current_user
 from deps import get_db
 from models import Notice
+from upload_utils import parse_attachments
 
 # 공지는 학년별 대상이 정해진 것도 있어 로그인한 사용자에게만 내려준다.
 # 이 라우터의 모든 엔드포인트에 한 번에 건다.
@@ -20,7 +21,7 @@ PREVIEW_LEN = 200
 
 _LIST_COLUMNS = (
     Notice.id, Notice.title, Notice.posted_date, Notice.target_grades,
-    Notice.original_filename, Notice.file_path, Notice.updated_at,
+    Notice.original_filename, Notice.file_path, Notice.attachments, Notice.updated_at,
     func.left(Notice.content_html, PREVIEW_LEN).label("preview"),
 )
 
@@ -52,6 +53,7 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
                 "target_grades": n.target_grades,
                 "original_filename": n.original_filename,
                 "file_path": n.file_path,
+                "attachments": parse_attachments(n.attachments, f"/uploads/notices/{n.file_path}" if n.file_path else None, n.original_filename),
                 "updated_at": n.updated_at,
                 "content_preview": n.preview,
             })
@@ -67,6 +69,7 @@ def list_notices(db: Session = Depends(get_db), source: str = "all", limit: int 
                 "target_grades": "0", # 외부 공지는 전체 대상
                 "original_filename": n.original_filename,
                 "file_path": n.file_path,
+                "attachments": parse_attachments(n.attachments, f"/uploads/external_notices/{n.file_path}" if n.file_path else None, n.original_filename),
                 "updated_at": n.updated_at,
                 "content_preview": n.preview,
             })
@@ -92,6 +95,7 @@ def get_internal_notice_detail(notice_id: int, db: Session = Depends(get_db)):
         "target_grades": n.target_grades if n.source == "internal" else "0",
         "original_filename": n.original_filename,
         "file_path": n.file_path,
+        "attachments": parse_attachments(n.attachments, f"/uploads/{'external_notices' if n.source == 'external' else 'notices'}/{n.file_path}" if n.file_path else None, n.original_filename),
         "updated_at": n.updated_at,
         "source": n.source # 소스 정보 추가 (프론트에서 파일 경로 분기용)
     }

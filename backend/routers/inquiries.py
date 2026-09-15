@@ -8,19 +8,21 @@ from deps import get_db, get_current_user
 from auth import require_assistant
 from models import Inquiry, InquiryReply, InquiryHistory, AcademicEvent, User
 from push_service import send_push_to_user, send_push_to_staff
-from upload_utils import save_upload
+from upload_utils import attachments_json, collect_files, parse_attachments, save_uploads
 
 r = APIRouter(prefix="/inquiries", tags=["inquiries"])
 
 UPLOAD_DIR = "uploads"
 
 # ★ 파일 저장 헬퍼 함수
-def save_upload_file(file: UploadFile) -> str:
-    if not file:
-        return None
-    file_name = save_upload(file, UPLOAD_DIR)
-    # DB에 저장할 접근 URL
-    return f"/uploads/{file_name}"
+def _save_files(file, files) -> list[dict]:
+    """옛 방식(file 하나)과 새 방식(files 여러 개)을 합쳐 저장하고 [{"url","name"}]을 돌려준다."""
+    return save_uploads(collect_files(file, files), UPLOAD_DIR)
+
+
+def _first_url(items: list[dict]):
+    """옛 앱은 attachment 하나만 읽으므로 첫 파일 경로를 거기에도 넣어 둔다."""
+    return items[0]["url"] if items else None
 
 # 1. 문의 등록
 @r.post("")
@@ -29,11 +31,12 @@ def create_inquiry(
     content: str = Form(...),
     academic_event_id: Optional[int] = Form(None),
     file: Optional[UploadFile] = File(None),
+    files: list[UploadFile] = File([]),
     background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    attachment_url = save_upload_file(file)
+    items = _save_files(file, files)
 
     q = Inquiry(
         user_id=current_user.id,
@@ -41,7 +44,8 @@ def create_inquiry(
         content=content,
         status="OPEN",
         academic_event_id=academic_event_id,
-        attachment=attachment_url
+        attachment=_first_url(items),
+        attachments=attachments_json(items),
     )
     db.add(q)
     db.commit()
@@ -83,6 +87,7 @@ def list_my_inquiries(
             "created_at": q.created_at,
             "academic_event_id": q.academic_event_id,
             "attachment": q.attachment,
+            "attachments": parse_attachments(q.attachments, q.attachment),
             "reply_edited": bool(edited),  # 답변 수정(재답변) 여부
         }
         for q, edited in rows
@@ -149,6 +154,7 @@ def list_all_inquiries(
             "created_at": q.created_at,
             "user_id": q.user_id,
             "attachment": q.attachment,
+            "attachments": parse_attachments(q.attachments, q.attachment),
             "academic_event_id": q.academic_event_id,
             "author_info": author_info,
             "academic_event": event_info,
@@ -191,6 +197,7 @@ def inquiry_detail(inquiry_id: int, db: Session = Depends(get_db), current_user:
         "content": q.content,
         "status": q.status,
         "attachment": q.attachment,
+        "attachments": parse_attachments(q.attachments, q.attachment),
         "created_at": q.created_at,
         "author_name": author.name if author else "알수없음",
         "author_info": {"student_no": author.student_no, "name": author.name, "department": author.department, "grade": author.grade} if author else {},
@@ -208,12 +215,27 @@ def inquiry_replies(inquiry_id: int, db: Session = Depends(get_db), current_user
     if current_user.role not in ("assistant", "admin") and current_user.id != q.user_id:
         raise HTTPException(status_code=403, detail="접근 권한이 없습니다.")
 
-    return (
+    rows = (
         db.query(InquiryReply)
         .filter(InquiryReply.inquiry_id == inquiry_id)
         .order_by(InquiryReply.created_at.asc(), InquiryReply.id.asc())
         .all()
     )
+    # ORM 객체를 그대로 돌려주면 attachments가 JSON 문자열로 나가므로 목록으로 풀어서 내려준다
+    return [
+        {
+            "id": x.id,
+            "inquiry_id": x.inquiry_id,
+            "assistant_id": x.assistant_id,
+            "sender_role": x.sender_role,
+            "content": x.content,
+            "created_at": x.created_at,
+            "updated_at": x.updated_at,
+            "attachment": x.attachment,
+            "attachments": parse_attachments(x.attachments, x.attachment),
+        }
+        for x in rows
+    ]
 
 # 6. 답변 등록
 @r.post("/{inquiry_id}/replies")
@@ -221,6 +243,7 @@ def create_reply(
     inquiry_id: int,
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    files: list[UploadFile] = File([]),
     background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
@@ -229,14 +252,15 @@ def create_reply(
     if not q:
         raise HTTPException(status_code=404, detail="not found")
 
-    attachment_url = save_upload_file(file)
+    items = _save_files(file, files)
 
     new_reply = InquiryReply(
         inquiry_id=inquiry_id,
         assistant_id=current_user.id,
         sender_role="assistant",
         content=content,
-        attachment=attachment_url
+        attachment=_first_url(items),
+        attachments=attachments_json(items),
     )
     db.add(new_reply)
     q.status = "COMPLETED" # 답변 달리면 완료 상태로 변경
@@ -258,6 +282,7 @@ def create_student_followup(
     inquiry_id: int,
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    files: list[UploadFile] = File([]),
     background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -269,14 +294,15 @@ def create_student_followup(
     if current_user.id != q.user_id:
         raise HTTPException(status_code=403, detail="본인 문의에만 추가 질문을 등록할 수 있습니다.")
 
-    attachment_url = save_upload_file(file)
+    items = _save_files(file, files)
 
     new_message = InquiryReply(
         inquiry_id=inquiry_id,
         assistant_id=current_user.id,
         sender_role="student",
         content=content,
-        attachment=attachment_url
+        attachment=_first_url(items),
+        attachments=attachments_json(items),
     )
     db.add(new_message)
     q.status = "OPEN"  # 조교가 다시 확인할 수 있도록 대기 상태로 되돌림
@@ -299,6 +325,7 @@ def update_reply(
     reply_id: int,
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    files: list[UploadFile] = File([]),
     background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
@@ -316,9 +343,10 @@ def update_reply(
     reply.content = content
 
     # 새 파일이 업로드된 경우에만 교체
-    if file:
-        attachment_url = save_upload_file(file)
-        reply.attachment = attachment_url
+    items = _save_files(file, files)
+    if items:
+        reply.attachment = _first_url(items)
+        reply.attachments = attachments_json(items)
 
     # models.py에서 onupdate=func.now() 설정이 되어 있다면
     # commit 시 자동으로 updated_at이 갱신됩니다.
