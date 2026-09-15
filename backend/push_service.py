@@ -37,6 +37,11 @@ def _send_to_subscriptions(db: Session, subs: list[PushSubscription], title: str
                 data=payload,
                 vapid_private_key=_vapid,
                 vapid_claims={"sub": VAPID_CLAIM_EMAIL},
+                # 라이브러리 기본값 TTL 0은 "지금 못 받으면 즉시 폐기"라, 화면이 꺼져
+                # 절전 중인 휴대폰에는 알림이 조용히 사라진다. 하루 동안 보관했다가 전달한다.
+                ttl=24 * 60 * 60,
+                # 절전 중에도 기기를 깨워 바로 전달하도록 긴급도를 높인다(기본 normal)
+                headers={"Urgency": "high"},
             )
         except WebPushException as e:
             status = e.response.status_code if e.response is not None else None
