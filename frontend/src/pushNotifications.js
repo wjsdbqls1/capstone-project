@@ -42,31 +42,38 @@ export async function subscribeToPush() {
     throw new Error(BLOCKED_MSG)
   }
 
-  const permission = await Notification.requestPermission()
-  if (permission === 'denied') {
-    throw new Error(BLOCKED_MSG)
+  // 권한 창이 떠 있는 동안 앱이 뒤로 갔다 돌아오며 '새 버전 확인 → 자동 새로고침'이
+  // 끼어들 수 있어(main.jsx), 이 흐름이 끝날 때까지 그걸 멈춰 둔다.
+  window.__pushPermissionInFlight = true
+  try {
+    const permission = await Notification.requestPermission()
+    if (permission === 'denied') {
+      throw new Error(BLOCKED_MSG)
+    }
+    if (permission !== 'granted') {
+      throw new Error('알림 권한 요청이 취소되었습니다. 다시 시도해 주세요.')
+    }
+
+    const { data } = await axios.get(`${API}/push/vapid-public-key`)
+    if (!data || !data.publicKey) {
+      throw new Error('서버에 알림 설정이 되어 있지 않습니다. 관리자에게 문의해 주세요.')
+    }
+    const reg = await navigator.serviceWorker.ready
+
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(data.publicKey),
+    })
+
+    const token = localStorage.getItem('token')
+    await axios.post(`${API}/push/subscribe`, subscription.toJSON(), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    return subscription
+  } finally {
+    window.__pushPermissionInFlight = false
   }
-  if (permission !== 'granted') {
-    throw new Error('알림 권한 요청이 취소되었습니다. 다시 시도해 주세요.')
-  }
-
-  const { data } = await axios.get(`${API}/push/vapid-public-key`)
-  if (!data || !data.publicKey) {
-    throw new Error('서버에 알림 설정이 되어 있지 않습니다. 관리자에게 문의해 주세요.')
-  }
-  const reg = await navigator.serviceWorker.ready
-
-  const subscription = await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(data.publicKey),
-  })
-
-  const token = localStorage.getItem('token')
-  await axios.post(`${API}/push/subscribe`, subscription.toJSON(), {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-
-  return subscription
 }
 
 export async function unsubscribeFromPush() {

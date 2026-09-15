@@ -2,14 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdAttachFile, MdSmartToy } from 'react-icons/md';
+import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdSmartToy } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
-import AttachmentPreview, { attachmentKind } from '../../components/AttachmentPreview';
+import AttachmentPreview, { BubbleAttachments } from '../../components/AttachmentPreview';
 import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
-import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
+import { appendFiles, attachmentsOf, errorMessage } from '../../utils/upload';
+import FilePicker from '../../components/FilePicker';
 const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
 function TAPending() {
@@ -18,7 +19,7 @@ function TAPending() {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [threadReplies, setThreadReplies] = useState([]);
   const [replyContent, setReplyContent] = useState("");
-  const [replyFile, setReplyFile] = useState(null);
+  const [replyFiles, setReplyFiles] = useState([]);
   const [sortType, setSortType] = useState('latest');
   const [aiCandidates, setAiCandidates] = useState([]);
   const [aiKeywords, setAiKeywords] = useState([]);
@@ -69,7 +70,7 @@ function TAPending() {
       setSelectedInquiry(inquiry);
       setThreadReplies(replies);
       setReplyContent("");
-      setReplyFile(null);
+      setReplyFiles([]);
       setAiCandidates([]);
       setAiKeywords([]);
 
@@ -114,7 +115,7 @@ function TAPending() {
     const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('content', replyContent);
-    if (replyFile) formData.append('file', replyFile);
+    appendFiles(formData, replyFiles);
     try {
       await axios.post(`${API_BASE}/inquiries/${selectedInquiry.id}/replies`, formData, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
       alert("답변 완료"); setSelectedInquiry(null); fetchData(); 
@@ -193,11 +194,11 @@ function TAPending() {
                 <div style={modalStyles.qText}>
                   {isFollowup ? inq.content : renderHighlighted(inq.content, aiKeywords)}
                 </div>
-                {inq.attachment && (
-                  <div style={{marginTop: '13px', maxWidth: '420px'}}>
-                    <AttachmentPreview url={`${API_BASE}${inq.attachment}`} name={inq.attachment} maxHeight={260} />
+                {attachmentsOf(inq, 'inquiry', API_BASE).map((a, i) => (
+                  <div key={i} style={{marginTop: '13px', maxWidth: '420px'}}>
+                    <AttachmentPreview url={a.url} name={a.name} maxHeight={260} />
                   </div>
-                )}
+                ))}
               </div>
 
               {/* 대화 스레드 — 학생은 왼쪽, 조교는 오른쪽 */}
@@ -213,25 +214,7 @@ function TAPending() {
                           <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
                           <div style={isStudent ? modalStyles.bubbleMuted : modalStyles.bubbleAccent}>
                             {isStudent && isLast ? renderHighlighted(msg.content, aiKeywords) : linkify(msg.content, { color: isStudent ? '#003675' : '#fff' })}
-                            {msg.attachment && (
-                              <div>
-                                {attachmentKind(msg.attachment) === 'image' ? (
-                                  // 채팅처럼 이미지는 말풍선 안에서 바로 보여준다
-                                  <a href={`${API_BASE}${msg.attachment}`} target="_blank" rel="noreferrer">
-                                    <img src={`${API_BASE}${msg.attachment}`} alt="첨부 이미지"
-                                         style={{display:'block', marginTop:'8px', maxWidth:'100%', maxHeight:'200px',
-                                                 borderRadius:'10px', cursor:'zoom-in'}} />
-                                  </a>
-                                ) : (
-                                  <a
-                                    href={`${API_BASE}${msg.attachment}`} target="_blank" rel="noreferrer"
-                                    style={{...modalStyles.bubbleFile, color: isStudent ? '#003675' : '#fff'}}
-                                  >
-                                    <MdAttachFile size={12} /> 첨부파일
-                                  </a>
-                                )}
-                              </div>
-                            )}
+                            <BubbleAttachments items={attachmentsOf(msg, 'inquiry', API_BASE)} color={isStudent ? '#003675' : '#fff'} linkStyle={modalStyles.bubbleFile} />
                           </div>
                         </div>
                       );
@@ -280,15 +263,7 @@ function TAPending() {
                 <div style={modalStyles.charCount}>{replyContent.length}자</div>
                 <div style={modalStyles.footRow}>
                   {/* 브라우저 기본 파일 위젯 대신 label로 감싼 숨은 input */}
-                  <label style={replyFile ? modalStyles.attachBtnActive : modalStyles.attachBtn}>
-                    <MdAttachFile size={15} />
-                    {replyFile ? replyFile.name : '파일 첨부'}
-                    <input
-                      type="file" accept={ACCEPT_ATTACHMENT}
-                      onChange={(e) => setReplyFile(e.target.files[0])}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
+                  <FilePicker files={replyFiles} onChange={setReplyFiles} style={modalStyles.attachBtn} activeStyle={modalStyles.attachBtnActive} />
                   <motion.button
                     whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                     style={modalStyles.submitBtn}

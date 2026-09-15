@@ -9,6 +9,7 @@ import NotificationBell from '../../components/NotificationBell';
 
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import { attachmentsOf } from '../../utils/upload';
 import { linkify, htmlToText } from '../../utils/linkify';
 import { parseTargetGrades, gradeBadgeStyle } from '../../styles/gradeBadge';
 import AttachmentPreview from '../../components/AttachmentPreview';
@@ -57,13 +58,7 @@ function StudentNoticeDetail() {
     );
   }
 
-  const getFileUrl = () => {
-    if (!notice.file_path) return "";
-    if (source === 'external') {
-      return `${API_BASE}/uploads/external_notices/${notice.file_path}`;
-    }
-    return `${API_BASE}/uploads/notices/${notice.file_path}`;
-  };
+  const attachments = attachmentsOf(notice, source === 'external' ? 'external' : 'notice', API_BASE);
 
   return (
     <div style={styles.pageContainer}>
@@ -108,10 +103,14 @@ function StudentNoticeDetail() {
         </div>
 
         {/* 첨부파일 — 이미지·PDF는 다운로드 전에 미리보기 */}
-        {notice.file_path && (
+        {attachments.length > 0 && (
           <div style={styles.fileCard}>
-            <div style={{fontSize:'12px', color:'#666', marginBottom:'8px', fontWeight:'bold'}}>첨부파일</div>
-            <AttachmentPreview url={getFileUrl()} name={notice.original_filename} maxHeight={320} />
+            <div style={{fontSize:'12px', color:'#666', marginBottom:'8px', fontWeight:'bold'}}>첨부파일 {attachments.length > 1 ? `(${attachments.length})` : ''}</div>
+            {attachments.map((a, i) => (
+              <div key={i} style={{marginTop: i ? '10px' : 0}}>
+                <AttachmentPreview url={a.url} name={a.name} maxHeight={320} />
+              </div>
+            ))}
           </div>
         )}
 

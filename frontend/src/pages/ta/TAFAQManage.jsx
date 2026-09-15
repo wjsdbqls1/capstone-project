@@ -10,7 +10,8 @@ import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
-import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
+import { appendFiles, attachmentsOf, errorMessage } from '../../utils/upload';
+import FilePicker from '../../components/FilePicker';
 const m = makeInquiryModalStyles(ACCENTS.navy, { maxWidth: '1240px' });
 
 const formatDate = (v) => (v ? String(v).split('T')[0] : '');
@@ -26,7 +27,7 @@ function TAFaqManage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [targetId, setTargetId] = useState(null);
   const [formData, setFormData] = useState({ question: "", answer_html: "" });
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   // 카드를 누르면 뜨는 상세 모달 (목록 항목을 그대로 사용)
   const [detail, setDetail] = useState(null);
 
@@ -90,7 +91,7 @@ function TAFaqManage() {
     const sendData = new FormData();
     sendData.append("question", formData.question);
     sendData.append("answer_html", formData.answer_html);
-    if (file) sendData.append("file", file);
+    appendFiles(sendData, files);
 
     try {
       const config = { headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` } };
@@ -116,8 +117,8 @@ function TAFaqManage() {
     }
   };
 
-  const handleOpenCreate = () => { setIsEditMode(false); setFormData({ question: "", answer_html: "" }); setFile(null); setShowModal(true); };
-  const handleOpenEdit = (item) => { setIsEditMode(true); setTargetId(item.id); setFormData({ question: item.question, answer_html: item.answer_html }); setFile(null); setShowModal(true); };
+  const handleOpenCreate = () => { setIsEditMode(false); setFormData({ question: "", answer_html: "" }); setFiles([]); setShowModal(true); };
+  const handleOpenEdit = (item) => { setIsEditMode(true); setTargetId(item.id); setFormData({ question: item.question, answer_html: item.answer_html }); setFiles([]); setShowModal(true); };
 
   return (
     <>
@@ -164,7 +165,7 @@ function TAFaqManage() {
                         <div style={styles.cardContent}>
                             <div style={styles.question}>
                               <span style={{color:'#003675', marginRight:'5px'}}>Q.</span>{item.question}
-                              {item.original_filename && <MdAttachFile size={13} style={{marginLeft: '5px', verticalAlign: 'middle'}} />}
+                              {attachmentsOf(item, 'faq', API_BASE).length > 0 && <MdAttachFile size={13} style={{marginLeft: '5px', verticalAlign: 'middle'}} />}
                             </div>
                             <div style={styles.answer}>
                               <span style={{color:'#666', marginRight:'5px', fontWeight:'bold'}}>A.</span>{item.answer_html}
@@ -234,14 +235,12 @@ function TAFaqManage() {
                       )}
                       <div style={m.infoItem}>
                         <span style={m.infoLabel}>첨부</span>
-                        {d.file_path ? (
-                          <div style={{marginTop: '4px'}}>
-                            <AttachmentPreview
-                              url={`${API_BASE}/uploads/faqs/${d.file_path}`}
-                              name={d.original_filename}
-                              maxHeight={200}
-                            />
-                          </div>
+                        {attachmentsOf(d, 'faq', API_BASE).length > 0 ? (
+                          attachmentsOf(d, 'faq', API_BASE).map((a, i) => (
+                            <div key={i} style={{marginTop: '4px'}}>
+                              <AttachmentPreview url={a.url} name={a.name} maxHeight={200} />
+                            </div>
+                          ))
                         ) : (
                           <span style={{...m.infoValue, color: '#9aa3af', fontWeight: 500}}>없음</span>
                         )}
@@ -292,11 +291,7 @@ function TAFaqManage() {
                 <div style={m.splitSide}>
                   <div>
                     <div style={m.sectionHead}>첨부파일<span style={m.sectionLine} /></div>
-                    <label style={{...(file ? m.attachBtnActive : m.attachBtn), width: '100%', justifyContent: 'center'}}>
-                      <MdAttachFile size={15} />
-                      {file ? file.name : '파일 선택'}
-                      <input type="file" accept={ACCEPT_ATTACHMENT} style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
-                    </label>
+                    <FilePicker files={files} onChange={setFiles} style={m.attachBtn} activeStyle={m.attachBtnActive} label="파일 선택" fullWidth />
                   </div>
 
                   <div style={m.sideActions}>

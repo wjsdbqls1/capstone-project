@@ -206,4 +206,37 @@ const styles = {
   hint: { fontSize: '11.5px', color: '#9aa3af' },
 };
 
+/**
+ * 대화 말풍선 안의 첨부 목록. 이미지는 채팅처럼 바로 보여주고 나머지는 링크로.
+ * items: [{ url, name }] (절대 주소), color: 말풍선 글자색(링크색으로 씀)
+ */
+export function BubbleAttachments({ items, color, linkStyle }) {
+  if (!items || !items.length) return null;
+  return (
+    <div>
+      {items.map((a, i) => (
+        attachmentKind(a.name || a.url) === 'image' ? (
+          <a key={i} href={a.url} target="_blank" rel="noreferrer">
+            <img
+              src={a.url}
+              alt={a.name || '첨부 이미지'}
+              style={{ display: 'block', marginTop: '8px', maxWidth: '100%', maxHeight: '200px', borderRadius: '10px', cursor: 'zoom-in' }}
+            />
+          </a>
+        ) : (
+          <a
+            key={i}
+            href={a.url}
+            target="_blank"
+            rel="noreferrer"
+            style={{ ...linkStyle, color, display: 'inline-flex', marginRight: '10px' }}
+          >
+            <MdAttachFile size={12} /> {a.name || '첨부파일'}
+          </a>
+        )
+      ))}
+    </div>
+  );
+}
+
 export default AttachmentPreview;

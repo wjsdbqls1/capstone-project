@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdChevronLeft, MdClose, MdCalendarToday, MdAttachFile, MdPerson, MdSend } from 'react-icons/md';
+import { MdChevronLeft, MdClose, MdCalendarToday, MdPerson, MdSend } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
-import AttachmentPreview, { attachmentKind } from '../../components/AttachmentPreview';
+import AttachmentPreview, { BubbleAttachments } from '../../components/AttachmentPreview';
 import '../../App.css';
 import NotificationBell from '../../components/NotificationBell';
 
@@ -15,7 +15,8 @@ import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
-import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
+import { appendFiles, attachmentsOf, errorMessage } from '../../utils/upload';
+import FilePicker from '../../components/FilePicker';
 // 조교 화면과 같은 모달 구조를 쓰되, 색은 그 문의의 상태를 따른다(답변 대기=주황, 완료=초록)
 const pendingModal = makeInquiryModalStyles(ACCENTS.pending);
 const completedModal = makeInquiryModalStyles(ACCENTS.completed);
@@ -26,7 +27,7 @@ function StudentHistory() {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [detailData, setDetailData] = useState(null);
   const [followupText, setFollowupText] = useState('');
-  const [followupFile, setFollowupFile] = useState(null);
+  const [followupFiles, setFollowupFiles] = useState([]);
   const [sendingFollowup, setSendingFollowup] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -84,7 +85,7 @@ function StudentHistory() {
     setSelectedInquiry(item);
     setDetailData(null);
     setFollowupText('');
-    setFollowupFile(null);
+    setFollowupFiles([]);
     fetchDetail(item.id);
   };
 
@@ -100,7 +101,7 @@ function StudentHistory() {
     setSendingFollowup(true);
     const formData = new FormData();
     formData.append('content', followupText);
-    if (followupFile) formData.append('file', followupFile);
+    appendFiles(formData, followupFiles);
 
     try {
       await axios.post(
@@ -109,7 +110,7 @@ function StudentHistory() {
         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
       );
       setFollowupText('');
-      setFollowupFile(null);
+      setFollowupFiles([]);
       await fetchDetail(selectedInquiry.id);
       fetchInquiries(); // 목록의 상태 배지(대기중/완료)도 갱신
     } catch (error) {
@@ -258,11 +259,11 @@ function StudentHistory() {
                   <div style={modalStyles.section}>
                     <div style={modalStyles.sectionHead}>문의 내용<span style={modalStyles.sectionLine} /></div>
                     <div style={modalStyles.qText}>{linkify(detailData.content)}</div>
-                    {detailData.attachment && (
-                      <div style={{marginTop: '13px'}}>
-                        <AttachmentPreview url={`${API_BASE}${detailData.attachment}`} name={detailData.attachment} maxHeight={260} />
+                    {attachmentsOf(detailData, 'inquiry', API_BASE).map((a, i) => (
+                      <div key={i} style={{marginTop: '13px'}}>
+                        <AttachmentPreview url={a.url} name={a.name} maxHeight={260} />
                       </div>
-                    )}
+                    ))}
                   </div>
 
                   {/* 모달 최소 높이가 남기는 아래쪽 여백을 대화창이 채우도록 flex:1 */}
@@ -282,25 +283,7 @@ function StudentHistory() {
                               </div>
                               <div style={isMine ? modalStyles.bubbleAccent : modalStyles.bubbleOnPanel}>
                                 {linkify(reply.content, { color: isMine ? '#fff' : '#003675' })}
-                                {reply.attachment && (
-                                  <div>
-                                    {attachmentKind(reply.attachment) === 'image' ? (
-                                  // 채팅처럼 이미지는 말풍선 안에서 바로 보여준다
-                                  <a href={`${API_BASE}${reply.attachment}`} target="_blank" rel="noreferrer">
-                                    <img src={`${API_BASE}${reply.attachment}`} alt="첨부 이미지"
-                                         style={{display:'block', marginTop:'8px', maxWidth:'100%', maxHeight:'200px',
-                                                 borderRadius:'10px', cursor:'zoom-in'}} />
-                                  </a>
-                                ) : (
-                                  <a
-                                    href={`${API_BASE}${reply.attachment}`} target="_blank" rel="noreferrer"
-                                    style={{...modalStyles.bubbleFile, color: isMine ? '#fff' : '#003675'}}
-                                  >
-                                    <MdAttachFile size={12} /> 첨부파일
-                                  </a>
-                                )}
-                                  </div>
-                                )}
+                                <BubbleAttachments items={attachmentsOf(reply, 'inquiry', API_BASE)} color={isMine ? '#fff' : '#003675'} linkStyle={modalStyles.bubbleFile} />
                               </div>
                             </div>
                           );
@@ -325,11 +308,7 @@ function StudentHistory() {
                     />
                     <div style={modalStyles.charCount}>{followupText.length}자</div>
                     <div style={modalStyles.footRow}>
-                      <label style={followupFile ? modalStyles.attachBtnActive : modalStyles.attachBtn}>
-                        <MdAttachFile size={15} />
-                        {followupFile ? followupFile.name : '파일 첨부'}
-                        <input type="file" accept={ACCEPT_ATTACHMENT} style={{display:'none'}} onChange={(e) => setFollowupFile(e.target.files[0])} />
-                      </label>
+                      <FilePicker files={followupFiles} onChange={setFollowupFiles} style={modalStyles.attachBtn} activeStyle={modalStyles.attachBtnActive} />
                       <motion.button
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.98 }}

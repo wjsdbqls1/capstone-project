@@ -1,9 +1,9 @@
 // src/pages/student/StudentInquiry.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdChevronLeft, MdChat, MdCalendarToday, MdAttachFile, MdCheckCircle, MdPerson } from 'react-icons/md';
+import { MdChevronLeft, MdChat, MdCalendarToday, MdPerson } from 'react-icons/md';
 import '../../App.css';
 import NotificationBell from '../../components/NotificationBell';
 
@@ -11,14 +11,14 @@ import NotificationBell from '../../components/NotificationBell';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
 
-import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
+import { appendFiles, errorMessage } from '../../utils/upload';
+import FilePicker from '../../components/FilePicker';
 function StudentInquiry() {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [isRelatedToEvent, setIsRelatedToEvent] = useState(false); 
   const [academicEventId, setAcademicEventId] = useState(''); 
   const [events, setEvents] = useState([]); 
@@ -47,15 +47,6 @@ function StudentInquiry() {
       .catch(err => console.error("일정 로딩 실패:", err));
   }, [navigate]);
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
-  };
-
-  const handleAttachClick = () => {
-    fileInputRef.current.click();
-  };
 
 
   const handleSubmit = async () => {
@@ -73,9 +64,7 @@ function StudentInquiry() {
         formData.append('academic_event_id', academicEventId);
     }
     
-    if (file) {
-        formData.append('file', file);
-    }
+    appendFiles(formData, files);
 
     try {
       await axios.post(`${API_BASE}/inquiries`, formData, { 
@@ -206,16 +195,7 @@ function StudentInquiry() {
 
         {/* 하단 버튼 그룹 */}
         <div style={styles.buttonGroup}>
-          <input 
-            type="file" accept={ACCEPT_ATTACHMENT} 
-            ref={fileInputRef} 
-            style={{display: 'none'}} 
-            onChange={handleFileChange}
-          />
-
-          <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={{ ...styles.attachBtn, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={handleAttachClick}>
-             {file ? <><MdCheckCircle size={16} /> 파일 선택됨: {file.name}</> : <><MdAttachFile size={16} /> 파일 첨부하기</>}
-          </motion.button>
+          <FilePicker files={files} onChange={setFiles} style={styles.attachBtn} label="파일 첨부하기" fullWidth />
 
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={styles.submitBtn} onClick={handleSubmit}>
             등록하기

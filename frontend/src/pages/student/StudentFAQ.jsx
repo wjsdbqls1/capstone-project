@@ -10,6 +10,7 @@ import NotificationBell from '../../components/NotificationBell';
 // 배경 이미지
 import bgImage from '../../assets/로그인 이미지.jpg';
 import { API_BASE } from '../../config';
+import { attachmentsOf } from '../../utils/upload';
 import { linkify } from '../../utils/linkify';
 import AttachmentPreview from '../../components/AttachmentPreview';
 
@@ -131,15 +132,11 @@ function StudentFaq() {
                           <div style={styles.aText}>{linkify(item.answer_html)}</div>
 
                           {/* 파일 다운로드 */}
-                          {item.file_path && (
-                            <div style={styles.fileBox}>
-                              <AttachmentPreview
-                                url={`${API_BASE}/uploads/faqs/${item.file_path}`}
-                                name={item.original_filename}
-                                maxHeight={280}
-                              />
+                          {attachmentsOf(item, 'faq', API_BASE).map((a, i) => (
+                            <div key={i} style={styles.fileBox}>
+                              <AttachmentPreview url={a.url} name={a.name} maxHeight={280} />
                             </div>
-                          )}
+                          ))}
                       </div>
                     </div>
                     </motion.div>

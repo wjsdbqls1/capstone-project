@@ -11,7 +11,8 @@ import { linkify } from '../../utils/linkify';
 import { parseTargetGrades, gradeBadgeStyle, allGradeBadgeStyle } from '../../styles/gradeBadge';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
-import { ACCEPT_ATTACHMENT, errorMessage } from '../../utils/upload';
+import { appendFiles, attachmentsOf, errorMessage } from '../../utils/upload';
+import FilePicker from '../../components/FilePicker';
 const m = makeInquiryModalStyles(ACCENTS.navy, { maxWidth: '1240px' });
 
 // '2026-09-14T01:24:51+00:00' -> '2026-09-14'
@@ -30,7 +31,7 @@ function TANoticeManage() {
   const [targetId, setTargetId] = useState(null);
   // targetGrades: 선택된 학년 배열. [0]이면 전체 공지, 그 외엔 [1,3]처럼 중복 선택된 학년들
   const [formData, setFormData] = useState({ title: "", content_html: "", targetGrades: [0] });
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   // 목록에서 카드를 눌렀을 때 띄우는 상세 모달
   const [showDetail, setShowDetail] = useState(false);
   const [detail, setDetail] = useState(null);
@@ -98,7 +99,7 @@ function TANoticeManage() {
   const handleOpenCreate = () => {
     setIsEditMode(false);
     setFormData({ title: "", content_html: "", targetGrades: [0] });
-    setFile(null);
+    setFiles([]);
     setShowModal(true);
   };
 
@@ -114,7 +115,7 @@ function TANoticeManage() {
         content_html: response.data.content_html,
         targetGrades: parsedGrades.length > 0 ? parsedGrades : [0]
       });
-      setFile(null);
+      setFiles([]);
       setTargetId(id);
       setIsEditMode(true);
       setShowModal(true);
@@ -145,7 +146,7 @@ function TANoticeManage() {
     sendData.append("title", formData.title);
     sendData.append("content_html", formData.content_html);
     sendData.append("target_grades", formData.targetGrades.join(","));
-    if (file) sendData.append("file", file);
+    appendFiles(sendData, files);
 
     try {
       const config = { headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` } };
@@ -225,7 +226,7 @@ function TANoticeManage() {
                                     <span key={g} style={gradeBadgeStyle(g)}>{g}학년</span>
                                   ));
                                 })()}
-                                {item.original_filename && <MdAttachFile size={12} color="#888" />}
+                                {attachmentsOf(item, 'notice', API_BASE).length > 0 && <MdAttachFile size={12} color="#888" />}
                             </div>
                             <div style={styles.title}>{item.title}</div>
                             <div style={styles.preview}>{item.content_preview}</div>
@@ -305,14 +306,12 @@ function TANoticeManage() {
                         )}
                         <div style={m.infoItem}>
                           <span style={m.infoLabel}>첨부</span>
-                          {detail.file_path ? (
-                            <div style={{marginTop: '4px'}}>
-                              <AttachmentPreview
-                                url={`${API_BASE}/uploads/notices/${detail.file_path}`}
-                                name={detail.original_filename}
-                                maxHeight={200}
-                              />
-                            </div>
+                          {attachmentsOf(detail, 'notice', API_BASE).length > 0 ? (
+                            attachmentsOf(detail, 'notice', API_BASE).map((a, i) => (
+                              <div key={i} style={{marginTop: '4px'}}>
+                                <AttachmentPreview url={a.url} name={a.name} maxHeight={200} />
+                              </div>
+                            ))
                           ) : (
                             <span style={{...m.infoValue, color: '#9aa3af', fontWeight: 500}}>없음</span>
                           )}
@@ -378,11 +377,7 @@ function TANoticeManage() {
 
                   <div>
                     <div style={m.sectionHead}>첨부파일<span style={m.sectionLine} /></div>
-                    <label style={{...(file ? m.attachBtnActive : m.attachBtn), width: '100%', justifyContent: 'center'}}>
-                      <MdAttachFile size={15} />
-                      {file ? file.name : '파일 선택'}
-                      <input type="file" accept={ACCEPT_ATTACHMENT} style={{display:'none'}} onChange={(e) => setFile(e.target.files[0])}/>
-                    </label>
+                    <FilePicker files={files} onChange={setFiles} style={m.attachBtn} activeStyle={m.attachBtnActive} label="파일 선택" fullWidth />
                   </div>
 
                   <div style={m.sideActions}>

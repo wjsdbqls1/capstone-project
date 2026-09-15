@@ -3,15 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdCalendarToday, MdSearch, MdClose, MdPerson, MdAttachFile, MdEdit } from 'react-icons/md';
+import { MdCalendarToday, MdSearch, MdClose, MdPerson, MdEdit } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
-import AttachmentPreview, { attachmentKind } from '../../components/AttachmentPreview';
+import AttachmentPreview, { BubbleAttachments } from '../../components/AttachmentPreview';
 import '../../App.css';
 import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
-import { errorMessage } from '../../utils/upload';
+import { attachmentsOf, errorMessage } from '../../utils/upload';
 function TACompleted() {
   const navigate = useNavigate();
   const [inquiries, setInquiries] = useState([]);
@@ -170,11 +170,11 @@ function TACompleted() {
               <div style={modalStyles.section}>
                 <div style={modalStyles.sectionHead}>문의 내용<span style={modalStyles.sectionLine} /></div>
                 <div style={modalStyles.qText}>{linkify(inq.content)}</div>
-                {inq.attachment && (
-                  <div style={{marginTop: '13px', maxWidth: '420px'}}>
-                    <AttachmentPreview url={`${API_BASE}${inq.attachment}`} name={inq.attachment} maxHeight={260} />
+                {attachmentsOf(inq, 'inquiry', API_BASE).map((a, i) => (
+                  <div key={i} style={{marginTop: '13px', maxWidth: '420px'}}>
+                    <AttachmentPreview url={a.url} name={a.name} maxHeight={260} />
                   </div>
-                )}
+                ))}
               </div>
 
               <div style={modalStyles.sectionLast}>
@@ -205,25 +205,7 @@ function TACompleted() {
                         <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
                         <div style={isStudent ? modalStyles.bubbleMuted : modalStyles.bubbleAccent}>
                           {linkify(r.content, { color: isStudent ? '#003675' : '#fff' })}
-                          {r.attachment && (
-                            <div>
-                              {attachmentKind(r.attachment) === 'image' ? (
-                                  // 채팅처럼 이미지는 말풍선 안에서 바로 보여준다
-                                  <a href={`${API_BASE}${r.attachment}`} target="_blank" rel="noreferrer">
-                                    <img src={`${API_BASE}${r.attachment}`} alt="첨부 이미지"
-                                         style={{display:'block', marginTop:'8px', maxWidth:'100%', maxHeight:'200px',
-                                                 borderRadius:'10px', cursor:'zoom-in'}} />
-                                  </a>
-                                ) : (
-                                  <a
-                                    href={`${API_BASE}${r.attachment}`} target="_blank" rel="noreferrer"
-                                    style={{...modalStyles.bubbleFile, color: isStudent ? '#003675' : '#fff'}}
-                                  >
-                                    <MdAttachFile size={12} /> 첨부파일
-                                  </a>
-                                )}
-                            </div>
-                          )}
+                          <BubbleAttachments items={attachmentsOf(r, 'inquiry', API_BASE)} color={isStudent ? '#003675' : '#fff'} linkStyle={modalStyles.bubbleFile} />
                         </div>
                         {!isStudent && (
                           <button
