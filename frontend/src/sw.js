@@ -1,14 +1,14 @@
 import { precacheAndRoute } from 'workbox-precaching'
 import { clientsClaim } from 'workbox-core'
 
-// registerType: 'autoUpdate' (vite-plugin-pwa)가 새 SW를 감지하면
-// 클라이언트에서 SKIP_WAITING 메시지를 보내는데, injectManifest 커스텀 sw.js는
-// 이 메시지를 직접 처리해야 함. 이 리스너가 없으면 새 배포본이 절대 활성화되지 않고
-// 기존 탭이 모두 닫히기 전까지 이전 캐시된 번들이 계속 서빙된다.
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting()
-  }
+// 새 배포본이 설치되면 기다리지 않고 바로 교체한다.
+// vite-plugin-pwa의 autoUpdate 모드는 페이지가 SKIP_WAITING 메시지를 보내지 않는다
+// (1.3.0 register.js: `if (!auto) sendSkipWaitingMessage()`). 교체는 SW가 스스로 해야 하고,
+// 교체가 끝나면 페이지 쪽 'activated' 리스너가 새로고침한다.
+// 예전처럼 메시지를 받아야만 교체하게 두면 새 SW가 대기 상태로 남아, 앱을 완전히
+// 닫기 전까지 옛 index.html과 옛 번들이 캐시에서 계속 나온다(폰에서 새로고침해도 안 바뀌던 원인).
+self.addEventListener('install', () => {
+  self.skipWaiting()
 })
 
 clientsClaim()
