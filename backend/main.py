@@ -200,6 +200,12 @@ def fetch_and_save_events(db: Session, year: int):
 # -----------------------------------------------------------
 @app.on_event("startup")
 def on_startup():
+    # 로컬 테스트에서는 외부 사이트 크롤링(학사일정·공지사항)을 건너뛴다.
+    # 네트워크에 의존해 시작이 느려지고, 테스트용 DB에 실제 일정까지 섞이기 때문.
+    if os.getenv("SKIP_STARTUP_CRAWL") == "1":
+        print("⏭️ [로컬] 시작 시 크롤링 건너뜀")
+        return
+
     db = SessionLocal()
     try:
         # 서버 시작 시 2026년 학사일정 최신화

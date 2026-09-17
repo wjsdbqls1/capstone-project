@@ -17,4 +17,8 @@ build/
 # 3. DB 백업 (학생 개인정보 포함 — 절대 커밋 금지)
 backups/
 
+# 4. 로컬 테스트용 SQLite DB (run_local.py / seed_local.py가 만드는 파일 — 운영과 무관)
+*.db
+*.sqlite3
+
 .DS_Store

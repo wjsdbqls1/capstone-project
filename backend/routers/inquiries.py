@@ -1,7 +1,7 @@
 # backend/routers/inquiries.py
 import os
 from typing import Optional
-from sqlalchemy import exists, and_
+from sqlalchemy import exists, and_, select
 from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, BackgroundTasks
 from deps import get_db, get_current_user
@@ -13,6 +13,35 @@ from upload_utils import attachments_json, collect_files, parse_attachments, sav
 r = APIRouter(prefix="/inquiries", tags=["inquiries"])
 
 UPLOAD_DIR = "uploads"
+
+# 문의 상태 3단계
+#   OPEN        대기중 — 조교가 아직 답변하지 않음
+#   IN_PROGRESS 진행중 — 조교가 답변했지만 아직 '답변 완료'로 닫지 않음
+#   COMPLETED   완료   — 조교가 완료 처리함
+# 예전 데이터에는 완료 상태가 한글 '답변 완료'로 남아 있어 완료 판정에 함께 넣는다.
+STATUS_OPEN = "OPEN"
+STATUS_IN_PROGRESS = "IN_PROGRESS"
+STATUS_COMPLETED = "COMPLETED"
+COMPLETED_STATUSES = [STATUS_COMPLETED, "답변 완료"]
+# 대기중에서 빼야 할 상태들. 알 수 없는 옛 값은 대기중에 모여 눈에 띄도록 둔다.
+NOT_PENDING_STATUSES = COMPLETED_STATUSES + [STATUS_IN_PROGRESS]
+
+
+def _last_sender_subquery():
+    """문의별로 마지막 메시지를 누가 썼는지 알아내는 상관 서브쿼리.
+
+    학생이 마지막으로 말한 문의는 조교가 답할 차례이므로,
+    진행중 목록에서 따로 표시해 놓치지 않게 한다.
+    """
+    return (
+        select(InquiryReply.sender_role)
+        .where(InquiryReply.inquiry_id == Inquiry.id)
+        .order_by(InquiryReply.id.desc())
+        .limit(1)
+        .correlate(Inquiry)
+        .scalar_subquery()
+    )
+
 
 # ★ 파일 저장 헬퍼 함수
 def _save_files(file, files) -> list[dict]:
@@ -42,7 +71,7 @@ def create_inquiry(
         user_id=current_user.id,
         title=title,
         content=content,
-        status="OPEN",
+        status=STATUS_OPEN,
         academic_event_id=academic_event_id,
         attachment=_first_url(items),
         attachments=attachments_json(items),
@@ -96,7 +125,7 @@ def list_my_inquiries(
 # 3. 조교용 목록 조회
 @r.get("")
 def list_all_inquiries(
-    status: Optional[str] = None,  # "pending" | "completed" — 지정하면 서버에서 걸러서 내려줌
+    status: Optional[str] = None,  # "pending" | "in_progress" | "completed" — 지정하면 서버에서 걸러서 내려줌
     limit: int = 500,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
@@ -112,22 +141,27 @@ def list_all_inquiries(
     )
 
     # (1) DB에서 문의글 가져오기 (작성자 정보와 학사일정 정보를 미리 같이 로딩)
-    query = db.query(Inquiry, edited_exists.label("reply_edited")).options(
+    query = db.query(
+        Inquiry,
+        edited_exists.label("reply_edited"),
+        _last_sender_subquery().label("last_sender"),
+    ).options(
         joinedload(Inquiry.user),           # 작성자 정보 로딩
         joinedload(Inquiry.academic_event)  # 학사일정 정보 로딩
     )
 
-    completed_statuses = ["COMPLETED", "답변 완료"]
     if status == "pending":
-        query = query.filter(Inquiry.status.notin_(completed_statuses))
+        query = query.filter(Inquiry.status.notin_(NOT_PENDING_STATUSES))
+    elif status == "in_progress":
+        query = query.filter(Inquiry.status == STATUS_IN_PROGRESS)
     elif status == "completed":
-        query = query.filter(Inquiry.status.in_(completed_statuses))
+        query = query.filter(Inquiry.status.in_(COMPLETED_STATUSES))
 
     rows = query.order_by(Inquiry.id.desc()).limit(limit).all()
 
     # (2) 프론트엔드가 원하는 형태로 데이터 가공
     results = []
-    for q, edited in rows:
+    for q, edited, last_sender in rows:
         # 작성자 정보 추출
         author_info = None
         if q.user:
@@ -159,18 +193,27 @@ def list_all_inquiries(
             "author_info": author_info,
             "academic_event": event_info,
             "reply_edited": bool(edited),  # 답변 수정(재답변) 여부
+            # 학생이 마지막으로 말했거나 아직 아무 답변이 없으면 조교가 답할 차례
+            "awaiting_reply": last_sender != "assistant",
         })
 
     return results
 
-# 3-1. 대기중인 문의 개수만 조회 (사이드바 배지용 — 목록 전체를 불러오지 않아 가벼움)
+# 3-1. 상태별 문의 개수만 조회 (사이드바 배지용 — 목록 전체를 불러오지 않아 가벼움)
 @r.get("/pending-count")
 def count_pending_inquiries(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_assistant)
 ):
-    count = db.query(Inquiry).filter(Inquiry.status.notin_(["COMPLETED", "답변 완료"])).count()
-    return {"count": count}
+    open_count = db.query(Inquiry).filter(Inquiry.status.notin_(NOT_PENDING_STATUSES)).count()
+    # 진행중이면서 학생이 마지막으로 말한 건 = 조교가 답할 차례
+    waiting_count = (
+        db.query(Inquiry)
+        .filter(Inquiry.status == STATUS_IN_PROGRESS, _last_sender_subquery() == "student")
+        .count()
+    )
+    # count는 예전 화면(설치해 둔 구버전 PWA)이 읽던 키라 그대로 남겨 둔다
+    return {"count": open_count, "open": open_count, "in_progress_waiting": waiting_count}
 
 # 4. 상세 조회
 @r.get("/{inquiry_id}")
@@ -242,6 +285,11 @@ def inquiry_replies(inquiry_id: int, db: Session = Depends(get_db), current_user
 def create_reply(
     inquiry_id: int,
     content: str = Form(...),
+    # 조교가 답변과 함께 문의를 닫을지 여부. false면 진행중으로 남아 대화를 이어갈 수 있다.
+    # 값이 아예 없으면(= 아직 갱신되지 않은 옛 화면) 예전처럼 '답변 = 완료'로 처리한다.
+    # 배포 직후 구버전 화면과 새 서버가 섞이는 몇 분 동안 답변이 엉뚱하게 진행중으로
+    # 쌓이는 것을 막기 위한 것.
+    complete: Optional[bool] = Form(None),
     file: Optional[UploadFile] = File(None),
     files: list[UploadFile] = File([]),
     background_tasks: BackgroundTasks = None,
@@ -263,7 +311,7 @@ def create_reply(
         attachments=attachments_json(items),
     )
     db.add(new_reply)
-    q.status = "COMPLETED" # 답변 달리면 완료 상태로 변경
+    q.status = STATUS_IN_PROGRESS if complete is False else STATUS_COMPLETED
 
     db.commit()
 
@@ -304,8 +352,17 @@ def create_student_followup(
         attachment=_first_url(items),
         attachments=attachments_json(items),
     )
+    # 조교가 한 번이라도 답한 문의면 '진행중'으로 두어 대화가 이어지는 것으로 보고,
+    # 아직 첫 답변 전이면 '대기중'에 그대로 남긴다.
+    has_assistant_reply = db.query(
+        exists().where(and_(
+            InquiryReply.inquiry_id == inquiry_id,
+            InquiryReply.sender_role == "assistant",
+        ))
+    ).scalar()
+
     db.add(new_message)
-    q.status = "OPEN"  # 조교가 다시 확인할 수 있도록 대기 상태로 되돌림
+    q.status = STATUS_IN_PROGRESS if has_assistant_reply else STATUS_OPEN
 
     db.commit()
 
@@ -317,6 +374,31 @@ def create_student_followup(
     )
 
     return {"message": "followup created"}
+
+# ★ 6-2. 답변을 새로 달지 않고 상태만 바꾸기 (전화로 해결한 문의를 닫는 등)
+@r.patch("/{inquiry_id}/status")
+def update_inquiry_status(
+    inquiry_id: int,
+    status: str = Form(...),  # "open" | "in_progress" | "completed"
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_assistant)
+):
+    mapping = {
+        "open": STATUS_OPEN,
+        "in_progress": STATUS_IN_PROGRESS,
+        "completed": STATUS_COMPLETED,
+    }
+    if status not in mapping:
+        raise HTTPException(status_code=400, detail="알 수 없는 상태입니다.")
+
+    q = db.query(Inquiry).filter(Inquiry.id == inquiry_id).first()
+    if not q:
+        raise HTTPException(status_code=404, detail="not found")
+
+    q.status = mapping[status]
+    db.commit()
+    return {"message": "status updated", "status": q.status}
+
 
 # ★ 7. 답변 수정 (새로 추가됨)
 @r.put("/{inquiry_id}/replies/{reply_id}")

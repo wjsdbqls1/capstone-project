@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdMenu, MdInbox, MdCheckCircle, MdCampaign, MdHelp, MdDescription, MdCalendarToday, MdPeople, MdBarChart, MdLogout } from 'react-icons/md';
+import { MdMenu, MdInbox, MdAutorenew, MdCheckCircle, MdCampaign, MdHelp, MdDescription, MdCalendarToday, MdPeople, MdBarChart, MdLogout } from 'react-icons/md';
 import '../../App.css';
 import bgImage from '../../assets/로그인 이미지.jpg';
 import NotificationToggle from '../../components/NotificationToggle';
@@ -19,6 +19,8 @@ function TALayout() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  // 진행중인 문의 가운데 학생이 마지막으로 말해 조교가 답할 차례인 건수
+  const [progressWaiting, setProgressWaiting] = useState(0);
 
   // 화면 크기 감지
   useEffect(() => {
@@ -51,7 +53,10 @@ function TALayout() {
     const token = localStorage.getItem('token');
     if (!token) return;
     axios.get(`${API}/inquiries/pending-count`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => setPendingCount(res.data.count))
+      .then((res) => {
+        setPendingCount(res.data.open ?? res.data.count ?? 0);
+        setProgressWaiting(res.data.in_progress_waiting ?? 0);
+      })
       .catch(() => {});
   }, [location.pathname]);
 
@@ -121,7 +126,11 @@ function TALayout() {
               <MdInbox size={18} /> 대기중인 문의
               {pendingCount > 0 && <span style={layoutStyles.badge}>{pendingCount}</span>}
             </div>
-            <div style={isActive('/ta/completed') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/completed')}><MdCheckCircle size={18} /> 처리 완료 문의</div>
+            <div style={isActive('/ta/progress') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/progress')}>
+              <MdAutorenew size={18} /> 진행중인 문의
+              {progressWaiting > 0 && <span style={layoutStyles.badge}>{progressWaiting}</span>}
+            </div>
+            <div style={isActive('/ta/completed') ? layoutStyles.menuItemActive : layoutStyles.menuItem} onClick={() => handleMenuClick('/ta/completed')}><MdCheckCircle size={18} /> 답변 완료된 문의</div>
           </div>
 
           <div style={layoutStyles.divider}></div>

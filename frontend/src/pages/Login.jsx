@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { MdChatBubbleOutline } from 'react-icons/md';
+import { MdChatBubbleOutline, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import '../App.css';
 import bgImage from '../assets/로그인 이미지.jpg';
 import { API_BASE } from '../config';
@@ -14,6 +14,7 @@ function Login() {
   const navigate = useNavigate();
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
 
   // 앱을 다시 열었을 때 유효한 토큰이 있으면 로그인 화면을 건너뛰고 바로 메인으로 이동
@@ -107,17 +108,29 @@ function Login() {
             spellCheck={false}
             autoComplete="username"
           />
-          <input 
-            className="input-field" 
-            type="password" 
-            placeholder="비밀번호" 
-            value={password} 
-            onChange={(e)=>setPassword(e.target.value)} 
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleLogin();
-            }}
-            style={styles.input}
-          />
+          {/* 눈 버튼으로 입력한 비밀번호를 잠깐 확인할 수 있게 한다.
+              휴대폰에서는 오타를 확인할 방법이 없어 로그인 실패가 잦기 때문 */}
+          <div style={styles.pwWrap}>
+            <input
+              className="input-field"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="비밀번호 (초기 비밀번호는 학번 + ! 입니다)"
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleLogin();
+              }}
+              style={styles.pwInput}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              style={styles.eyeBtn}
+              aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+            >
+              {showPassword ? <MdVisibilityOff size={20} /> : <MdVisibility size={20} />}
+            </button>
+          </div>
           
           <button 
             onClick={handleLogin} 
@@ -224,7 +237,40 @@ const styles = {
     boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)',
     boxSizing: 'border-box'
   },
-  
+  // 비밀번호 칸은 오른쪽에 눈 버튼이 겹쳐 앉으므로 그만큼 안쪽 여백을 더 준다
+  pwWrap: { position: 'relative', width: '100%' },
+  pwInput: {
+    width: '100%',
+    padding: '16px 48px 16px 16px',
+    borderRadius: '12px',
+    border: '1px solid rgba(255,255,255,0.5)',
+    outline: 'none',
+    // 16px보다 작으면 iOS가 입력할 때 화면을 확대해버린다
+    fontSize: '16px',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)',
+    boxSizing: 'border-box',
+    // 안내 문구가 길어 좁은 화면에서는 잘리므로 끝을 말줄임으로 알려 준다
+    textOverflow: 'ellipsis'
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: '6px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '38px',
+    height: '38px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+    background: 'none',
+    border: 'none',
+    borderRadius: '9px',
+    color: '#5b6572',
+    cursor: 'pointer'
+  },
+
   loginBtn: {
     width: '100%',
     padding: '16px', 

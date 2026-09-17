@@ -22,6 +22,7 @@ import StudentNoticeDetail from './pages/student/StudentNoticeDetail';
 // 조교 페이지
 import TAMain from './pages/ta/TAMain';
 import TAPending from './pages/ta/TAPending';
+import TAInProgress from './pages/ta/TAInProgress';
 import TACompleted from './pages/ta/TACompleted';
 import TANoticeManage from './pages/ta/TANoticeManage';
 import TAFAQManage from './pages/ta/TAFAQManage';
@@ -66,6 +67,7 @@ function AnimatedRoutes() {
         <Route path="/ta/main" element={withTransition(<TAMain />)} />
         <Route path="/ta" element={<TALayout />}>
           <Route path="pending" element={<TAPending />} />
+          <Route path="progress" element={<TAInProgress />} />
           <Route path="completed" element={<TACompleted />} />
           <Route path="notice" element={<TANoticeManage />} />
           <Route path="faq" element={<TAFAQManage />} />

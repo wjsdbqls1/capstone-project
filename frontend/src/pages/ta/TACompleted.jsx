@@ -11,7 +11,9 @@ import { API_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
-import { attachmentsOf, errorMessage } from '../../utils/upload';
+import { appendFiles, attachmentsOf, errorMessage } from '../../utils/upload';
+import FilePicker from '../../components/FilePicker';
+
 function TACompleted() {
   const navigate = useNavigate();
   const [inquiries, setInquiries] = useState([]);
@@ -24,6 +26,10 @@ function TACompleted() {
   const [searchTerm, setSearchTerm] = useState("");
   const [gradeFilter, setGradeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  // 완료된 문의에도 조교가 내용을 보충할 수 있다(등록해도 완료 상태는 그대로 유지).
+  const [replyContent, setReplyContent] = useState("");
+  const [replyFiles, setReplyFiles] = useState([]);
+  const [sendingReply, setSendingReply] = useState(false);
 
   useEffect(() => { fetchInquiries(); }, []);
 
@@ -77,7 +83,10 @@ function TACompleted() {
     try {
       const qRes = await axios.get(`${API_BASE}/inquiries/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       const rRes = await axios.get(`${API_BASE}/inquiries/${id}/replies`, { headers: { Authorization: `Bearer ${token}` } });
-      setSelectedInquiry({ ...qRes.data, replies: rRes.data }); setEditingReplyId(null);
+      setSelectedInquiry({ ...qRes.data, replies: rRes.data });
+      setEditingReplyId(null);
+      setReplyContent("");
+      setReplyFiles([]);
     } catch (error) { alert("상세 정보를 불러오지 못했습니다."); }
   };
 
@@ -93,10 +102,32 @@ function TACompleted() {
     } catch (error) { alert(errorMessage(error, "수정 실패")); }
   };
 
+  // 끝난 문의에 답변을 덧붙이면 대화가 다시 시작된 것이므로 진행중으로 돌려보낸다.
+  // (complete=false로 보내면 서버가 IN_PROGRESS로 바꾼다)
+  const handleAddReply = async () => {
+    if (!replyContent.trim()) { alert("내용을 입력해주세요."); return; }
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('content', replyContent);
+    formData.append('complete', 'false');
+    appendFiles(formData, replyFiles);
+    setSendingReply(true);
+    try {
+      await axios.post(`${API_BASE}/inquiries/${selectedInquiry.id}/replies`, formData, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } });
+      alert('답변을 등록했습니다. 이 문의는 진행중으로 옮겨집니다.');
+      setReplyContent("");
+      setReplyFiles([]);
+      // 이 목록(완료)에서는 빠지므로 창을 닫고 목록을 다시 읽는다
+      setSelectedInquiry(null);
+      fetchInquiries();
+    } catch (error) { alert(errorMessage(error, "답변 등록 실패")); }
+    finally { setSendingReply(false); }
+  };
+
   return (
     <>
       <div style={styles.glassBox}>
-        <div style={styles.pageTitle}>처리 완료 문의</div>
+        <div style={styles.pageTitle}>답변 완료된 문의</div>
         <div style={styles.filterBar}>
             <div style={styles.filterGroup}>
                 <select style={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
@@ -177,9 +208,11 @@ function TACompleted() {
                 ))}
               </div>
 
-              <div style={modalStyles.sectionLast}>
+              {/* 모달 최소 높이가 남기는 아래쪽 빈 여백을 대화창이 채우도록 flex:1 */}
+              <div style={modalStyles.sectionFill}>
                 <div style={modalStyles.sectionHead}>대화<span style={modalStyles.sectionLine} /></div>
-                <div style={modalStyles.thread}>
+                <div style={modalStyles.threadPanel}>
+                 <div style={modalStyles.threadInner}>
                   {!inq.replies?.length && <div style={modalStyles.emptyThread}>아직 대화 내역이 없습니다.</div>}
                   {inq.replies?.map(r => {
                     const isStudent = r.sender_role === 'student';
@@ -203,7 +236,7 @@ function TACompleted() {
                     return (
                       <div key={r.id} style={isStudent ? modalStyles.bubbleWrapLeft : modalStyles.bubbleWrapRight}>
                         <div style={modalStyles.who}>{isStudent ? '학생 추가 질문' : '조교 답변'}</div>
-                        <div style={isStudent ? modalStyles.bubbleMuted : modalStyles.bubbleAccent}>
+                        <div style={isStudent ? modalStyles.bubbleOnPanel : modalStyles.bubbleAccent}>
                           {linkify(r.content, { color: isStudent ? '#003675' : '#fff' })}
                           <BubbleAttachments items={attachmentsOf(r, 'inquiry', API_BASE)} color={isStudent ? '#003675' : '#fff'} linkStyle={modalStyles.bubbleFile} />
                         </div>
@@ -216,6 +249,28 @@ function TACompleted() {
                       </div>
                     );
                   })}
+                 </div>
+                </div>
+              </div>
+
+              {/* 끝난 문의라도 대화를 다시 이어갈 수 있게 열어 둔다 (등록하면 진행중으로 되돌아감) */}
+              <div style={modalStyles.sectionLast}>
+                <div style={modalStyles.sectionHead}>추가 답변<span style={modalStyles.sectionLine} /></div>
+                <textarea
+                  style={modalStyles.textarea}
+                  placeholder="덧붙일 내용을 입력하세요. 등록하면 이 문의는 진행중으로 다시 넘어갑니다."
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                />
+                <div style={modalStyles.charCount}>{replyContent.length}자</div>
+                <div style={modalStyles.footRow}>
+                  <FilePicker files={replyFiles} onChange={setReplyFiles} style={modalStyles.attachBtn} activeStyle={modalStyles.attachBtnActive} />
+                  <motion.button
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                    style={{...modalStyles.submitBtn, opacity: sendingReply ? 0.6 : 1}}
+                    onClick={handleAddReply}
+                    disabled={sendingReply}
+                  >{sendingReply ? '등록 중...' : '추가 답변 등록'}</motion.button>
                 </div>
               </div>
             </div>

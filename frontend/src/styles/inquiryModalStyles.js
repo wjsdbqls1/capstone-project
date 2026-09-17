@@ -15,6 +15,12 @@ export const ACCENTS = {
     grad: ['#ffa726', '#ef6c00', '#8d3b00'],
     chipText: '#8d3b00',
   },
+  // 진행중 — 대기(주황)와 완료(초록) 사이를 파랑으로 구분한다
+  inProgress: {
+    accent: '#1976d2',
+    grad: ['#42a5f5', '#1565c0', '#0b2f5e'],
+    chipText: '#0b2f5e',
+  },
   completed: {
     accent: '#2e7d32',
     grad: ['#4caf50', '#2e7d32', '#14421a'],

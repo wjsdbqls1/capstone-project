@@ -17,8 +17,10 @@ import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles
 
 import { appendFiles, attachmentsOf, errorMessage } from '../../utils/upload';
 import FilePicker from '../../components/FilePicker';
-// 조교 화면과 같은 모달 구조를 쓰되, 색은 그 문의의 상태를 따른다(답변 대기=주황, 완료=초록)
+// 조교 화면과 같은 모달 구조를 쓰되, 색은 그 문의의 상태를 따른다
+// (대기중=주황, 진행중=파랑, 완료=초록)
 const pendingModal = makeInquiryModalStyles(ACCENTS.pending);
+const progressModal = makeInquiryModalStyles(ACCENTS.inProgress);
 const completedModal = makeInquiryModalStyles(ACCENTS.completed);
 
 function StudentHistory() {
@@ -121,20 +123,25 @@ function StudentHistory() {
     }
   };
 
-  // 서버에는 'COMPLETED'와 예전 값 '답변 완료'가 섞여 있어 둘 다 완료로 취급
-  const isDoneStatus = (status) => status === 'COMPLETED' || status === '답변 완료';
+  // 서버 상태값을 화면에 쓰는 세 단계로 옮긴다.
+  // 완료는 예전 데이터에 한글 '답변 완료'로 남아 있어 함께 처리한다.
+  const statusKeyOf = (status) =>
+    (status === 'COMPLETED' || status === '답변 완료') ? 'completed'
+    : status === 'IN_PROGRESS' ? 'in_progress'
+    : 'pending';
 
-  const getStatusBadge = (status) => (isDoneStatus(status) ? styles.statusDone : styles.statusWaiting);
+  const STATUS_LABEL = { pending: '답변 대기중', in_progress: '답변 진행중', completed: '답변 완료' };
+  const STATUS_BADGE = { pending: styles.statusWaiting, in_progress: styles.statusProgress, completed: styles.statusDone };
 
   const FILTERS = [
     { key: 'all', label: '전체' },
     { key: 'pending', label: '답변 대기중' },
+    { key: 'in_progress', label: '답변 진행중' },
     { key: 'completed', label: '답변 완료' },
   ];
   const visibleInquiries =
     statusFilter === 'all' ? inquiries
-    : statusFilter === 'pending' ? inquiries.filter(i => !isDoneStatus(i.status))
-    : inquiries.filter(i => isDoneStatus(i.status));
+    : inquiries.filter(i => statusKeyOf(i.status) === statusFilter);
 
 
   return (
@@ -193,7 +200,7 @@ function StudentHistory() {
           </div>
         ) : visibleInquiries.length === 0 ? (
           <div style={styles.emptyMessage}>
-            {statusFilter === 'pending' ? '답변을 기다리는 문의가 없습니다.' : '답변이 완료된 문의가 없습니다.'}
+            {STATUS_LABEL[statusFilter]}인 문의가 없습니다.
           </div>
         ) : (
           visibleInquiries.map((item) => (
@@ -206,8 +213,8 @@ function StudentHistory() {
             >
               <div style={styles.cardHeader}>
                 <div style={{display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap'}}>
-                  <span style={getStatusBadge(item.status)}>
-                    {isDoneStatus(item.status) ? '답변 완료' : '답변 대기중'}
+                  <span style={STATUS_BADGE[statusKeyOf(item.status)]}>
+                    {STATUS_LABEL[statusKeyOf(item.status)]}
                   </span>
                   {item.reply_edited && <span style={styles.reAnswer}>답변 수정됨</span>}
                 </div>
@@ -223,8 +230,10 @@ function StudentHistory() {
       {/* 상세 보기 팝업 (모달) */}
       {(() => {
       // 문의 상태에 따라 모달 색이 달라진다 (조교 화면과 같은 기준)
-      const isDone = selectedInquiry && (selectedInquiry.status === 'COMPLETED' || selectedInquiry.status === '답변 완료');
-      const modalStyles = isDone ? completedModal : pendingModal;
+      const statusKey = selectedInquiry ? statusKeyOf(selectedInquiry.status) : 'pending';
+      const modalStyles = statusKey === 'completed' ? completedModal
+        : statusKey === 'in_progress' ? progressModal
+        : pendingModal;
       return (
       <AnimatedModal
         isOpen={!!selectedInquiry}
@@ -241,7 +250,7 @@ function StudentHistory() {
                 <button onClick={() => setSelectedInquiry(null)} style={modalStyles.closeBtn}><MdClose size={18} /></button>
               </div>
               <div style={modalStyles.metaRow}>
-                <span style={modalStyles.chipAccent}>{isDone ? '답변 완료' : '답변 대기중'}</span>
+                <span style={modalStyles.chipAccent}>{STATUS_LABEL[statusKey]}</span>
                 {detailData && detailData.created_at && (
                   <span style={modalStyles.chip}>{detailData.created_at.split('T')[0]}</span>
                 )}
@@ -473,6 +482,11 @@ const styles = {
     color: '#ff9800', fontWeight: 'bold', 
     border: '1px solid #ff9800', padding: '4px 8px', borderRadius: '6px', 
     backgroundColor: '#fff3e0', fontSize: '14px' 
+  },
+  statusProgress: {
+    color: '#1565c0', fontWeight: 'bold',
+    border: '1px solid #1976d2', padding: '4px 8px', borderRadius: '6px',
+    backgroundColor: '#e3f2fd', fontSize: '14px'
   },
   statusDone: {
     color: '#4caf50', fontWeight: 'bold',
