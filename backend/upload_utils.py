@@ -21,11 +21,12 @@ ALLOWED_EXTS = {
     ".hwp", ".hwpx",
     ".doc", ".docx",
     ".xls", ".xlsx",
+    ".ppt", ".pptx",
     # 압축
     ".zip",
 }
 
-_ALLOWED_TEXT = "이미지, PDF, 한글, 워드, 엑셀, zip"
+_ALLOWED_TEXT = "이미지, PDF, 한글, 워드, 엑셀, 파워포인트, zip"
 
 
 def check_allowed(filename: str) -> str:

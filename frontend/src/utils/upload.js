@@ -3,7 +3,7 @@
 // ★ ACCEPT_ATTACHMENT는 backend/upload_utils.py의 ALLOWED_EXTS와 같아야 한다.
 //   한쪽만 고치면 파일 선택 창에서는 고를 수 있는데 등록할 때 거부당한다.
 export const ACCEPT_ATTACHMENT =
-  '.jpg,.jpeg,.png,.gif,.webp,.bmp,.heic,.pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,.zip';
+  '.jpg,.jpeg,.png,.gif,.webp,.bmp,.heic,.pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip';
 
 // 한 번에 올릴 수 있는 개수. backend/upload_utils.py의 MAX_FILES와 같아야 한다.
 export const MAX_FILES = 5;
