@@ -342,12 +342,16 @@ const styles = {
     wordBreak: 'break-word' // 긴 텍스트 줄바꿈
   },
   
-  fileBox: { 
-    marginTop: '12px', 
-    paddingTop: '12px', 
+  fileBox: {
+    marginTop: '12px',
+    paddingTop: '12px',
     borderTop: '1px dashed #ccc',
+    // flex 항목의 기본 min-width는 auto라 내용보다 작아지지 않는다.
+    // 파일명이 길면 상자가 화면을 벗어나므로, 세로로 쌓고 minWidth:0으로 줄어들게 한다.
     display: 'flex',
-    alignItems: 'center'
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    minWidth: 0
   },
   downloadLink: { 
     fontSize: '13px', 

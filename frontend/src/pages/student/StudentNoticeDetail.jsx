@@ -107,7 +107,7 @@ function StudentNoticeDetail() {
           <div style={styles.fileCard}>
             <div style={{fontSize:'12px', color:'#666', marginBottom:'8px', fontWeight:'bold'}}>첨부파일 {attachments.length > 1 ? `(${attachments.length})` : ''}</div>
             {attachments.map((a, i) => (
-              <div key={i} style={{marginTop: i ? '10px' : 0}}>
+              <div key={i} style={{minWidth: 0}}>
                 <AttachmentPreview url={a.url} name={a.name} maxHeight={320} />
               </div>
             ))}
@@ -277,10 +277,14 @@ const styles = {
     borderRadius: '12px',
     marginBottom: '20px',
     border: '1px solid #e9ecef',
+    // 가로로 늘어놓던(space-between) 구조는 첨부가 하나고 파일명이 짧던 시절 것이다.
+    // flex 항목은 기본 min-width가 auto라 내용(max-content)보다 작아지지 않는데,
+    // 파일명에 nowrap이 걸려 있어 이름이 길면 상자가 화면 밖으로 밀려났다.
+    // 세로로 쌓고 minWidth:0을 줘서 좁은 화면에서도 안쪽 폭에 맞춰 줄어들게 한다.
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    minWidth: 0,
     gap: '10px'
   },
   fileInfo: {

@@ -20,5 +20,15 @@ engine = create_engine(
     pool_recycle=1800,
     connect_args=connect_args,
 )
+# 운영은 PostgreSQL이라 left() 같은 내장 함수를 쿼리에서 그대로 쓰는데 SQLite에는 없다.
+# 로컬 테스트에서만 같은 이름으로 흉내 내 준다. 운영 경로에서는 이 블록이 아예 실행되지 않는다.
+if DATABASE_URL.startswith("sqlite"):
+    from sqlalchemy import event
+
+    @event.listens_for(engine, "connect")
+    def _register_sqlite_compat_functions(dbapi_conn, _record):
+        dbapi_conn.create_function("left", 2, lambda s, n: (s or "")[: int(n)])
+        dbapi_conn.create_function("right", 2, lambda s, n: (s or "")[-int(n):] if int(n) else "")
+
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()
