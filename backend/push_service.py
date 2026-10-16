@@ -20,6 +20,12 @@ VAPID_CLAIM_EMAIL = os.getenv("VAPID_CLAIM_EMAIL", "mailto:admin@example.com")
 # 디코딩을 시도해 깨지므로, PEM을 직접 파싱한 Vapid01 인스턴스를 넘겨준다.
 _vapid = Vapid01.from_pem(_VAPID_PRIVATE_KEY_PEM.encode()) if _VAPID_PRIVATE_KEY_PEM else None
 
+# 시연 모드: 값이 있으면 이 사용자들에게만 알림(기록+푸시)을 보낸다(쉼표로 구분한 user id).
+# 시연 영상을 운영 서버에서 찍을 때 실제 학생·조교에게 알림이 가지 않도록 하기 위한 것.
+NOTIFY_ONLY_USER_IDS = {int(x) for x in os.getenv("NOTIFY_ONLY_USER_IDS", "").split(",") if x.strip()}
+if NOTIFY_ONLY_USER_IDS:
+    print(f"⚠️ [push] 시연 모드: 알림 대상을 {sorted(NOTIFY_ONLY_USER_IDS)}로 제한")
+
 
 def _send_to_subscriptions(db: Session, subs: list[PushSubscription], title: str, body: str, url: str):
     """구독 목록에 실제로 webpush를 쏘는 내부 헬퍼.
@@ -92,6 +98,8 @@ def _save_notifications(db: Session, user_ids, title: str, body: str, url: str):
 def _deliver(db: Session, user_ids, title: str, body: str, url: str):
     """기록을 남기고, 푸시 설정이 되어 있으면 발송까지 한다."""
     user_ids = list(user_ids)
+    if NOTIFY_ONLY_USER_IDS:
+        user_ids = [uid for uid in user_ids if uid in NOTIFY_ONLY_USER_IDS]
     _save_notifications(db, user_ids, title, body, url)
     if not _vapid or not user_ids:
         return
