@@ -24,7 +24,8 @@ _vapid = Vapid01.from_pem(_VAPID_PRIVATE_KEY_PEM.encode()) if _VAPID_PRIVATE_KEY
 # 시연 영상을 운영 서버에서 찍을 때 실제 학생·조교에게 알림이 가지 않도록 하기 위한 것.
 NOTIFY_ONLY_USER_IDS = {int(x) for x in os.getenv("NOTIFY_ONLY_USER_IDS", "").split(",") if x.strip()}
 if NOTIFY_ONLY_USER_IDS:
-    print(f"⚠️ [push] 시연 모드: 알림 대상을 {sorted(NOTIFY_ONLY_USER_IDS)}로 제한")
+    # 켜졌는지 배포 로그로 확인하는 줄이라, 출력 버퍼에 묻히지 않게 바로 내보낸다
+    print(f"⚠️ [push] 시연 모드: 알림 대상을 {sorted(NOTIFY_ONLY_USER_IDS)}로 제한", flush=True)
 
 
 def _send_to_subscriptions(db: Session, subs: list[PushSubscription], title: str, body: str, url: str):
