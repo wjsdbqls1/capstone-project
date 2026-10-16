@@ -6,9 +6,10 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from auth import get_current_user
+from auth import get_current_user, require_admin
 from deps import get_db
 from models import PushSubscription
+from push_service import NOTIFY_ONLY_USER_IDS
 
 load_dotenv()
 
@@ -34,6 +35,12 @@ class UnsubscribeIn(BaseModel):
 @r.get("/vapid-public-key")
 def get_vapid_public_key():
     return {"publicKey": VAPID_PUBLIC_KEY}
+
+
+# 시연 모드가 운영 서버에 실제로 켜졌는지 확인용(개발자 전용). 시연 정리 때 함께 회수할 것.
+@r.get("/notify-mode")
+def notify_mode(_=Depends(require_admin)):
+    return {"notify_only_user_ids": sorted(NOTIFY_ONLY_USER_IDS)}
 
 
 @r.post("/subscribe")
