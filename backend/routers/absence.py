@@ -1,11 +1,13 @@
 # backend/routers/absence.py
 import os
-from fastapi import APIRouter, Depends, File, UploadFile, Form, BackgroundTasks
+from datetime import date
+from fastapi import APIRouter, Depends, File, UploadFile, Form, BackgroundTasks, HTTPException
 from sqlalchemy.orm import Session
 from deps import get_db, get_current_user
 from models import AbsenceRequest, AbsenceAttachment, User
 from push_service import send_push_to_staff
 from upload_utils import save_upload
+import storage_service
 
 r = APIRouter(prefix="/absence", tags=["absence"])
 UPLOAD_DIR = "uploads/absence"
@@ -21,12 +23,19 @@ def create_absence(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # 문자열을 그대로 넣으면 Postgres는 알아서 바꿔 주지만 SQLite는 거부한다.
+    # 날짜로 바꿔 넣으면서 형식이 틀린 값은 500 대신 400으로 돌려준다.
+    try:
+        absent_date = date.fromisoformat(target_date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="결석 날짜 형식이 올바르지 않습니다.")
+
     # 공결 신청 저장
     new_absence = AbsenceRequest(
         # ★ 수정: 모델의 student_id 컬럼에 로그인한 유저 ID 저장
         student_id=current_user.id,  
         
-        absent_date=target_date,
+        absent_date=absent_date,
         course_name=subject,
         reason=reason,
         status="SUBMITTED"
@@ -35,8 +44,8 @@ def create_absence(
     db.commit()
     db.refresh(new_absence)
 
-    # 파일 저장
-    stored_filename = save_upload(file, UPLOAD_DIR)
+    # 파일 저장: 진단서 같은 민감 서류라 공개 버킷이 아닌 비공개 버킷에 둔다
+    stored_filename = save_upload(file, UPLOAD_DIR, bucket=storage_service.PRIVATE_BUCKET)
 
     new_attachment = AbsenceAttachment(
         request_id=new_absence.id,

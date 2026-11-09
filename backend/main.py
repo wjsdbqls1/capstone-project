@@ -74,6 +74,12 @@ def serve_upload(path: str):
     if not path or path.startswith("/") or ".." in path.replace("\\", "/").split("/"):
         raise HTTPException(status_code=404, detail="not found")
 
+    # 공결 증빙서류는 비공개 버킷에 있고, 조교 전용 API(/admin/absence/{id}/file-url)의
+    # 서명 URL로만 연다. 인증 없는 이 공개 경로로는 내주지 않는다.
+    # (스토리지를 안 쓰는 로컬 개발에서만 예전처럼 디스크에서 연다)
+    if storage_service.enabled and path.replace("\\", "/").lstrip("./").startswith("absence/"):
+        raise HTTPException(status_code=404, detail="not found")
+
     local_path = os.path.join(UPLOAD_DIR, path)
     if os.path.isfile(local_path):
         return FileResponse(local_path)

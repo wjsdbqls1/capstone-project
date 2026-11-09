@@ -8,6 +8,7 @@ from deps import get_db
 from auth import require_assistant
 from models import AbsenceRequest, User, AbsenceHistory, AbsenceAttachment
 from push_service import send_push_to_user
+import storage_service
 
 router = APIRouter(prefix="/admin/absence", tags=["admin-absence"])
 
@@ -28,17 +29,11 @@ def get_absence_list(db: Session = Depends(get_db), current_user: User = Depends
 
     results = []
     for req in requests:
-        # 파일 정보 추출
+        # 파일 정보 추출. 서류는 비공개라 여기서 주소를 주지 않는다.
+        # 열 때마다 /admin/absence/{id}/file-url 로 잠깐만 유효한 주소를 받아 간다.
         file_info = None
         if req.attachments:
-            att = req.attachments[0]
-            file_url = f"/uploads/absence/{att.stored_name}" if not att.stored_name.startswith("/") else att.stored_name
-            
-            file_info = {
-                "original_name": att.original_name,
-                "stored_name": att.stored_name,
-                "url": file_url
-            }
+            file_info = {"original_name": req.attachments[0].original_name}
 
         # 신청자 정보 매핑
         student_data = {
@@ -63,6 +58,24 @@ def get_absence_list(db: Session = Depends(get_db), current_user: User = Depends
             "file": file_info
         })
     return results
+
+# 1-1. 증빙서류 열기: 조교 권한을 확인한 뒤 SIGNED_URL_TTL초 동안만 유효한 주소를 준다
+@router.get("/{request_id}/file-url")
+def get_absence_file_url(request_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_assistant)):
+    att = (
+        db.query(AbsenceAttachment)
+        .filter(AbsenceAttachment.request_id == request_id)
+        .order_by(AbsenceAttachment.id)
+        .first()
+    )
+    if not att:
+        raise HTTPException(status_code=404, detail="첨부된 증빙서류가 없습니다.")
+
+    if storage_service.enabled:
+        # 저장할 때와 같은 경로 규칙: uploads/absence → absence/<파일명>
+        return {"url": storage_service.signed_url(f"absence/{att.stored_name}")}
+    # 로컬 개발(스토리지 미설정)에서는 디스크에 저장된 파일을 예전 경로로 연다
+    return {"url": f"/uploads/absence/{att.stored_name}"}
 
 # 2. 공결 승인/반려 처리
 @router.put("/{request_id}/status")

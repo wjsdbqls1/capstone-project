@@ -105,7 +105,7 @@ def parse_attachments(text: str | None, legacy_url: str | None = None, legacy_na
     return []
 
 
-def save_upload(file: UploadFile, upload_dir: str) -> str:
+def save_upload(file: UploadFile, upload_dir: str, bucket: str | None = None) -> str:
     """업로드 파일을 UUID 기반 이름으로 저장하고 저장된 파일명을 반환.
 
     원본 파일명은 확장자만 취하고 버려서 경로 조작(../ 등)을 막고,
@@ -114,6 +114,7 @@ def save_upload(file: UploadFile, upload_dir: str) -> str:
     Supabase Storage가 설정돼 있으면 그쪽에 올린다. Render 디스크는 배포할 때마다
     비워져서 첨부파일이 사라지기 때문. 반환값은 예전과 같은 '파일명'이라
     호출하는 쪽과 DB에 저장된 기존 값의 형태는 달라지지 않는다.
+    bucket을 주면 기본(공개) 버킷 대신 그 버킷에 올린다(공결 서류 → 비공개 버킷).
     """
     file_ext = check_allowed(file.filename)
 
@@ -122,7 +123,7 @@ def save_upload(file: UploadFile, upload_dir: str) -> str:
     if storage_service.enabled:
         data = storage_service.read_capped(file)
         object_path = f"{storage_service.folder_of(upload_dir)}/{saved_name}"
-        storage_service.upload_bytes(object_path, data, file.content_type)
+        storage_service.upload_bytes(object_path, data, file.content_type, bucket or storage_service.BUCKET)
         return saved_name
 
     return _save_to_disk(file, upload_dir, saved_name)
