@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { MdAssignment, MdCalendarToday, MdCampaign, MdChevronRight, MdEdit, MdHelp, MdPerson } from 'react-icons/md';
+import { MdAssignment, MdCalendarToday, MdCampaign, MdChevronRight, MdDescription, MdEdit, MdHelp, MdPerson } from 'react-icons/md';
 import '../../App.css';
 import NotificationBell from '../../components/NotificationBell';
 
@@ -19,7 +19,7 @@ const LIST_ITEMS = [
   { icon: MdHelp, text: 'FAQ', path: '/student/faq' },
   { icon: MdCampaign, text: '공지사항', path: '/student/notice' },
   { icon: MdCalendarToday, text: '캘린더', path: '/student/calendar' },
-  // 공결 서류 제출: 백엔드 기능이 아직 없어 프론트에서 임시로 숨김
+  { icon: MdDescription, text: '공결 서류 제출', path: '/student/absence' },
 ];
 
 const todayStr = () => {
@@ -165,6 +165,8 @@ function StudentMain() {
               <MenuTile
                 key={item.text}
                 index={idx}
+                // 2열에서 혼자 남는 마지막 타일은 가로로 길게 채운다
+                wide={LIST_ITEMS.length % 2 === 1 && idx === LIST_ITEMS.length - 1}
                 icon={<item.icon size={22} />}
                 text={item.text}
                 onClick={() => item.path ? navigate(item.path) : alert(item.alert)}
@@ -194,10 +196,10 @@ function InfoHalf({ icon, label, title, subtitle, onClick }) {
 }
 
 // 보조 메뉴 그리드의 타일 하나
-function MenuTile({ onClick, icon, text, index }) {
+function MenuTile({ onClick, icon, text, index, wide }) {
   return (
     <motion.div
-      style={styles.menuTile}
+      style={wide ? { ...styles.menuTile, ...styles.menuTileWide } : styles.menuTile}
       onClick={onClick}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -407,6 +409,15 @@ const styles = {
     borderRadius: '14px',
     cursor: 'pointer',
     textAlign: 'center'
+  },
+
+  // 혼자 남는 타일: 두 칸을 차지하되 세로는 낮게, 아이콘과 글자를 가로로
+  menuTileWide: {
+    gridColumn: '1 / -1',
+    flexDirection: 'row',
+    gap: '10px',
+    minHeight: '72px',
+    padding: '14px 10px'
   },
 
   menuTileIconWrap: {

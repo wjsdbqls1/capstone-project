@@ -74,6 +74,24 @@ function TAAbsenceManage() {
     setFilteredRequests(result);
   }, [dateFilter, statusFilter, requests]);
 
+  // 증빙서류는 비공개라 고정 주소가 없다. 열 때마다 서버에서 잠깐만 유효한 주소를 받아 연다.
+  const openAbsenceFile = async (reqId) => {
+    // await 뒤에 창을 열면 팝업 차단에 걸리므로, 클릭하자마자 빈 창부터 띄워 둔다
+    const win = window.open('', '_blank');
+    if (win) win.opener = null;
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(`${API_BASE}/admin/absence/${reqId}/file-url`, { headers: { Authorization: `Bearer ${token}` } });
+      // 로컬 개발에서는 /uploads/... 상대 경로가 온다
+      const url = data.url.startsWith('/') ? `${API_BASE}${data.url}` : data.url;
+      if (win) win.location.href = url;
+      else window.location.href = url;
+    } catch (e) {
+      if (win) win.close();
+      alert(e.response?.data?.detail || '증빙서류를 불러오지 못했습니다.');
+    }
+  };
+
   const handleStatusUpdate = async (status) => {
     if (!selectedReq) return;
     if (status === 'REJECTED' && !showRejectInput) { setShowRejectInput(true); return; }
@@ -187,7 +205,7 @@ function TAAbsenceManage() {
                       <span style={{color:'#c62828', fontWeight:'bold'}}>{selectedReq.absent_date}</span>
                   </div>
                   <div style={{marginTop:'15px'}}><div style={styles.label}>결석 사유</div><div style={styles.reasonBox}>{selectedReq.reason}</div></div>
-                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href={`${API_BASE}/uploads/absence/${selectedReq.file.stored_name}`} target="_blank" rel="noreferrer" style={{...styles.fileLink, display: 'inline-flex', alignItems: 'center', gap: '6px'}}><MdAttachFile size={14} /> 증빙서류 다운로드 / 보기</a></div>)}
+                  {selectedReq.file && (<div style={{marginTop:'15px'}}><a href="#" role="button" onClick={(e) => { e.preventDefault(); openAbsenceFile(selectedReq.id); }} style={{...styles.fileLink, display: 'inline-flex', alignItems: 'center', gap: '6px'}}><MdAttachFile size={14} /> 증빙서류 다운로드 / 보기</a></div>)}
               </div>
 
               {selectedReq.status === 'SUBMITTED' ? (
