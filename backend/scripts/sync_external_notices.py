@@ -4,6 +4,8 @@ import random
 import sys
 import os
 import re
+import threading
+from contextlib import contextmanager
 import requests
 import uuid
 import urllib3
@@ -19,8 +21,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # 경로 설정
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
-from db import SessionLocal
+from db import SessionLocal, engine
 from models import Notice, User
 import storage_service
 
@@ -60,6 +63,30 @@ def get_browser_session():
     session.mount("http://", adapter)
     
     return session
+
+# 홈페이지는 새 글 제목 끝에 'NEW' 표시를 붙인다. 그대로 저장하면 학생 화면에 NEW가 계속
+# 남고, 며칠 뒤 표시가 떨어지면 제목이 달라져 같은 글이 한 번 더 저장된다.
+_NEW_MARK = re.compile(r"(?<![A-Za-z])\s*new\s*$", re.IGNORECASE)
+
+
+def clean_title(a) -> str:
+    """목록의 제목 링크에서 제목만 뽑는다(새 글 표시 제거, 공백 정리)."""
+    t = " ".join(a.get_text(" ", strip=True).split())
+    while True:
+        stripped = _NEW_MARK.sub("", t).rstrip()
+        if stripped == t:
+            return t
+        t = stripped
+
+
+def title_key(title: str) -> str:
+    """같은 글인지 판단하는 비교용 키.
+    NEW 표시, 공백·기호 차이, 숫자 앞의 0('09월'과 '9월')은 같은 글로 본다.
+    조교가 같은 공지를 직접 올려 둔 경우에도 이 키로 걸러 중복으로 보이지 않게 한다."""
+    t = _NEW_MARK.sub("", " ".join((title or "").split()))
+    t = re.sub(r"\d+", lambda m: str(int(m.group())), t)
+    return re.sub(r"[^0-9A-Za-z가-힣]", "", t).lower()
+
 
 def parse_date(date_str):
     try:
@@ -157,15 +184,17 @@ def main(max_pages=None, reset=False):
     # ★ 먼저 관리자 계정(ID=1)이 있는지 확인 (안전장치)
     admin_check = db.query(User).filter(User.id == 1).first()
     if not admin_check:
-        print("❌ 오류: ID가 1인 관리자 계정이 없습니다.")
-        print("   먼저 'python backend/create_admin.py'를 실행해주세요.")
         db.close()
-        return 0
+        # 조용히 0건으로 끝나면 '새 글이 없다'와 구별이 안 되므로 오류로 올린다
+        raise RuntimeError("ID가 1인 관리자 계정이 없습니다. 'python backend/create_admin.py'를 먼저 실행하세요.")
 
     if reset:
         deleted = db.query(Notice).filter(Notice.source == "external").delete()
         db.commit()
         print(f"🗑️  기존 external 공지 {deleted}건 삭제 (재크롤링 준비)")
+
+    # 이미 있는 공지(직접 올린 공지 포함)의 비교용 키
+    known = {title_key(t) for (t,) in db.query(Notice.title).all()}
 
     print("📡 [외부공지] 학과 홈페이지(CSW) 크롤링 시작...")
 
@@ -210,20 +239,17 @@ def main(max_pages=None, reset=False):
                 break
 
             for a in rows:
-                title = a.get_text(strip=True)
+                title = clean_title(a)
                 href = a.get("href")
-                if not href: continue
-                
+                if not href or not title: continue
+
                 detail_url = urljoin(LIST_URL, href)
-                
-                # 중복 확인
-                exists = db.query(Notice).filter(
-                    Notice.title == title, 
-                    Notice.source == "external"
-                ).first()
-                
-                if exists:
+
+                # 중복 확인: 이미 수집했거나 조교가 같은 공지를 직접 올렸으면 건너뛴다
+                key = title_key(title)
+                if key in known:
                     continue
+                known.add(key)
 
                 print(f"      ➕ 신규 공지 발견: {title}")
                 
@@ -269,10 +295,81 @@ def main(max_pages=None, reset=False):
 
     except Exception as e:
         print(f"❌ 크롤링 중 치명적 오류: {e}")
-        return 0
+        raise  # 호출한 쪽(자동 수집 상태)에 실패가 남도록
     finally:
         db.close()
         session.close() # 세션 닫기
+
+
+# ───────────────────────── 자동 수집 ─────────────────────────
+# 예전에는 서버가 시작될 때 한 번만 돌아서, 서버가 계속 떠 있으면 새 공지를 영영 못 가져왔다.
+# 이제 시작할 때 한 번(누락분까지 전체) + 이후 일정 간격으로 앞쪽 몇 페이지만 확인한다.
+
+AUTO_PAGES = 2  # 주기 수집 때 볼 목록 페이지 수(한 페이지 10건). 몇 시간 사이 새 글은 이 안에 있다
+
+# 자동·수동 실행이 함께 쓰는 상태. 조교용 /admin/notices/sync-external/status 로 보여 준다
+state = {"running": False, "auto": None, "last_run": None, "last_result": None}
+_local_lock = threading.Lock()
+_PG_LOCK_KEY = 72_310_001  # 아무 숫자나 고정. 이 작업 전용 advisory lock 번호
+
+
+@contextmanager
+def _single_runner():
+    """한 번에 한 곳에서만 돌게 한다.
+    배포 중에는 옛 서버와 새 서버가 잠깐 같이 떠 있어서, 둘이 동시에 돌면 같은 글이 두 번 저장될 수 있다.
+    Postgres advisory lock은 연결에 묶이므로 전용 연결을 따로 잡고, 끝나면 풀어 준다."""
+    if not _local_lock.acquire(blocking=False):
+        yield False
+        return
+    conn, got_pg = None, False
+    try:
+        if engine.dialect.name == "postgresql":
+            conn = engine.connect()
+            got_pg = bool(conn.execute(text("SELECT pg_try_advisory_lock(:k)"), {"k": _PG_LOCK_KEY}).scalar())
+            if not got_pg:
+                yield False
+                return
+        yield True
+    finally:
+        if conn is not None:
+            try:
+                if got_pg:
+                    conn.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": _PG_LOCK_KEY})
+            finally:
+                conn.close()
+        _local_lock.release()
+
+
+def run_once(max_pages=None, reset=False, trigger="자동"):
+    """한 번 수집하고 결과를 state에 남긴다. 다른 곳에서 이미 돌고 있으면 건너뛴다."""
+    with _single_runner() as ok:
+        if not ok:
+            print(f"⏭️ [외부공지] 이미 수집 중이라 건너뜀 ({trigger})")
+            return None
+        state["running"] = True
+        try:
+            count = main(max_pages=max_pages, reset=reset)
+            state["last_result"] = f"{trigger}: 신규 {count}건"
+            return count
+        except Exception as e:
+            state["last_result"] = f"{trigger}: 오류 - {e}"
+            return None
+        finally:
+            state["running"] = False
+            state["last_run"] = datetime.now().astimezone().isoformat(timespec="seconds")
+
+
+def start_scheduler(interval_hours: float):
+    """서버 시작 시 한 번 전체 수집 후, interval_hours마다 앞쪽 AUTO_PAGES 페이지만 다시 본다."""
+    def loop():
+        run_once(trigger="서버 시작")
+        while True:
+            time.sleep(interval_hours * 3600)
+            run_once(max_pages=AUTO_PAGES, trigger="자동")
+
+    state["auto"] = f"{interval_hours:g}시간마다"
+    threading.Thread(target=loop, daemon=True, name="notice-sync").start()
+
 
 if __name__ == "__main__":
     import argparse

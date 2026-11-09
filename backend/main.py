@@ -219,16 +219,10 @@ def on_startup():
     finally:
         db.close()
 
-    # 공지사항 크롤링은 시간이 걸리므로 백그라운드 스레드로 실행
-    def _sync_notices():
-        try:
-            from scripts.sync_external_notices import main as sync_notices
-            sync_notices()
-        except Exception as e:
-            print(f"⚠️ [공지사항] 크롤링 오류: {e}")
-
-    t = threading.Thread(target=_sync_notices, daemon=True)
-    t.start()
+    # 학과 홈페이지 공지: 시작 직후 한 번 + 이후 NOTICE_SYNC_INTERVAL_HOURS(기본 3)시간마다.
+    # 시간이 걸리므로 백그라운드 스레드에서 돈다.
+    from scripts.sync_external_notices import start_scheduler
+    start_scheduler(float(os.getenv("NOTICE_SYNC_INTERVAL_HOURS", "3")))
 
 @app.get("/")
 def read_root():
