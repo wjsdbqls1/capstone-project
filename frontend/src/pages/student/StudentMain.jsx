@@ -416,7 +416,8 @@ const styles = {
     gridColumn: '1 / -1',
     flexDirection: 'row',
     gap: '10px',
-    minHeight: '72px',
+    // [임시] 원래 72px. 되돌릴 예정이라 값만 3배로 바꿔 둠
+    minHeight: '216px',
     padding: '14px 10px'
   },
 
@@ -433,7 +434,8 @@ const styles = {
   },
 
   menuTileText: {
-    fontSize: '15px',
+    // [임시] 원래 '15px'. 되돌릴 예정. 지금은 '문의하기'(primaryCta)와 같은 크기
+    fontSize: 'clamp(15px, 4.6vw, 19px)',
     fontWeight: '600',
     color: '#222'
   },
