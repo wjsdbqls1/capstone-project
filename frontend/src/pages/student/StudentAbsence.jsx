@@ -161,6 +161,8 @@ function StudentAbsence() {
         </div>
       </div>
 
+      {/* 헤더 아래 영역만 스크롤 (페이지 전체는 fixed라 스크롤되지 않음) */}
+      <div style={styles.scrollArea}>
       {/* 유리 박스 컨테이너 */}
       <div style={styles.glassContainer}>
         
@@ -271,6 +273,7 @@ function StudentAbsence() {
           </div>
         )}
       </div>
+      </div>
 
     </div>
   );
@@ -353,8 +356,19 @@ const styles = {
     whiteSpace: 'nowrap'
   },
 
-  glassContainer: {
+  // 내용이 화면보다 길면 이 영역이 스크롤된다
+  scrollArea: {
     flex: 1,
+    minHeight: 0,
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+
+  glassContainer: {
+    // 짧을 땐 남는 높이를 채우고, 길면 내용만큼 늘어난다(줄어들며 잘리지 않게)
+    flex: '1 0 auto',
     margin: '15px', // 여백 축소
     // clamp(최소, 권장, 최대) -> 화면 크기에 따라 패딩 자동 조절
     padding: 'clamp(15px, 3vw, 40px)', 
@@ -364,11 +378,10 @@ const styles = {
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
     border: '1px solid rgba(255, 255, 255, 0.4)',
     display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden'
+    flexDirection: 'column'
   },
 
-  createButton: { 
+  createButton: {
     width: '100%', 
     padding: '15px', 
     background: 'linear-gradient(135deg, #003675 0%, #00509d 100%)', 
@@ -417,7 +430,8 @@ const styles = {
   },
 
   // 폼 스타일
-  formWrapper: { display: 'flex', flexDirection: 'column', height: '100%' },
+  // height:100%로 고정하면 폼이 길 때 넘친 부분(제출 버튼)이 스크롤 범위에서 빠진다
+  formWrapper: { display: 'flex', flexDirection: 'column', flex: 1 },
   inputGroup: { marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '16px', fontWeight: 'bold', color: '#333' },
   input: { 
