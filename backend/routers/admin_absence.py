@@ -71,11 +71,13 @@ def get_absence_file_url(request_id: int, db: Session = Depends(get_db), current
     if not att:
         raise HTTPException(status_code=404, detail="첨부된 증빙서류가 없습니다.")
 
+    # 저장할 때와 같은 경로 규칙: uploads/absence → absence/<파일명>
+    object_path = f"absence/{att.stored_name}"
     if storage_service.enabled:
-        # 저장할 때와 같은 경로 규칙: uploads/absence → absence/<파일명>
-        return {"url": storage_service.signed_url(f"absence/{att.stored_name}")}
-    # 로컬 개발(스토리지 미설정)에서는 디스크에 저장된 파일을 예전 경로로 연다
-    return {"url": f"/uploads/absence/{att.stored_name}"}
+        return {"url": storage_service.signed_url(object_path)}
+    # 디스크 저장(학과 서버·로컬 개발): 서버가 직접 서명한 짧은 유효기간의 상대 경로.
+    # 프론트가 API 주소를 앞에 붙여 연다.
+    return {"url": storage_service.local_signed_path(object_path)}
 
 # 2. 공결 승인/반려 처리
 @router.put("/{request_id}/status")

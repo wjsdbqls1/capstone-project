@@ -5,7 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MdTrendingUp, MdAssignment } from 'react-icons/md';
 import { API_BASE } from '../../config';
 
-const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
+// 기본값은 운영 AI 서버(Hugging Face Space). 리포트의 예측·요약은 AI 서버가
+// 자기 DB의 문의 이력을 읽어 계산하므로, 로컬에서 화면을 확인할 때만
+// .env.development.local 로 로컬 AI 서버 주소를 끼워 넣는다.
+// (문의 추천은 TAInquiryWork가 운영 FAQ를 쓰는 HF 서버를 그대로 바라본다.)
+const AI_BASE = import.meta.env.VITE_AI_REPORT_BASE || 'https://wjsdbqls-capstone-ai.hf.space';
 
 function TAAIReport() {
   const [alerts, setAlerts] = useState([]);

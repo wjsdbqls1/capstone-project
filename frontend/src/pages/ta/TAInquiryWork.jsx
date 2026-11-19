@@ -7,13 +7,12 @@ import { motion } from 'framer-motion';
 import { MdCalendarToday, MdArrowDownward, MdArrowUpward, MdCelebration, MdPushPin, MdClose, MdPerson, MdSmartToy, MdCheckCircle } from 'react-icons/md';
 import AnimatedModal from '../../components/AnimatedModal';
 import AttachmentPreview, { BubbleAttachments } from '../../components/AttachmentPreview';
-import { API_BASE } from '../../config';
+import { API_BASE, AI_BASE } from '../../config';
 import { linkify } from '../../utils/linkify';
 import { makeInquiryModalStyles, ACCENTS } from '../../styles/inquiryModalStyles';
 
 import { appendFiles, attachmentsOf, errorMessage } from '../../utils/upload';
 import FilePicker from '../../components/FilePicker';
-const AI_BASE = 'https://wjsdbqls-capstone-ai.hf.space';
 
 const MODES = {
   pending: {

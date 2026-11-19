@@ -1,0 +1,9 @@
+[Unit]
+Description=학과 서버 생존 신호 (healthchecks.io)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=task
+ExecStart=/srv/sch-cse-task/app/deploy/scripts/heartbeat.sh

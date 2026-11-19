@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
 
 import storage_service
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -50,6 +51,8 @@ origins = [
     # 사람(설치해 둔 PWA 등)이 바로 깨지지 않도록 당분간 함께 허용한다.
     "https://capstone-project-1-q2nw.onrender.com",
     "https://sch-assistant.onrender.com",
+    # 학과 서버(미니PC + Cloudflare Tunnel)의 프론트 주소
+    "https://sch-cse-task.com",
 ]
 
 app.add_middleware(
@@ -74,10 +77,9 @@ def serve_upload(path: str):
     if not path or path.startswith("/") or ".." in path.replace("\\", "/").split("/"):
         raise HTTPException(status_code=404, detail="not found")
 
-    # 공결 증빙서류는 비공개 버킷에 있고, 조교 전용 API(/admin/absence/{id}/file-url)의
-    # 서명 URL로만 연다. 인증 없는 이 공개 경로로는 내주지 않는다.
-    # (스토리지를 안 쓰는 로컬 개발에서만 예전처럼 디스크에서 연다)
-    if storage_service.enabled and path.replace("\\", "/").lstrip("./").startswith("absence/"):
+    # 공결 증빙서류는 조교 전용 API(/admin/absence/{id}/file-url)가 주는 서명 링크로만 연다.
+    # 디스크에 저장하는 학과 서버에서도 마찬가지로, 인증 없는 이 공개 경로로는 내주지 않는다.
+    if storage_service.is_private(path):
         raise HTTPException(status_code=404, detail="not found")
 
     local_path = os.path.join(UPLOAD_DIR, path)
@@ -90,6 +92,23 @@ def serve_upload(path: str):
     # 폴더 없이 저장되던 문의 첨부(/uploads/파일명)는 misc/ 아래에 올라간다
     object_path = path if "/" in path else f"misc/{path}"
     return RedirectResponse(storage_service.public_url(object_path), status_code=307)
+
+
+# 디스크 저장 모드에서 공결 증빙서류를 여는 경로. Supabase 서명 URL과 같은 역할로,
+# /admin/absence/{id}/file-url 이 만들어 준 링크(서명 + 짧은 만료시각)만 통과한다.
+@app.get(storage_service.PRIVATE_FILE_ROUTE + "/{path:path}")
+def serve_private_file(path: str, exp: int = 0, sig: str = ""):
+    bad_path = not path or path.startswith("/") or ".." in path.replace("\\", "/").split("/")
+    if bad_path or not storage_service.is_private(path):
+        raise HTTPException(status_code=404, detail="not found")
+    if not storage_service.verify_local_signature(path, exp, sig):
+        raise HTTPException(status_code=403, detail="링크가 만료되었습니다. 목록에서 다시 열어 주세요.")
+
+    local_path = os.path.join(UPLOAD_DIR, path)
+    if not os.path.isfile(local_path):
+        raise HTTPException(status_code=404, detail="not found")
+    # 진단서가 브라우저·중간 캐시에 남지 않게 한다
+    return FileResponse(local_path, headers={"Cache-Control": "private, no-store"})
 
 
 # -----------------------------------------------------------
@@ -227,3 +246,11 @@ def on_startup():
 @app.get("/")
 def read_root():
     return {"message": "Hello World"}
+
+
+# 장애 감시용. 루트(/)는 DB를 안 타서 DB가 죽어도 200이 나오므로, DB까지 확인하는 경로를 따로 둔다.
+@app.get("/healthz")
+def healthz():
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+    return {"status": "ok"}

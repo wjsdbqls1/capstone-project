@@ -1,0 +1,110 @@
+# 학과 서버(미니PC) 구성. 서버 위치: /srv/sch-cse-task
+#
+#   /srv/sch-cse-task/app   ← 이 저장소 (deploy/ 가 여기 있다)
+#   /srv/sch-cse-task/ai    ← AI 서버 소스 (Hugging Face Space capstone-ai 사본)
+#   /srv/sch-cse-task/data  ← DB 파일(postgres/)과 첨부파일(uploads/). 백업 대상
+#
+# 바깥에서 들어오는 길은 Cloudflare Tunnel(cloudflared, 호스트 서비스) 하나뿐이다.
+#   sch-cse-task.com      → 127.0.0.1:8080 (web)
+#   api.sch-cse-task.com  → 127.0.0.1:8000 (backend)
+#   ai.sch-cse-task.com   → 127.0.0.1:7860 (ai)
+# 포트를 127.0.0.1에만 여는 이유: Docker는 ufw 방화벽을 우회해서, 0.0.0.0으로 열면
+# 학교망의 다른 기기가 터널을 거치지 않고 바로 붙을 수 있다.
+#
+# 실행: cd /srv/sch-cse-task/app/deploy && docker compose up -d --build
+
+name: sch-cse-task
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"   # 로그가 몇 년 쌓여 디스크를 채우지 않도록 컨테이너당 최대 50MB
+    max-file: "5"
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sch
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?deploy/.env에 POSTGRES_PASSWORD가 필요합니다}
+      # db-init/10-ai-reader.sh 가 처음 한 번 AI 전용 읽기 계정을 만들 때 쓴다
+      AI_DB_PASSWORD: ${AI_DB_PASSWORD:?deploy/.env에 AI_DB_PASSWORD가 필요합니다}
+    volumes:
+      # PostgreSQL 18 이미지는 /var/lib/postgresql 아래(18/docker)에 데이터를 둔다
+      - ../../data/postgres:/var/lib/postgresql
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d sch"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: *logging
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../deploy/backend.Dockerfile
+    restart: unless-stopped
+    env_file: ./backend.env
+    environment:
+      DATABASE_URL: postgresql://app:${POSTGRES_PASSWORD}@db:5432/sch
+      # Supabase 키를 비워 두면 첨부파일을 디스크(/app/uploads)에 저장한다
+      SUPABASE_URL: ""
+      SUPABASE_SERVICE_KEY: ""
+      EXT_NOTICE_DIR: /app/uploads/external_notices
+      # 로그인 횟수 제한을 터널 IP가 아니라 실제 접속자 IP 기준으로 (rate_limit.py)
+      TRUST_CF_CONNECTING_IP: "1"
+    # --proxy-headers: Cloudflare가 붙이는 X-Forwarded-Proto(https)를 믿어서,
+    # 서버가 만드는 주소(리다이렉트 등)가 http://로 나가 브라우저에서 막히지 않게 한다
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000",
+              "--proxy-headers", "--forwarded-allow-ips", "*"]
+    volumes:
+      - ../../data/uploads:/app/uploads
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging: *logging
+
+  ai:
+    build:
+      context: .
+      dockerfile: ai.Dockerfile
+      additional_contexts:
+        ai_src: ../../ai
+    restart: unless-stopped
+    environment:
+      # FAQ·문의 두 테이블만 읽을 수 있는 계정 (사용자 비밀번호 해시 등은 못 본다)
+      DATABASE_URL: postgresql://ai_reader:${AI_DB_PASSWORD}@db:5432/sch
+    ports:
+      - "127.0.0.1:7860:7860"
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 4g
+    logging: *logging
+
+  web:
+    build:
+      context: ../frontend
+      dockerfile: ../deploy/web.Dockerfile
+      args:
+        VITE_API_BASE: https://api.sch-cse-task.com
+        VITE_AI_BASE: https://ai.sch-cse-task.com
+        VITE_AI_REPORT_BASE: https://ai.sch-cse-task.com
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - "127.0.0.1:8080:80"
+    logging: *logging

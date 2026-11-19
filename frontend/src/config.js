@@ -6,3 +6,8 @@
 // .env.production을 반드시 함께 유지할 것. 값이 없을 때의 기본값도 운영 주소로 둔다.
 export const API_BASE =
   import.meta.env.VITE_API_BASE || 'https://capstone-project-of74.onrender.com';
+
+// AI 서버 주소(문의 답변 추천·하이라이트). 학과 서버 빌드는 VITE_AI_BASE로 ai.sch-cse-task.com을 넣는다.
+// (리포트 화면은 로컬 확인용 VITE_AI_REPORT_BASE를 따로 쓴다 — TAAIReport.jsx 참고)
+export const AI_BASE =
+  import.meta.env.VITE_AI_BASE || 'https://wjsdbqls-capstone-ai.hf.space';

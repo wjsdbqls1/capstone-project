@@ -1,0 +1,9 @@
+[Unit]
+Description=매달 1일 05:00 백업 복원 확인
+
+[Timer]
+OnCalendar=*-*-01 05:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

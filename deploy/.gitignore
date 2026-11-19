@@ -1,0 +1,4 @@
+# 서버에만 두는 비밀값 파일
+.env
+backend.env
+backup.env

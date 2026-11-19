@@ -3,8 +3,15 @@
 
 Render의 디스크는 배포할 때마다 초기화돼서 업로드된 파일이 전부 사라진다.
 그래서 파일 본체는 외부 스토리지에 두고, DB에는 예전처럼 파일명만 남긴다.
+
+SUPABASE_URL을 비워 두면 서버 디스크(uploads/)에 저장한다(학과 서버, 로컬 개발).
+이때도 공결 증빙서류는 공개 경로로 내주지 않고, 아래 local_signed_path()로 만든
+짧은 유효기간의 서명 링크로만 연다.
 """
+import hashlib
+import hmac
 import os
+import time
 import uuid
 from urllib.parse import quote
 
@@ -60,6 +67,49 @@ def signed_url(object_path: str, bucket: str = PRIVATE_BUCKET, expires_in: int =
         raise HTTPException(status_code=502, detail=f"파일을 불러오지 못했습니다. ({res.status_code})")
     # 응답은 "/object/sign/..."처럼 /storage/v1 아래의 상대 경로다
     return f"{SUPABASE_URL}/storage/v1{res.json()['signedURL']}"
+
+
+# ───────────── 디스크 저장 모드의 비공개 파일(공결 증빙서류) ─────────────
+# Supabase의 서명 URL과 같은 역할을 서버가 직접 한다.
+# 조교 권한을 확인한 API가 "경로 + 만료시각"에 서명한 링크를 주고,
+# /private-files/ 경로는 서명과 만료시각이 맞을 때만 파일을 내준다.
+
+PRIVATE_FOLDERS = ("absence/",)
+PRIVATE_FILE_ROUTE = "/private-files"
+
+
+def _norm(path: str) -> str:
+    return str(path).replace("\\", "/").lstrip("./").lower()
+
+
+def is_private(path: str) -> bool:
+    """공개 경로(/uploads)로 내주면 안 되는 파일인지. 대소문자·구분자 차이로 우회되지 않게 정규화해서 본다."""
+    return _norm(path).startswith(PRIVATE_FOLDERS)
+
+
+def _signing_key() -> bytes:
+    secret = os.getenv("JWT_SECRET", "")
+    if not secret:
+        raise HTTPException(status_code=500, detail="서버 설정 오류: JWT_SECRET이 없습니다.")
+    # 로그인 토큰 서명과 같은 키를 그대로 쓰지 않도록 용도별로 파생한다
+    return hashlib.sha256(b"private-file-link:" + secret.encode()).digest()
+
+
+def _signature(object_path: str, exp: int) -> str:
+    msg = f"{object_path}\n{exp}".encode()
+    return hmac.new(_signing_key(), msg, hashlib.sha256).hexdigest()
+
+
+def local_signed_path(object_path: str, expires_in: int = SIGNED_URL_TTL) -> str:
+    """디스크의 비공개 파일을 expires_in초 동안만 열 수 있는 상대 경로를 만든다."""
+    exp = int(time.time()) + expires_in
+    return f"{PRIVATE_FILE_ROUTE}/{quote(object_path)}?exp={exp}&sig={_signature(object_path, exp)}"
+
+
+def verify_local_signature(object_path: str, exp: int, sig: str) -> bool:
+    if exp < int(time.time()):
+        return False
+    return hmac.compare_digest(_signature(object_path, exp), sig or "")
 
 
 def upload_bytes(object_path: str, data: bytes, content_type: str | None, bucket: str = BUCKET) -> None:

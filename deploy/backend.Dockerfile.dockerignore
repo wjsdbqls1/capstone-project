@@ -1,0 +1,11 @@
+# 비밀값·개인정보·로컬 파일이 이미지에 들어가지 않게 한다
+.env
+.env.*
+uploads/
+backups/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+*.sqlite3
