@@ -8,9 +8,10 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+import login_guard
 from deps import get_db
 from models import User
-from rate_limit import limiter
+from rate_limit import client_ip
 
 load_dotenv()
 
@@ -32,10 +33,16 @@ def create_token(user_id: int):
 
 
 @r.post("/login")
-@limiter.limit("10/minute")
 def login(request: Request, data: LoginIn, db: Session = Depends(get_db)):
+    # 실패 횟수를 "IP + 아이디"와 "IP 전체" 두 기준으로 센다(login_guard.py).
+    # 학교 와이파이처럼 여러 사람이 한 IP를 쓸 때 한 사람의 실패로 전원이 막히지 않게 하기 위함
+    ip = client_ip(request)
+    if login_guard.is_blocked(ip, data.student_no):
+        raise HTTPException(status_code=429, detail=login_guard.BLOCK_MESSAGE)
+
     u = db.query(User).filter(User.student_no == data.student_no).first()
     if (not u) or (not pwd.verify(data.password, u.password_hash)):
+        login_guard.record_failure(ip, data.student_no)
         raise HTTPException(status_code=401, detail="invalid credentials")
 
     token = create_token(u.id)

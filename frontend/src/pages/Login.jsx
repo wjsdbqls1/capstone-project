@@ -71,6 +71,9 @@ function Login() {
       console.error("로그인 실패:", error);
       if (error.response && error.response.status === 401) {
         alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+      } else if (error.response && error.response.status === 429) {
+        // 비밀번호를 여러 번 틀려 잠시 막힌 경우(서버 login_guard.py)
+        alert(error.response.data?.detail || "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.");
       } else if (error.response) {
         alert(`로그인 오류가 발생했습니다. (코드 ${error.response.status})`);
       } else {

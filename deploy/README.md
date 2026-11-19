@@ -190,4 +190,4 @@ R2 백업에는 DB, 첨부파일, AI 소스·모델, 비밀값 파일(`deploy/.e
 - 첨부파일은 Supabase Storage 대신 서버 디스크(`data/uploads`)에 저장한다. DB에는 예전처럼 상대 경로만 있어 그대로 쓴다.
 - 공결 증빙서류는 공개 경로(`/uploads/absence/...`)로는 열리지 않고, 조교 API가 만들어 주는 60초짜리 서명 링크(`/private-files/...`)로만 열린다.
 - Supabase에서 켜 두었던 RLS는 끈다(공개 REST API가 없으므로 불필요, 켜 두면 AI 계정이 0건을 읽음).
-- 로그인 횟수 제한은 Cloudflare가 넘겨주는 실제 접속자 IP(CF-Connecting-IP) 기준이다.
+- 로그인 실패 제한은 Cloudflare가 넘겨주는 실제 접속자 IP(CF-Connecting-IP) 기준이고, 실패만 센다(`backend/login_guard.py`): 같은 IP·같은 아이디 1분 10회, 같은 IP 전체 1분 30회. 학교 와이파이는 교내 전원이 IP 하나를 쓰므로 한 사람의 실패로 전원이 막히지 않게 나눴다.
