@@ -361,6 +361,9 @@ const styles = {
   },
   pageContainer: {
     backgroundImage: `url(${bgImage})`,
+    // iOS 26 홈 화면 앱은 화면 맨 위 고정 요소의 배경'색'으로 상태 표시줄을 칠한다(사진은 무시).
+    // 비워 두면 밝은 회색 띠가 생기므로 헤더와 같은 남색을 사진 뒤에 깔아 둔다(화면에는 안 보임).
+    backgroundColor: '#003675',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     // height:100dvh 대신 position:fixed + inset:0 사용.
