@@ -7,7 +7,11 @@
     <meta name="theme-color" content="#003675" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- apple-mobile-web-app-status-bar-style="black-translucent"는 쓰지 않는다.
+         iOS 26.1부터 홈 화면 앱에서 이 값이면 시스템이 상태 표시줄과 그 아래 화면 위쪽에
+         흐린 막(블러)을 덮어 헤더 글자가 뿌옇게 보인다(CSS로 못 지움). 빼면 상태 표시줄이
+         theme-color(#003675) 단색으로 화면 위에 따로 그려진다.
+         홈 화면 앱은 이 설정을 설치할 때 굳히므로, 바꾼 뒤엔 앱을 지우고 다시 추가해야 반영된다. -->
     <meta name="apple-mobile-web-app-title" content="행정조교" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>SCH 행정조교 시스템</title>

@@ -8,6 +8,16 @@ html, body, #root {
   background-color: #ffffff;
 }
 
+/* 홈 화면 앱(iOS 26)에서는 화면 맨 아래(홈 바 영역) 띠를 페이지 내용이 덮지 못하고
+   html/body 배경색이 그대로 보인다(WebKit 버그 301108 등). 흰색이면 띠가 도드라지므로,
+   홈 화면 앱일 때만 학생 화면 배경 사진의 맨 아래 색(평균 #565358)으로 맞춰 눈에 안 띄게 한다.
+   일반 브라우저와 조교 PC 화면은 그대로 흰 배경. */
+@media (display-mode: standalone) {
+  html, body, #root {
+    background-color: #565358;
+  }
+}
+
 body {
   font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
 }
