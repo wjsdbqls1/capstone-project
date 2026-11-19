@@ -34,7 +34,9 @@ COPY --from=ai_src --chown=app:app app.py router.py backend_bridge.py ./
 COPY --from=ai_src --chown=app:app inference ./inference
 COPY --from=ai_src --chown=app:app models ./models
 COPY --from=ai_src --chown=app:app saved_models ./saved_models
+COPY ai-warmup.py /opt/ai-warmup.py
 
 USER app
 EXPOSE 7860
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
+# 뜨자마자 모델을 미리 불러 둔다(첫 요청 30초 대기 방지). 서버는 exec로 띄워 종료 신호를 직접 받게 한다
+CMD ["sh", "-c", "python /opt/ai-warmup.py & exec uvicorn app:app --host 0.0.0.0 --port 7860"]
